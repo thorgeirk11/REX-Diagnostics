@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+ <!-- META DATA -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta property="og:url"             content="http://kingcoyotestudios.com/" /> 
+    <meta property="og:title"           content="The adventure begins..." /> 
+    <meta property="og:image"           content="http://kingcoyotestudios.com/assets/images/KCS-Newsfeed.jpg" /> 
+    <meta property="og:description"     content="Do you remember when games and toys were all about stimulating your imagination?" />  
+    
+    <meta name="description" content="King Coyote Studios - Game development">
+    <title>King Coyote Studios</title>
+
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/images/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/images/ico/apple-touch-icon-114-precomposed.png">
+      <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/images/ico/apple-touch-icon-72-precomposed.png">
+                    <link rel="apple-touch-icon-precomposed" href="../assets/images/ico/apple-touch-icon-57-precomposed.png">
+                                   <link rel="shortcut icon" href="../assets/images/ico/favicon.png">
+                                   
+    
+
+
+
+
+
+		<script type='text/javascript' src='https://ssl-webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/jquery.min.js'></script>
+		<script type="text/javascript">
+		<!--
+		var unityObjectUrl = "http://webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/UnityObject2.js";
+		if (document.location.protocol == 'https:')
+			unityObjectUrl = unityObjectUrl.replace("http://", "https://ssl-");
+		document.write('<script type="text\/javascript" src="' + unityObjectUrl + '"><\/script>');
+		-->
+		</script>
+		<script type="text/javascript">
+		<!--
+			var config = {
+				width: 960, 
+				height: 600,
+				params: { enableDebugging:"0" }
+				
+			};
+			var u = new UnityObject2(config);
+
+			jQuery(function() {
+
+				var $missingScreen = jQuery("#unityPlayer").find(".missing");
+				var $brokenScreen = jQuery("#unityPlayer").find(".broken");
+				$missingScreen.hide();
+				$brokenScreen.hide();
+				
+				u.observeProgress(function (progress) {
+					switch(progress.pluginStatus) {
+						case "broken":
+							$brokenScreen.find("a").click(function (e) {
+								e.stopPropagation();
+								e.preventDefault();
+								u.installPlugin();
+								return false;
+							});
+							$brokenScreen.show();
+						break;
+						case "missing":
+							$missingScreen.find("a").click(function (e) {
+								e.stopPropagation();
+								e.preventDefault();
+								u.installPlugin();
+								return false;
+							});
+							$missingScreen.show();
+						break;
+						case "installed":
+							$missingScreen.remove();
+						break;
+						case "first":
+						break;
+					}
+				});
+				u.initPlugin(jQuery("#unityPlayer")[0], "SpaceYChrome.unity3d");
+			});
+		-->
+		</script>
+		<style type="text/css">
+		<!--
+		body {
+			font-family: Helvetica, Verdana, Arial, sans-serif;
+			background-color: #000;
+			color: #fff;
+			text-align: center;
+		}
+		a:link, a:visited {
+			color: #fff;
+		}
+		a:active, a:hover {
+			color: #666;
+		}
+		em{
+			font-weight: 500;
+			text-transform: none;
+		}
+		p.header {
+			font-size: small;
+		}
+		p.header span {
+			font-weight: bold;
+		}
+		p.footer {
+			font-size: x-small;
+		}
+		div.content {
+			margin: auto;
+			width: 960px;
+		}
+		div.broken,
+		div.missing {
+			margin: auto;
+			position: relative;
+			top: 50%;
+			width: 193px;
+		}
+		div.broken a,
+		div.missing a {
+			height: 63px;
+			position: relative;
+			top: -31px;
+		}
+		div.broken img,
+		div.missing img {
+			border-width: 0px;
+		}
+		div.broken {
+			display: none;
+		}
+		div#unityPlayer {
+			cursor: default;
+			height: 600px;
+			width: 960px;
+		}
+.btn {
+  background: #f74d4d;
+  background-image: -webkit-linear-gradient(top, #f74d4d, #c70035);
+  background-image: -moz-linear-gradient(top, #f74d4d, #c70035);
+  background-image: -ms-linear-gradient(top, #f74d4d, #c70035);
+  background-image: -o-linear-gradient(top, #f74d4d, #c70035);
+  background-image: linear-gradient(to bottom, #f74d4d, #c70035);
+  -webkit-border-radius: 3;
+  -moz-border-radius: 3;
+  border-radius: 3px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 22px;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: #731e1e;
+  background-image: -webkit-linear-gradient(top, #731e1e, #b50707);
+  background-image: -moz-linear-gradient(top, #731e1e, #b50707);
+  background-image: -ms-linear-gradient(top, #731e1e, #b50707);
+  background-image: -o-linear-gradient(top, #731e1e, #b50707);
+  background-image: linear-gradient(to bottom, #731e1e, #b50707);
+  text-decoration: none;
+}
+a.btn:active, a.btn:hover {
+			color: #e8e1e8;
+		}
+
+		-->
+		</style>
+		<!-- GOOGLE WEB FONTS -->
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,700,600,300,800' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Crimson+Text:400,400italic,600,600italic,700,700italic' rel='stylesheet' type='text/css'>
+
+	</head>
+	<body>
+		<h1>SpaceY</h1>
+		<h2>A tower defence game in space</h2>
+		
+		<div class="content">
+			<div id="unityPlayer">
+				<div class="missing">
+					<a href="http://unity3d.com/webplayer/" title="Unity Web Player. Install now!">
+						<img alt="Unity Web Player. Install now!" src="http://webplayer.unity3d.com/installation/getunity.png" width="193" height="63" />
+					</a>
+				</div>
+				<div class="broken">
+					<a href="http://unity3d.com/webplayer/" title="Unity Web Player. Install now! Restart your browser after install.">
+						<img alt="Unity Web Player. Install now! Restart your browser after install." src="http://webplayer.unity3d.com/installation/getunityrestart.png" width="193" height="63" />
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<p>Thanks for trying out this pre-Alpha version of SpaceY</p>
+		<p><a class="btn" href="https://docs.google.com/forms/d/1BvL94A9Stou0CzTj_JpnA2aV8yW72UufMbRXZlk_ps4/viewform?usp=send_form" target="_blank">Give us some feedback!</a></p>
+		<p>&nbsp;</p>
+<p class="footer">Made by <a href="http://www.kingcoyotestudios.com" target="_blank">King Coyote Studios</a>. Connect with us on <a href="https://www.facebook.com/kingcoyotestudios" target="_blank">Facebook</a>, <a href="twitter.com/kingcoyotegames" target="_blank">Twitter</a> and <a href="www.linkedin.com/company/king-coyote-studios" target="_blank">LinkedIn</a></p>
+		
+
+		<p class="footer">&laquo; created with <a href="http://unity3d.com/unity/" title="Go to unity3d.com">Unity</a> &raquo;</p>
+
+		 <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-48864413-1', 'kingcoyotestudios.com');
+  ga('send', 'pageview');
+
+    </script>   
+	</body>
+</html>
