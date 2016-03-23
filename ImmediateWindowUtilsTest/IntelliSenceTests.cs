@@ -51,16 +51,6 @@ namespace Rex.Utilities.Test
 			CollectionAssert.Contains(helpInfo, "static sbyte Abs ( sbyte value )");
 		}
 
-
-		[Test]
-		public void SimpleNewStatementTest()
-		{
-			var helpInfo = RexHelper.Intellisence("new Acti").Select(i => i.ToString());
-			CollectionAssert.Contains(helpInfo, "Action < T >");
-			CollectionAssert.Contains(helpInfo, "Action < T1 , T2 >");
-		}
-
-
 		[Test]
 		public void TypeNotFoundTest()
 		{
