@@ -278,7 +278,7 @@ namespace Rex.Utilities.Test
         {
             var syntax = new[] {
                 Syntax.StaticKeyword,
-                Syntax._Type("int"),
+                Syntax.NewType("int"),
                 Syntax.Name("num"),
                 Syntax.EqualsOp,
                 Syntax.ConstVal("5")
@@ -306,7 +306,7 @@ namespace Rex.Utilities.Test
         {
             var syntax = new MemberDetails(
                 Syntax.StaticKeyword,
-                Syntax._Type("int"),
+                Syntax.NewType("int"),
                 Syntax.Name("myNumber"),
                 Syntax.EqualsOp,
                 Syntax.ConstVal("5")

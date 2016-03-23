@@ -258,33 +258,6 @@ namespace Rex.Utilities.Test
             var func = RexHelper.Variables["x"].VarValue as Func<int, bool>;
             Assert.IsTrue(func(1));
             Assert.IsFalse(func(6));
-
-            expr = @"new Dictionary< Rex.Utilities.Helpers.ToggleType, string>
-                     {
-                         {  Rex.Utilities.Helpers.ToggleType.Once,            ""Run Once"" },
-                         {  Rex.Utilities.Helpers.ToggleType.OnceAFrame,      ""Frame""    },
-                         {  Rex.Utilities.Helpers.ToggleType.OnceASec,        ""Sec""      },
-                         {  Rex.Utilities.Helpers.ToggleType.EveryFiveSec,    ""5 sec""    },
-                         {  Rex.Utilities.Helpers.ToggleType.EveryTenSec,     ""10 sec""   },
-                     };";
-            expression = "toggleSelection =" + expr;
-
-            pResult = RexHelper.ParseAssigment(expression);
-            Assert.AreEqual(expr, pResult.ExpressionString);
-            Assert.AreEqual(expression, pResult.WholeCode);
-
-            cResult = RexHelper.Compile(pResult, History);
-            Assert.AreEqual(pResult, cResult.Parse);
-            Assert.IsNotNull(cResult.Assembly);
-
-            output = RexHelper.Execute<DummyOutput>(cResult);
-            Assert.IsInstanceOf<Dictionary<ToggleType, string>>(output.Value);
-            var dic = RexHelper.Variables["toggleSelection"].VarValue as Dictionary<ToggleType, string>;
-            Assert.AreEqual("Run Once", dic[ToggleType.Once]);
-            Assert.AreEqual("Frame", dic[ToggleType.OnceAFrame]);
-            Assert.AreEqual("Sec", dic[ToggleType.OnceASec]);
-            Assert.AreEqual("5 sec", dic[ToggleType.EveryFiveSec]);
-            Assert.AreEqual("10 sec", dic[ToggleType.EveryTenSec]);
         }
 
         [Test]
