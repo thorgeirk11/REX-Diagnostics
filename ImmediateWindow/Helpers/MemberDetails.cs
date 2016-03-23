@@ -19,12 +19,11 @@ namespace Rex.Utilities.Helpers
 			details.FirstOrDefault(i => i.Type == SyntaxType.Keyword && Utils.MapToKeyWords.Values.Contains(i.String));
 
 		public Syntax Constant => details.FirstOrDefault(i => i.Type == SyntaxType.ConstVal);
-
-		public MemberDetails(object value, params Syntax[] syntax)
+		public MemberDetails(IEnumerable<Syntax> syntax)
 		{
-			Value = value;
 			details = syntax;
 		}
+
 		public MemberDetails(object value, IEnumerable<Syntax> syntax)
 		{
 			Value = value;
@@ -36,10 +35,7 @@ namespace Rex.Utilities.Helpers
 
 		public override string ToString() => details.Aggregate("", (a, j) => a + " " + j).Trim();
 
-		public int CompareTo(MemberDetails other)
-		{
-			return ToString().CompareTo(other.ToString());
-		}
+		public int CompareTo(MemberDetails other) => ToString().CompareTo(other.ToString());
 
 		public bool IsEquivelent(MemberDetails other)
 		{
@@ -58,7 +54,7 @@ namespace Rex.Utilities.Helpers
 
 		public MemberDetails Merge(MemberDetails details)
 		{
-			return new MemberDetails(Value, this.Concat(details));
+			return new MemberDetails(Value, details.Concat(this));
 		}
 	}
 

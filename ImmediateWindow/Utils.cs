@@ -214,16 +214,16 @@ namespace Rex.Utilities
 				var typeName = t.Name.TrimEnd('&');
 				if (MapToKeyWords.ContainsKey(t))
 				{
-					return new MemberDetails(Syntax.Keyword(MapToKeyWords[t]));
+					return new MemberDetails(new[] { Syntax.Keyword(MapToKeyWords[t]) });
 				}
 				else if (MapToKeyWords.Any(i => i.Key.Name == typeName))
 				{
-					return new MemberDetails(Syntax.Keyword(MapToKeyWords.First(i => i.Key.Name == typeName).Value));
-				};
+					return new MemberDetails(new[] { Syntax.Keyword(MapToKeyWords.First(i => i.Key.Name == typeName).Value) });
+				}
 			}
 
 			if (nested.IsEmpty())
-				return new MemberDetails(Syntax.NewType(showFullName ? t.FullName : t.Name));
+				return new MemberDetails(new[] { Syntax.NewType(showFullName ? t.FullName : t.Name) });
 			else
 				return new MemberDetails(nested.Concat(new[] { Syntax.NewType(t.Name) }));
 

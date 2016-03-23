@@ -7,9 +7,9 @@ using Rex.Utilities.Helpers;
 namespace Rex.Utilities.Test
 {
     [TestFixture]
-    public class UnitTest1
+    public class RexHelperTest
     {
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void ClassSetup()
         {
             Utils.UsingsFileName = "testUsings.txt";
@@ -104,29 +104,29 @@ namespace Rex.Utilities.Test
                 typeof(Action<bool, int, Action<IEnumerable<string>>>), true);
 
             //nested types:
-            GetCSharpRepTest("UnitTest1 . ComplexValueType", typeof(ComplexValueType), false);
-            GetCSharpRepTest("Rex.Utilities.Test.UnitTest1 . ComplexValueType", typeof(ComplexValueType), true);
+            GetCSharpRepTest("RexHelperTest . ComplexValueType", typeof(ComplexValueType), false);
+            GetCSharpRepTest("Rex.Utilities.Test.RexHelperTest . ComplexValueType", typeof(ComplexValueType), true);
 
 
-            GetCSharpRepTest("UnitTest1 . ComplexValueType[]", typeof(ComplexValueType[]), false);
-            GetCSharpRepTest("Rex.Utilities.Test.UnitTest1 . ComplexValueType[]", typeof(ComplexValueType[]), true);
+            GetCSharpRepTest("RexHelperTest . ComplexValueType[]", typeof(ComplexValueType[]), false);
+            GetCSharpRepTest("Rex.Utilities.Test.RexHelperTest . ComplexValueType[]", typeof(ComplexValueType[]), true);
 
-            GetCSharpRepTest("Action < UnitTest1 . ComplexValueType[] >", typeof(Action<ComplexValueType[]>), false);
-            GetCSharpRepTest("System.Action < Rex.Utilities.Test.UnitTest1 . ComplexValueType[] >", typeof(Action<ComplexValueType[]>), true);
+            GetCSharpRepTest("Action < RexHelperTest . ComplexValueType[] >", typeof(Action<ComplexValueType[]>), false);
+            GetCSharpRepTest("System.Action < Rex.Utilities.Test.RexHelperTest . ComplexValueType[] >", typeof(Action<ComplexValueType[]>), true);
 
 
-            GetCSharpRepTest("Action < UnitTest1 . ComplexValueType >", typeof(Action<ComplexValueType>), false);
-            GetCSharpRepTest("System.Action < Rex.Utilities.Test.UnitTest1 . ComplexValueType >", typeof(Action<ComplexValueType>), true);
+            GetCSharpRepTest("Action < RexHelperTest . ComplexValueType >", typeof(Action<ComplexValueType>), false);
+            GetCSharpRepTest("System.Action < Rex.Utilities.Test.RexHelperTest . ComplexValueType >", typeof(Action<ComplexValueType>), true);
 
-            GetCSharpRepTest("Rex.Utilities.Test.UnitTest1 . ComplexValueType[]", typeof(ComplexValueType[]), true);
+            GetCSharpRepTest("Rex.Utilities.Test.RexHelperTest . ComplexValueType[]", typeof(ComplexValueType[]), true);
 
 
             //Nested Generic types:
-            GetCSharpRepTest("UnitTest1 . ComplexValueType < int >", typeof(ComplexValueType<int>), false);
-            GetCSharpRepTest("Rex.Utilities.Test.UnitTest1 . ComplexValueType < System.Int32 >", typeof(ComplexValueType<int>), true);
+            GetCSharpRepTest("RexHelperTest . ComplexValueType < int >", typeof(ComplexValueType<int>), false);
+            GetCSharpRepTest("Rex.Utilities.Test.RexHelperTest . ComplexValueType < System.Int32 >", typeof(ComplexValueType<int>), true);
 
             GetCSharpRepTest(
-                "System.Action < Rex.Utilities.Test.UnitTest1 . ComplexValueType < System.Int32 > >",
+                "System.Action < Rex.Utilities.Test.RexHelperTest . ComplexValueType < System.Int32 > >",
                 typeof(Action<ComplexValueType<int>>), true);
 
             GetCSharpRepTest("System.Action", typeof(Action), true);
@@ -138,7 +138,6 @@ namespace Rex.Utilities.Test
         {
             Assert.AreEqual(text, Utils.GetCSharpRepresentation(type, showFull).ToString());
         }
-
 
         public struct ComplexValueType<T>
         {
