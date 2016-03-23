@@ -887,11 +887,11 @@ namespace Rex.Window
 
 			var shouldDelete = false;
 			// Draw the delete button.
-			if (GUILayout.Button(new GUIContent("X", $"Remove <b>{VarName}</b>"), GUILayout.Width(20)))
+			if (GUILayout.Button(new GUIContent("X", "Remove <b>" + VarName + "</b>"), GUILayout.Width(20)))
 				shouldDelete = true;
 
 			// Draw the button as a label.
-			if (GUILayout.Button(new GUIContent(highlightedString, $"Click to inspect <b>{VarName}</b>"), varLabelStyle, GUILayout.ExpandWidth(true)))
+			if (GUILayout.Button(new GUIContent(highlightedString, "Click to inspect <b>" + VarName + "</b>"), varLabelStyle, GUILayout.ExpandWidth(true)))
 			{
 				// Construct a new output entry...
 				var ouput = new ConsoleOutput();
