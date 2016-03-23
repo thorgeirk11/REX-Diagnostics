@@ -21,16 +21,16 @@ namespace Rex.Utilities.Helpers
             else
                 Usings.Clear();
 
-            if (File.Exists(Utils.UsingsFileName))
+            if (File.Exists(RexUtils.UsingsFileName))
             {
-                foreach (var aUsing in File.ReadAllLines(Utils.UsingsFileName))
+                foreach (var aUsing in File.ReadAllLines(RexUtils.UsingsFileName))
                 {
                     Usings.Add(aUsing);
                 }
             }
             else
             {
-                using (File.Create(Utils.UsingsFileName)) { }
+                using (File.Create(RexUtils.UsingsFileName)) { }
             }
         }
 
@@ -42,10 +42,10 @@ namespace Rex.Utilities.Helpers
         {
             if (!Usings.Contains(nameSpace))
             {
-                if (!File.Exists(Utils.UsingsFileName))
-                    File.Create(Utils.UsingsFileName);
+                if (!File.Exists(RexUtils.UsingsFileName))
+                    File.Create(RexUtils.UsingsFileName);
 
-                using (var writer = File.AppendText(Utils.UsingsFileName)) writer.WriteLine(nameSpace);
+                using (var writer = File.AppendText(RexUtils.UsingsFileName)) writer.WriteLine(nameSpace);
                 Usings.Add(nameSpace);
             }
         }
@@ -59,7 +59,7 @@ namespace Rex.Utilities.Helpers
             if (Usings.Contains(nameSpace))
             {
                 Usings.Remove(nameSpace);
-                File.WriteAllLines(Utils.UsingsFileName, Usings.ToArray());
+                File.WriteAllLines(RexUtils.UsingsFileName, Usings.ToArray());
             }
         }
         #endregion

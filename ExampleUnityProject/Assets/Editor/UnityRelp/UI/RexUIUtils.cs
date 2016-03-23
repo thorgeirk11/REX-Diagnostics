@@ -7,22 +7,22 @@ using UnityEngine;
 
 namespace Rex.Window
 {
-    public static class UIUtils
+    public static class RexUIUtils
     {
         public static string SyntaxHighlingting(IEnumerable<Syntax> syntax)
         {
             if (EditorGUIUtility.isProSkin)
-                return Utils.SyntaxHighlingting(syntax, Utils.SyntaxHighlightColors);
+                return RexUtils.SyntaxHighlingting(syntax, RexUtils.SyntaxHighlightColors);
             else
-                return Utils.SyntaxHighlingting(syntax, Utils.SyntaxHighlightProColors);
+                return RexUtils.SyntaxHighlingting(syntax, RexUtils.SyntaxHighlightProColors);
         }
 
         internal static string SyntaxHighlingting(MemberDetails details, string search)
         {
             if (EditorGUIUtility.isProSkin)
-                return Utils.SyntaxHighlingting(details, Utils.SyntaxHighlightColors, search);
+                return RexUtils.SyntaxHighlingting(details, RexUtils.SyntaxHighlightColors, search);
             else
-                return Utils.SyntaxHighlingting(details, Utils.SyntaxHighlightProColors, search);
+                return RexUtils.SyntaxHighlingting(details, RexUtils.SyntaxHighlightProColors, search);
         }
 
 

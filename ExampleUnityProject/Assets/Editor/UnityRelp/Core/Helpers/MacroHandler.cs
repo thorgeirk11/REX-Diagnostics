@@ -18,11 +18,11 @@ namespace Rex.Utilities.Helpers
         public static void LoadMacros()
         {
             MacroDic = new Dictionary<string, string>();
-            if (Directory.Exists(Utils.MacroDirectory))
+            if (Directory.Exists(RexUtils.MacroDirectory))
             {
                 try
                 {
-                    foreach (var macroFile in Directory.GetFiles(Utils.MacroDirectory))
+                    foreach (var macroFile in Directory.GetFiles(RexUtils.MacroDirectory))
                     {
                         try
                         {
@@ -39,7 +39,7 @@ namespace Rex.Utilities.Helpers
             {
                 try
                 {
-                    Directory.CreateDirectory(Utils.MacroDirectory);
+                    Directory.CreateDirectory(RexUtils.MacroDirectory);
                 }
                 catch (Exception)
                 { throw; }
@@ -52,9 +52,9 @@ namespace Rex.Utilities.Helpers
             {
                 try
                 {
-                    if (Directory.Exists(Utils.MacroDirectory))
+                    if (Directory.Exists(RexUtils.MacroDirectory))
                     {
-                        var filePath = Utils.MacroDirectory + Path.DirectorySeparatorChar + Guid.NewGuid();
+                        var filePath = RexUtils.MacroDirectory + Path.DirectorySeparatorChar + Guid.NewGuid();
 
                         using (var file = File.Create(filePath))
                         using (var stream = new StreamWriter(file))

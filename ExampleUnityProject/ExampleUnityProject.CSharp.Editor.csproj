@@ -13,11 +13,13 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile></CompilerResponseFile>
+    <CompilerResponseFile>
+    </CompilerResponseFile>
     <UnityProjectType>Editor:5</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
     <UnityVersion>5.4.0b10</UnityVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -105,24 +107,24 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Editor\Core\Helpers\AccessingDeletedVariableException.cs" />
-    <Compile Include="Assets\Editor\Core\Helpers\CodeCompletion.cs" />
-    <Compile Include="Assets\Editor\Core\Helpers\ConsoleOutput.cs" />
-    <Compile Include="Assets\Editor\Core\Helpers\ExtentionMethods.cs" />
-    <Compile Include="Assets\Editor\Core\Helpers\Logger.cs" />
-    <Compile Include="Assets\Editor\Core\Helpers\MacroHandler.cs" />
-    <Compile Include="Assets\Editor\Core\Helpers\MemberDetails.cs" />
-    <Compile Include="Assets\Editor\Core\Helpers\NameSpaceInfo.cs" />
-    <Compile Include="Assets\Editor\Core\Helpers\ToggleExectue.cs" />
-    <Compile Include="Assets\Editor\Core\Helpers\UsingsHandler.cs" />
-    <Compile Include="Assets\Editor\Core\Input\InputStateMachine.cs" />
-    <Compile Include="Assets\Editor\Core\Input\_KeyCode.cs" />
-    <Compile Include="Assets\Editor\Core\RexHelper.cs" />
-    <Compile Include="Assets\Editor\Core\Utils.cs" />
-    <Compile Include="Assets\Editor\UI\ConsoleOutput.cs" />
-    <Compile Include="Assets\Editor\UI\RexEditorWindow.cs" />
-    <Compile Include="Assets\Editor\UI\UIUtils.cs" />
-    <Compile Include="Assets\Editor\UI\UStrap.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\AccessingDeletedVariableException.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\CodeCompletion.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\ConsoleOutput.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\ExtentionMethods.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\Logger.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\MacroHandler.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\MemberDetails.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\NameSpaceInfo.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\ToggleExectue.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\UsingsHandler.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\Input\InputStateMachine.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\Input\_KeyCode.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\RexHelper.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\RexUtils.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\UI\ConsoleOutput.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\UI\RexEditorWindow.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\UI\RexUIUtils.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\UI\UStrap.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

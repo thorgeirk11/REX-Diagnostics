@@ -54,7 +54,7 @@ namespace Rex.Window
 				};
 			}
 			Details = (from detail in details
-					   let highlight = UIUtils.SyntaxHighlingting(detail.Where(i => i.Type != SyntaxType.EqualsOp && i.Type != SyntaxType.ConstVal))
+					   let highlight = RexUIUtils.SyntaxHighlingting(detail.Where(i => i.Type != SyntaxType.EqualsOp && i.Type != SyntaxType.ConstVal))
 					   let content = new GUIContent(detail.Name.String, highlight)
 					   let displayAction = DisplayFieldFor(detail.Value, detail.Constant.String)
 					   select new { displayAction, content }).ToDictionary(i => i.displayAction, i => i.content);
