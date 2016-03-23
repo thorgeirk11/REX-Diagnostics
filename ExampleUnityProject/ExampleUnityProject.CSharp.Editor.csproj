@@ -105,24 +105,24 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Editor\ConsoleOutput.cs" />
-    <Compile Include="Assets\Editor\Helpers\AccessingDeletedVariableException.cs" />
-    <Compile Include="Assets\Editor\Helpers\CodeCompletion.cs" />
-    <Compile Include="Assets\Editor\Helpers\ConsoleOutput.cs" />
-    <Compile Include="Assets\Editor\Helpers\ExtentionMethods.cs" />
-    <Compile Include="Assets\Editor\Helpers\Logger.cs" />
-    <Compile Include="Assets\Editor\Helpers\MacroHandler.cs" />
-    <Compile Include="Assets\Editor\Helpers\MemberDetails.cs" />
-    <Compile Include="Assets\Editor\Helpers\NameSpaceInfo.cs" />
-    <Compile Include="Assets\Editor\Helpers\ToggleExectue.cs" />
-    <Compile Include="Assets\Editor\Helpers\UsingsHandler.cs" />
-    <Compile Include="Assets\Editor\Input\InputStateMachine.cs" />
-    <Compile Include="Assets\Editor\Input\_KeyCode.cs" />
-    <Compile Include="Assets\Editor\RexEditorWindow.cs" />
-    <Compile Include="Assets\Editor\RexHelper.cs" />
-    <Compile Include="Assets\Editor\UIUtils.cs" />
-    <Compile Include="Assets\Editor\UStrap.cs" />
-    <Compile Include="Assets\Editor\Utils.cs" />
+    <Compile Include="Assets\Editor\Core\Helpers\AccessingDeletedVariableException.cs" />
+    <Compile Include="Assets\Editor\Core\Helpers\CodeCompletion.cs" />
+    <Compile Include="Assets\Editor\Core\Helpers\ConsoleOutput.cs" />
+    <Compile Include="Assets\Editor\Core\Helpers\ExtentionMethods.cs" />
+    <Compile Include="Assets\Editor\Core\Helpers\Logger.cs" />
+    <Compile Include="Assets\Editor\Core\Helpers\MacroHandler.cs" />
+    <Compile Include="Assets\Editor\Core\Helpers\MemberDetails.cs" />
+    <Compile Include="Assets\Editor\Core\Helpers\NameSpaceInfo.cs" />
+    <Compile Include="Assets\Editor\Core\Helpers\ToggleExectue.cs" />
+    <Compile Include="Assets\Editor\Core\Helpers\UsingsHandler.cs" />
+    <Compile Include="Assets\Editor\Core\Input\InputStateMachine.cs" />
+    <Compile Include="Assets\Editor\Core\Input\_KeyCode.cs" />
+    <Compile Include="Assets\Editor\Core\RexHelper.cs" />
+    <Compile Include="Assets\Editor\Core\Utils.cs" />
+    <Compile Include="Assets\Editor\UI\ConsoleOutput.cs" />
+    <Compile Include="Assets\Editor\UI\RexEditorWindow.cs" />
+    <Compile Include="Assets\Editor\UI\UIUtils.cs" />
+    <Compile Include="Assets\Editor\UI\UStrap.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

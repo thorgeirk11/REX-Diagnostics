@@ -8,7 +8,7 @@ namespace Rex.Utilities.Helpers
     public class MemberDetails : IEnumerable<Syntax>, IComparable<MemberDetails>
     {
         private readonly IEnumerable<Syntax> _details;
-        private readonly IEnumerable<Syntax> _value;
+        private readonly object _value;
 
         public object Value { get { return _value; } }
         public Syntax Name
@@ -23,7 +23,7 @@ namespace Rex.Utilities.Helpers
 
         public Syntax Constant
         {
-            get { return details.FirstOrDefault(i => i.Type == SyntaxType.ConstVal); }
+            get { return _details.FirstOrDefault(i => i.Type == SyntaxType.ConstVal); }
         }
         public MemberDetails(IEnumerable<Syntax> syntax)
         {
@@ -32,7 +32,7 @@ namespace Rex.Utilities.Helpers
 
         public MemberDetails(object value, IEnumerable<Syntax> syntax)
         {
-            Value = value;
+            _value = value;
             _details = syntax;
         }
 
