@@ -7,16 +7,17 @@ namespace Rex.Utilities.Helpers
 {
     public class MemberDetails : IEnumerable<Syntax>, IComparable<MemberDetails>
     {
-        private readonly IEnumerable<Syntax> details;
+        private readonly IEnumerable<Syntax> _details;
+        private readonly IEnumerable<Syntax> _value;
 
-        public object Value { get; set; }
+        public object Value { get { return _value; } }
         public Syntax Name
         {
             get
             {
-                return details.LastOrDefault(i => i.Type == SyntaxType.Name) ??
-                  details.FirstOrDefault(i => i.Type == SyntaxType.Type) ??
-                  details.FirstOrDefault(i => i.Type == SyntaxType.Keyword && Utils.MapToKeyWords.Values.Contains(i.String));
+                return _details.LastOrDefault(i => i.Type == SyntaxType.Name) ??
+                  _details.FirstOrDefault(i => i.Type == SyntaxType.Type) ??
+                  _details.FirstOrDefault(i => i.Type == SyntaxType.Keyword && Utils.MapToKeyWords.Values.Contains(i.String));
             }
         }
 
@@ -24,29 +25,29 @@ namespace Rex.Utilities.Helpers
         {
             get { return details.FirstOrDefault(i => i.Type == SyntaxType.ConstVal); }
         }
-
-        public MemberDetails(params Syntax[] syntax)
-        {
-            details = syntax;
-        }
         public MemberDetails(IEnumerable<Syntax> syntax)
         {
-            details = syntax;
+            _details = syntax;
+        }
+
+        public MemberDetails(object value, IEnumerable<Syntax> syntax)
+        {
+            Value = value;
+            _details = syntax;
         }
 
         public IEnumerator<Syntax> GetEnumerator()
         {
-            return details.GetEnumerator();
+            return _details.GetEnumerator();
         }
-
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return details.GetEnumerator();
+            return _details.GetEnumerator();
         }
 
         public override string ToString()
         {
-            return details.Aggregate("", (a, j) => a + " " + j).Trim();
+            return _details.Aggregate("", (a, j) => a + " " + j).Trim();
         }
 
         public int CompareTo(MemberDetails other)
@@ -56,8 +57,8 @@ namespace Rex.Utilities.Helpers
 
         public bool IsEquivelent(MemberDetails other)
         {
-            var mySyntax = details.ToList();
-            var otherSyntax = other.details.ToList();
+            var mySyntax = _details.ToList();
+            var otherSyntax = other._details.ToList();
 
             if (mySyntax.Count != otherSyntax.Count) return false;
 
@@ -69,11 +70,10 @@ namespace Rex.Utilities.Helpers
             return true;
         }
 
-        public static MemberDetails operator +(MemberDetails c1, MemberDetails c2)
+        public MemberDetails Merge(MemberDetails details)
         {
-            return new MemberDetails(c1.Concat(c2));
+            return new MemberDetails(Value, details.Concat(this));
         }
-
     }
 
     public class Syntax : IComparable<Syntax>
@@ -99,7 +99,7 @@ namespace Rex.Utilities.Helpers
 
         public static Syntax Name(string name) { return new Syntax(name, SyntaxType.Name); }
         public static Syntax Keyword(string keyword) { return new Syntax(keyword, SyntaxType.Keyword); }
-        public static Syntax _Type(string typeStr) { return new Syntax(typeStr, SyntaxType.Type); }
+        public static Syntax NewType(string typeStr) { return new Syntax(typeStr, SyntaxType.Type); }
         public static Syntax ParaName(string name) { return new Syntax(name, SyntaxType.ParaName); }
         public static Syntax ConstVal(string v) { return new Syntax(v, SyntaxType.ConstVal); }
 
