@@ -84,9 +84,9 @@ namespace Rex.Utilities.Helpers
 
 		internal static bool IsAnonymousType(Type type)
 		{
-			bool hasCompilerGeneratedAttribute = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Length > 0;
-			bool nameContainsAnonymousType = type.FullName.Contains("AnonymousType") || type.FullName.Contains("<>__AnonType");
-			bool isAnonymousType = hasCompilerGeneratedAttribute && nameContainsAnonymousType;
+			var hasCompilerGeneratedAttribute = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Length > 0;
+			var nameContainsAnonymousType = type.FullName.Contains("AnonymousType") || type.FullName.Contains("<>__AnonType");
+			var isAnonymousType = hasCompilerGeneratedAttribute && nameContainsAnonymousType;
 			return isAnonymousType;
 			//return Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute), false) && type.IsGenericType
 			//       && (type.Name.Contains("AnonymousType") || type.FullName.Contains("<>__AnonType"))

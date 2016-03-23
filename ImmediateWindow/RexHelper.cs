@@ -21,7 +21,7 @@ namespace Rex.Utilities
 		private static readonly LinkedList<AConsoleOutput> outputList = new LinkedList<AConsoleOutput>();
 		const int OUTPUT_LENGHT = 20;
 
-		public static readonly Dictionary<MsgType, List<string>> Messages = new Dictionary<MsgType, List<string>>()
+		public static readonly Dictionary<MsgType, List<string>> Messages = new Dictionary<MsgType, List<string>>
 		{
 			{ MsgType.None, new List<string>()},
 			{ MsgType.Info, new List<string>()},
@@ -114,7 +114,6 @@ namespace Rex.Utilities
 			if (val != null)
 			{
 				var valType = val.GetType();
-				//if (valType.IsVisible)
 
 				if (ContainsAnonymousType(valType))
 				{
@@ -122,9 +121,6 @@ namespace Rex.Utilities
 				}
 				else
 				{
-					//var testCompile = Utils.CompileCode("cla/*ss rex_tmp { " + Utils.GetCSharpRepresentation(valType, true) + " myField; }");
-
-					//if (testCompile.Errors.Count > 0)
 					if (!valType.IsVisible)
 					{
 						var interfaces = valType.GetInterfaces();
@@ -212,7 +208,7 @@ namespace Rex.Utilities
 		/// </summary>
 		public static bool DealWithErrors(CompilerResults result)
 		{
-			bool succsessful = true;
+			var succsessful = true;
 			foreach (CompilerError error in result.Errors)
 			{
 				if (!error.IsWarning)
@@ -366,7 +362,7 @@ class " + Utils.className + @"
 			var paramatch = Utils.ParameterRegex.Match(parse.ExpressionString);
 			if (paramatch.Success)
 			{
-				IEnumerable<CodeCompletion> methodInfo = MethodsOverload(paramatch, endType);
+				var methodInfo = MethodsOverload(paramatch, endType);
 
 				var para = paramatch.Groups["para"];
 				offset += para.Index;
@@ -636,9 +632,6 @@ class " + Utils.className + @"
 		/// Finds the last index of a qurey.
 		/// <para>Example: x.MyProp.AnotherProp   This will navigate down to the AnotherProp</para> 
 		/// </summary>
-		/// <param name="full"></param>
-		/// <param name="variable"></param>
-		/// <returns></returns>
 		private static Type GetLastIndexType(Group full, Type type, int skipCount = 1)
 		{
 			var fullPath = full.Value.Split('.').Skip(skipCount).ToList();
@@ -648,7 +641,7 @@ class " + Utils.className + @"
 				if (string.IsNullOrEmpty(curPath))
 					break;
 
-				bool found = false;
+				var found = false;
 				var bindings = BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
 
 				try

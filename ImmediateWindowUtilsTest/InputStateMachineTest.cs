@@ -169,7 +169,7 @@ namespace Rex.Utilities.Test
             RexHelper.Messages[MsgType.Error].Clear();
             RexHelperTest.CompileAndRun(code);
         }
-        public void PressKey(_KeyCode key, int repeat = 1)
+        public static void PressKey(_KeyCode key, int repeat = 1)
         {
             for (int i = 0; i < repeat; i++)
             {

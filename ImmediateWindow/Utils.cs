@@ -118,7 +118,7 @@ namespace Rex.Utilities
 			{
 				var topName = TopLevelNameSpace(name.Key);
 
-				int indent = name.Key.Count(i => i == '.') - topName.Count(i => i == '.');
+				var indent = name.Key.Count(i => i == '.') - topName.Count(i => i == '.');
 
 				if (topName.Contains('.'))
 				{
@@ -235,7 +235,7 @@ namespace Rex.Utilities
 			{
 				var nested = NestedType(t, showFullName);
 
-				string value = showFullName && nested.IsEmpty() ? t.FullName : t.Name;
+				var value = showFullName && nested.IsEmpty() ? t.FullName : t.Name;
 				if (value.IndexOf("`") > -1)
 				{
 					value = value.Substring(0, value.IndexOf("`"));
@@ -330,9 +330,11 @@ namespace Rex.Utilities
 
 		public static CompilerResults CompileCode(string code)
 		{
-			CompilerParameters compilerparams = new CompilerParameters();
-			compilerparams.GenerateExecutable = false;
-			compilerparams.GenerateInMemory = false;
+			var compilerparams = new CompilerParameters
+			{
+				GenerateExecutable = false,
+				GenerateInMemory = false
+			};
 
 			compilerparams.AddCurrentAssemblies();
 
@@ -344,7 +346,7 @@ namespace Rex.Utilities
 			{
 				try
 				{
-					string location = assembly.Location;
+					var location = assembly.Location;
 					if (!string.IsNullOrEmpty(location))
 					{
 						compilerparams.ReferencedAssemblies.Add(location);
@@ -358,12 +360,12 @@ namespace Rex.Utilities
 		}
 
 
-		public static readonly Dictionary<SyntaxType, string> SyntaxHighlightColors = new Dictionary<SyntaxType, string>()
+		public static readonly Dictionary<SyntaxType, string> SyntaxHighlightColors = new Dictionary<SyntaxType, string>
 		{
 			{ SyntaxType.Type,       "#008000ff" },
 			{ SyntaxType.Keyword,    "#008080ff" },
 		};
-		public static readonly Dictionary<SyntaxType, string> SyntaxHighlightProColors = new Dictionary<SyntaxType, string>()
+		public static readonly Dictionary<SyntaxType, string> SyntaxHighlightProColors = new Dictionary<SyntaxType, string>
 		{
 			{ SyntaxType.Type,       "#6f00ff" },
 			{ SyntaxType.Keyword,    "blue" },

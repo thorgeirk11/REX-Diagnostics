@@ -21,7 +21,7 @@ namespace Rex.Utilities.Helpers
 
         public abstract void LoadInDetails(object value, string message, IEnumerable<MemberDetails> details);
 
-        public AConsoleOutput()
+        protected AConsoleOutput()
         {
             Exception = null;
             ShowMembers = false;

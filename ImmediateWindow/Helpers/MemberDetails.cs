@@ -6,7 +6,7 @@ using System.Linq;
 namespace Rex.Utilities.Helpers
 {
 	/// <summary>
-	/// Class used for syntax highlighting on the 
+	/// Used to 
 	/// </summary>
 	public class MemberDetails : IEnumerable<Syntax>, IComparable<MemberDetails>
 	{

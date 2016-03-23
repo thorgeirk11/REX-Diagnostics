@@ -12,7 +12,7 @@ namespace Rex.Utilities.Test
 	[TestFixture]
 	class IntelliSenceTests
 	{
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void Setup()
 		{
 			Utils.UsingsFileName = "testUsings.txt";
@@ -52,13 +52,13 @@ namespace Rex.Utilities.Test
 		}
 
 
-		//[Test]
-		//public void SimpleNewStatementTest()
-		//{
-		//    var helpInfo = ImmediateHelper.Intellisence("new Acti").Select(i => i.ToString());
-		//    CollectionAssert.Contains(helpInfo, "Action < T >");
-		//    CollectionAssert.Contains(helpInfo, "Action < T1 , T2 >");
-		//}
+		[Test]
+		public void SimpleNewStatementTest()
+		{
+			var helpInfo = RexHelper.Intellisence("new Acti").Select(i => i.ToString());
+			CollectionAssert.Contains(helpInfo, "Action < T >");
+			CollectionAssert.Contains(helpInfo, "Action < T1 , T2 >");
+		}
 
 
 		[Test]
@@ -137,7 +137,7 @@ namespace Rex.Utilities.Test
 		[Test]
 		public void DeepIntellisensTest()
 		{
-			RecursiveTest x = new RecursiveTest(null);
+			var x = new RecursiveTest(null);
 			SetVar("x", new RecursiveTest(x));
 
 			var helpInfo = RexHelper.Intellisence("x.Recursion").Select(i => i.Details.ToString());
@@ -163,7 +163,7 @@ namespace Rex.Utilities.Test
 			VariableA TheA;
 			SetVar("TheA", TheA = new VariableA
 			{
-				TheInterface = new B()
+				TheInterface = new B
 				{
 					InnerB = new B()
 				}
@@ -424,11 +424,11 @@ namespace Rex.Utilities.Test
 
 		void SpeedTestAction(Action ToDo, int n)
 		{
-			Stopwatch sw = new Stopwatch();
+			var sw = new Stopwatch();
 			sw.Start();
 			for (int i = 0; i < n; i++)
 			{
-				ToDo();
+				ToDo?.Invoke();
 			}
 			sw.Stop();
 			Console.WriteLine("Time: {0:0.000}", sw.ElapsedMilliseconds / (1.0 * n));

@@ -31,7 +31,7 @@ namespace Rex.Window
             var prevColor = GUI.backgroundColor;
             GUI.backgroundColor = color;
 
-            controlsToPaint();
+			controlsToPaint?.Invoke();
 
             GUI.backgroundColor = prevColor;
         }
@@ -41,7 +41,7 @@ namespace Rex.Window
             var prevColor = GUI.color;
             GUI.color = color;
 
-            controlsToPaint();
+			controlsToPaint?.Invoke();
 
             GUI.color = prevColor;
         }

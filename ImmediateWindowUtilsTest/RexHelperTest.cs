@@ -323,7 +323,7 @@ namespace Rex.Utilities.Test
 
         public override string ToString()
         {
-            return toString();
+            return toString?.Invoke();
         }
     }
 }

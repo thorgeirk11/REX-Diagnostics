@@ -95,7 +95,6 @@ namespace Rex.Window
 		{
 			// Get existing open window or if none, make a new one:
 			instance = GetWindow<RexEditorWindow>();
-			instance.outputIndex = 0;
 			new Thread(() => RexHelper.SetupHelper()).Start();
 		}
 
@@ -116,7 +115,8 @@ namespace Rex.Window
 			updateSkins = true;
 			minSize = new Vector2(450f, 350f);
 			autoRepaintOnSceneChange = true;
-			title = "REX";
+			titleContent.text = "REX";
+			titleContent.tooltip = "Runtime Expressions";
 		}
 
 		/// <summary>
@@ -155,13 +155,13 @@ namespace Rex.Window
 		void OnGUI()
 		{
 
-			//#if !DEBUG
-			//            if (!EditorApplication.isPlaying)
-			//            {
-			//                EditorGUILayout.HelpBox("Need to be in play mode to evaluate expressions", MessageType.Info);
-			//                return;
-			//            }
-			//#endif
+#if !DEBUG
+			if (!EditorApplication.isPlaying)
+			{
+			    EditorGUILayout.HelpBox("Need to be in play mode to evaluate expressions", MessageType.Info);
+			    return;
+			}
+#endif
 
 			HandleTabKeyPress();
 			UpdateSkins();
@@ -183,7 +183,7 @@ namespace Rex.Window
 					inp.selectIndex = ISM.Code.Length + 1;
 				}
 			}
-			bool hasFocus = GUI.GetNameOfFocusedControl() == NameOfInputField;
+			var hasFocus = GUI.GetNameOfFocusedControl() == NameOfInputField;
 
 			HandleInputShortcuts(hasFocus);
 			HandleInputHistory(hasFocus);
@@ -207,7 +207,7 @@ namespace Rex.Window
 		private void DisplayInputField(ref Rect inpLabelRect, ref Rect inpStringRect, ref Rect inpButRect)
 		{
 			GUI.Label(inpLabelRect, new GUIContent("Expression:"));
-			Color oldColor = ColorInput();
+			var oldColor = ColorInput();
 			GUI.SetNextControlName(NameOfInputField);
 			ISM.Code = GUI.TextField(inpStringRect, ISM.Code);
 
@@ -228,7 +228,7 @@ namespace Rex.Window
 		{
 			var evaluateLerpTime = TimeSpan.FromSeconds(1.5);
 			var oldColor = GUI.color;
-			TimeSpan timeSinceLastExecute = DateTime.Now - lastExecute;
+			var timeSinceLastExecute = DateTime.Now - lastExecute;
 			if (timeSinceLastExecute < evaluateLerpTime)
 			{
 				var fromColor = Color.clear;
@@ -255,8 +255,8 @@ namespace Rex.Window
 				var cont = new GUIContent(GUI.tooltip);
 				var ttsize = ttStyle.CalcSize(cont);
 
-				float width = Mathf.Min(300f, ttsize.x);
-				float height = ttStyle.CalcHeight(cont, width);
+				var width = Mathf.Min(300f, ttsize.x);
+				var height = ttStyle.CalcHeight(cont, width);
 
 				var mousePosition = Event.current.mousePosition;
 				var rect = new Rect(mousePosition.x + 10f, mousePosition.y + 20f, width, height);
@@ -275,7 +275,7 @@ namespace Rex.Window
 		private static Rect DisplayMessages(Rect layoutRect)
 		{
 			var helpboxStyle = GUI.skin.FindStyle("HelpBox");
-			bool areAnyErrors = false;
+			var areAnyErrors = false;
 			foreach (var infoType in MessageInfos)
 			{
 				foreach (var msg in RexHelper.Messages[infoType])
@@ -288,11 +288,13 @@ namespace Rex.Window
 			}
 			if (areAnyErrors)
 			{
-				var newRect = new Rect(layoutRect);
-				newRect.height = 20;
-				if (GUI.Button(newRect, "Clear Messages"))
+				var errorRect = new Rect(layoutRect)
+				{
+					height = 20
+				};
+				if (GUI.Button(errorRect, "Clear Messages"))
 					RexHelper.Messages.Values.ToList().ForEach(i => i.Clear());
-				layoutRect.yMin += newRect.height;
+				layoutRect.yMin += errorRect.height;
 			}
 			return layoutRect;
 		}
@@ -354,8 +356,8 @@ namespace Rex.Window
 		{
 			if (Event.current.isKey)
 			{
-				_KeyCode keyCode = (_KeyCode)Event.current.keyCode;
-				EventType eventType = Event.current.type;
+				var keyCode = (_KeyCode)Event.current.keyCode;
+				var eventType = Event.current.type;
 				if (ISM.InputBuffer.ContainsKey(keyCode))
 				{
 					if (eventType == EventType.keyUp)
@@ -444,8 +446,10 @@ namespace Rex.Window
 
 			GUI.Box(new Rect(0, -15, intelliRect.width, help.Count * lineHeigth + 15), "", GUI.skin.window);
 
-			var style = new GUIStyle(GUI.skin.label);
-			style.richText = true;
+			var style = new GUIStyle(GUI.skin.label)
+			{
+				richText = true
+			};
 			for (int i = 0; i < help.Count; i++)
 			{
 				var helpstr = UIUtils.SyntaxHighlingting(help[i].Details, help[i].Search);
@@ -504,10 +508,10 @@ namespace Rex.Window
 		private static void GetRects(out Rect inpRect, out Rect inpLabelRect, out Rect inpButRect, out Rect inpStringRect, out Rect intelliRect, out Rect layoutRect)
 		{
 			#region Rect initialization
-			RectOffset padding = GUI.skin.window.padding;
-			RectOffset overflow = GUI.skin.window.overflow;
+			var padding = GUI.skin.window.padding;
+			var overflow = GUI.skin.window.overflow;
 
-			Rect scrn = UStrap.ScreenRect;
+			var scrn = UStrap.ScreenRect;
 			inpRect = UStrap.GiveRect(scrn.width, 50f, VerticalAnchor.Top, HorizontalAnchor.Center);
 			inpLabelRect = new Rect(0, 0, 70f, inpRect.height / 3f).Place(inpRect, VerticalAnchor.Center, HorizontalAnchor.Left).SetMargin(left: 20f);
 			inpStringRect = new Rect(inpLabelRect.xMax + 10f, inpLabelRect.y, inpRect.width - inpLabelRect.xMax - 100f, inpLabelRect.height);
@@ -515,50 +519,61 @@ namespace Rex.Window
 
 			intelliRect = new Rect(inpStringRect.xMin, inpStringRect.yMax, inpStringRect.width, 150f);
 			layoutRect = UStrap.GiveRect(inpRect.width, scrn.height - inpRect.height, VerticalAnchor.Bottom, HorizontalAnchor.Center);
-			Rect sliderRect = inpRect.SubRect(rows: 4, row: 3);
+			var sliderRect = inpRect.SubRect(rows: 4, row: 3);
 			#endregion
 		}
 
 		private void UpdateSkins()
 		{
 			//GUI.skin.FindStyle("Tooltip").richText = true;
-			ttStyle = new GUIStyle(GUI.skin.FindStyle("Tooltip"));
-			ttStyle.richText = true;
-			ttStyle.wordWrap = true;
+			ttStyle = new GUIStyle(GUI.skin.FindStyle("Tooltip"))
+			{
+				richText = true,
+				wordWrap = true
+			};
 			if (updateSkins)
 			{
 				updateSkins = false;
-				darkBox = new GUIStyle(GUI.skin.box);
-				//darkBox.normal.background = ;
-				darkBox.margin = new RectOffset(0, 0, 0, 0);
-				box = new GUIStyle(GUI.skin.box);
-				box.stretchWidth = false;
-				box.margin = new RectOffset(0, 0, 0, 0);
-				slimBox = new GUIStyle(box);
-				slimBox.padding = new RectOffset(2, 2, 2, 2);
-				lightBox = new GUIStyle(GUI.skin.box);
+				darkBox = new GUIStyle(GUI.skin.box)
+				{
+					margin = new RectOffset(0, 0, 0, 0)
+				};
+				box = new GUIStyle(GUI.skin.box)
+				{
+					stretchWidth = false,
+					margin = new RectOffset(0, 0, 0, 0)
+				};
+				slimBox = new GUIStyle(box)
+				{
+					padding = new RectOffset(2, 2, 2, 2)
+				};
+				lightBox = new GUIStyle(GUI.skin.box)
+				{
+					stretchWidth = false,
+					margin = new RectOffset(0, 0, 0, 0)
+				};
 				lightBox.normal.background = EditorGUIUtility.whiteTexture;
-				lightBox.stretchWidth = false;
-				lightBox.margin = new RectOffset(0, 0, 0, 0);
 
-				lightSlimBox = new GUIStyle(lightBox);
-				lightSlimBox.padding = new RectOffset(0, 0, 0, 0);
+				lightSlimBox = new GUIStyle(lightBox)
+				{
+					padding = new RectOffset(0, 0, 0, 0)
+				};
 
 
 				rmvOutputBtn = GUI.skin.FindStyle("WinBtnCloseMac");
 
-				varLabelStyle = new GUIStyle(GUI.skin.label);
-				varLabelStyle.richText = true;
-				varLabelStyle.alignment = TextAnchor.UpperLeft;
-				varLabelStyle.margin = GUI.skin.button.margin;
-				varLabelStyle.padding = GUI.skin.button.padding;
+				varLabelStyle = new GUIStyle(GUI.skin.label)
+				{
+					richText = true,
+					alignment = TextAnchor.UpperLeft,
+					margin = GUI.skin.button.margin,
+					padding = GUI.skin.button.padding
+				};
 
 				greenLabelStyle = new GUIStyle(GUI.skin.label);
 				greenLabelStyle.normal.textColor = Color.green;
 			}
 		}
-
-		private int outputIndex = 0;
 
 		#region GUI Layout functions
 
@@ -567,10 +582,9 @@ namespace Rex.Window
 		{
 			ratio = (showHistory || showMacros || showVariables || showUsings) ? 0.6f : 0.9f;
 
-			//GUIStyle box = new GUIStyle(GUI.skin.box);
-			Rect inner = box.border.Remove(box.padding.Remove(layout));
-			float outputWidth = layout.width * ratio;
-			float sideBar = layout.width - outputWidth;
+			var inner = box.border.Remove(box.padding.Remove(layout));
+			var outputWidth = layout.width * ratio;
+			var sideBar = layout.width - outputWidth;
 			// Ugly hack to fix the text overflow problem.
 			if (sideBar < 130)
 			{
@@ -578,7 +592,6 @@ namespace Rex.Window
 				outputWidth = layout.width - sideBar;
 			}
 
-			//DisplayUsingsSettings();
 			EditorGUILayout.BeginHorizontal(GUILayout.MaxHeight(inner.height - 10f));
 			{
 				var outputRect = EditorGUILayout.BeginVertical(box, GUILayout.ExpandHeight(true), GUILayout.Width(outputWidth), GUILayout.MaxWidth(outputWidth));
@@ -657,7 +670,7 @@ namespace Rex.Window
 
 					usingScroll = EditorGUILayout.BeginScrollView(usingScroll, GUILayout.Height(1), GUILayout.MaxHeight(150));
 					{
-						int depth = 0;
+						var depth = 0;
 						foreach (var n in Utils.NamespaceInfos)
 						{
 							if (n.IndetLevel > depth) continue;
@@ -667,7 +680,7 @@ namespace Rex.Window
 							{
 								for (int i = 0; i < n.IndetLevel; i++) GUILayout.Space(25f);
 
-								bool prev = n.Selected;
+								var prev = n.Selected;
 								n.Selected = GUILayout.Toggle(n.Selected, "", GUILayout.Width(useWidth));
 
 								if (prev != n.Selected)
@@ -872,7 +885,7 @@ namespace Rex.Window
 				defaultMsg = var.VarValue.ToString();
 			}
 
-			bool shouldDelete = false;
+			var shouldDelete = false;
 			// Draw the delete button.
 			if (GUILayout.Button(new GUIContent("X", $"Remove <b>{VarName}</b>"), GUILayout.Width(20)))
 				shouldDelete = true;
