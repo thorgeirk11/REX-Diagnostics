@@ -167,9 +167,9 @@ namespace Rex.Utilities.Test
             RexHelper.Messages[MsgType.Info].Clear();
             RexHelper.Messages[MsgType.Warning].Clear();
             RexHelper.Messages[MsgType.Error].Clear();
-            UnitTest1.CompileAndRun(code);
+            RexHelperTest.CompileAndRun(code);
         }
-        public void PressKey(_KeyCode key, int repeat = 1)
+        public static void PressKey(_KeyCode key, int repeat = 1)
         {
             for (int i = 0; i < repeat; i++)
             {

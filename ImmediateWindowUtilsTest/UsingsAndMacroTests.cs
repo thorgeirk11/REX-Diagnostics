@@ -10,7 +10,7 @@ namespace Rex.Utilities.Test
     [TestFixture]
     class UsingsAndMacroTests
     {
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void ClassSetup()
         {
             Utils.UsingsFileName = "testUsings.txt";
