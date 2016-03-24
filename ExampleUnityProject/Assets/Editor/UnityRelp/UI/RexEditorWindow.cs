@@ -162,11 +162,11 @@ namespace Rex.Window
         {
 
 #if !DEBUG
-			if (!EditorApplication.isPlaying)
-			{
-				EditorGUILayout.HelpBox("Need to be in play mode to evaluate expressions", MessageType.Info);
-				return;
-			}
+            if (!EditorApplication.isPlaying)
+            {
+                EditorGUILayout.HelpBox("Need to be in play mode to evaluate expressions", MessageType.Info);
+                return;
+            }
 #endif
 
             HandleTabKeyPress();

@@ -6,6 +6,7 @@ using System.Collections;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Rex.Utilities.Helpers;
+using System.Diagnostics;
 
 namespace Rex.Utilities
 {
@@ -35,7 +36,7 @@ namespace Rex.Utilities
         {
             try
             {
-                var val = RexUtils.ExecuteAssembly(compileResult.Assembly);
+                var val = Invoke(compileResult);
 
                 // If this is a variable declaration
                 if (compileResult.Parse.IsDeclaring)
@@ -100,6 +101,37 @@ namespace Rex.Utilities
                 if (showMessages) Messages[MsgType.Error].Add(exception.ToString());
                 return new T { Exception = exception };
             }
+        }
+
+        private static object Invoke(CompiledExpression compileResult)
+        {
+            object val = null;
+            if (compileResult.HasInitialized)
+            {
+                if (compileResult.FuncType == FuncType._object)
+                {
+                    val = compileResult.InitializedFunction();
+                }
+                else
+                {
+                    compileResult.InitializedAction();
+                }
+            }
+            else
+            {
+                if (compileResult.FuncType == FuncType._object)
+                {
+                    compileResult.InitializedFunction = RexUtils.ExecuteAssembly<Func<object>>(compileResult.Assembly);
+                    val = compileResult.InitializedFunction();
+                }
+                else
+                {
+                    compileResult.InitializedAction = RexUtils.ExecuteAssembly<Action>(compileResult.Assembly);
+                    compileResult.InitializedAction();
+                }
+            }
+
+            return val;
         }
 
         /// <summary>
@@ -261,21 +293,19 @@ class " + RexUtils.className + @"
             {
                 return baseWrapper + @"
         " + variableProps + @"
-    public object " + RexUtils.FuncName + @"() 
+    public Func<object> " + RexUtils.FuncName + @"() 
     { 
-        UnityEngine.Debug.Log(""Runing: " + returnstring + @" "");
-
-        return " + returnstring + @";
-    }
+        return new Func<object>(() => " + returnstring + @");
+    }    
 }";
             }
             else
             {
                 return baseWrapper + @"
         " + variableProps + @"
-    public void " + RexUtils.FuncName + @"() 
+    public Action " + RexUtils.FuncName + @"() 
     { 
-        " + returnstring + @";
+        return new Action(() => " + returnstring + @");
     }
 }";
             }

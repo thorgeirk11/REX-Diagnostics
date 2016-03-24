@@ -121,10 +121,17 @@
     <Compile Include="Assets\Editor\UnityRelp\Core\Input\_KeyCode.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Core\RexHelper.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Core\RexUtils.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Test\InputStateMachineTest.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Test\IntelliSenceTests.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Test\RexHelperTest.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Test\UsingsAndMacroTests.cs" />
     <Compile Include="Assets\Editor\UnityRelp\UI\ConsoleOutput.cs" />
     <Compile Include="Assets\Editor\UnityRelp\UI\RexEditorWindow.cs" />
     <Compile Include="Assets\Editor\UnityRelp\UI\RexUIUtils.cs" />
     <Compile Include="Assets\Editor\UnityRelp\UI\UStrap.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

@@ -186,11 +186,11 @@ namespace Rex.Utilities
         }
         #endregion
 
-        public static object ExecuteAssembly(Assembly assembly)
+        public static T ExecuteAssembly<T>(Assembly assembly) where T : class
         {
             var Class = Activator.CreateInstance(assembly.GetType(className));
             var method = Class.GetType().GetMethod(FuncName);
-            return method.Invoke(Class, null);
+            return method.Invoke(Class, null) as T;
         }
 
         public static MemberDetails GetCSharpRepresentation(Type t, bool showFullName = false)
@@ -375,7 +375,7 @@ namespace Rex.Utilities
         /// </summary>
         /// <param name="intellisenseHelp">Syntax to highlight</param>
         /// <returns>Syntax highlighted rich text string</returns>
-        public static string SyntaxHighlingting(MemberDetails intellisenseHelp, Dictionary<SyntaxType, string> colors, string search = null)
+        public static string SyntaxHighlingting(MemberDetails intellisenseHelp, Dictionary<SyntaxType, string> colors, string search)
         {
             var str = new StringBuilder();
             Syntax last = null;
