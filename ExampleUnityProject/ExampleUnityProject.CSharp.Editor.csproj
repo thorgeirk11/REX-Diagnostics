@@ -111,11 +111,11 @@
     <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\CodeCompletion.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\ConsoleOutput.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\ExtentionMethods.cs" />
-    <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\Logger.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\RexReflectionHelper.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\MacroHandler.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\MemberDetails.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\NameSpaceInfo.cs" />
-    <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\ToggleExectue.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\CompiledExpression.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\UsingsHandler.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Core\Input\InputStateMachine.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Core\Input\_KeyCode.cs" />

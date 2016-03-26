@@ -213,7 +213,7 @@ namespace Rex.Utilities.Test
             var output = CompileAndRun(@"new { One = 1, Two = 2.0, Three = 3f }");
             Assert.AreEqual(new { One = 1, Two = 2.0, Three = 3f }.ToString(), output.Value.ToString());
 
-            var details = Logger.ExtractDetails(output.Value).Select(i => i.ToString()).ToList();
+            var details = RexReflectionHelper.ExtractDetails(output.Value).Select(i => i.ToString()).ToList();
             Assert.Contains("int One { get ; } = 1", details);
             Assert.Contains("double Two { get ; } = 2", details);
             Assert.Contains("float Three { get ; } = 3", details);

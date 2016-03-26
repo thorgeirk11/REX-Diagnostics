@@ -111,11 +111,11 @@ namespace Rex.Window
             ISM.ExecuteCode = Execute;
             ISM.Enter_NoInput();
 
-            if (!MacroHandler.Loaded)
+            if (!RexMacroHandler.Loaded)
             {
                 RexUtils.MacroDirectory = MacroDirectorPath;
                 RexUtils.UsingsFileName = UsingsFile;
-                MacroHandler.LoadMacros();
+                RexMacroHandler.LoadMacros();
             }
 
             updateSkins = true;
@@ -805,7 +805,7 @@ namespace Rex.Window
                 if (GUILayout.Button(new GUIContent("Run", "Run Expression"), GUILayout.Height(16)))
                     Execute(code);
                 if (GUILayout.Button(new GUIContent("Macro", "Save as Macro"), GUILayout.Height(16)))
-                    MacroHandler.Save(code);
+                    RexMacroHandler.Save(code);
                 if (GUILayout.Button(new GUIContent("Delete", "Delete the history item"), GUILayout.Height(16)))
                     deleted = true;
             }
@@ -901,7 +901,7 @@ namespace Rex.Window
             {
                 // Construct a new output entry...
                 var ouput = new ConsoleOutput();
-                ouput.LoadInDetails(var.VarValue, defaultMsg, Utilities.Helpers.Logger.ExtractDetails(var.VarValue));
+                ouput.LoadInDetails(var.VarValue, defaultMsg, Utilities.Helpers.RexReflectionHelper.ExtractDetails(var.VarValue));
                 RexHelper.AddOutput(ouput);
             }
 
@@ -927,7 +927,7 @@ namespace Rex.Window
                     scroll4 = EditorGUILayout.BeginScrollView(scroll4);
                     {
                         string deleted = null;
-                        foreach (var macro in MacroHandler.Macros)
+                        foreach (var macro in RexMacroHandler.Macros)
                         {
                             EditorGUILayout.BeginHorizontal();
                             {
@@ -953,7 +953,7 @@ namespace Rex.Window
                             EditorGUILayout.EndHorizontal();
                         }
                         if (deleted != null)
-                            MacroHandler.Remove(deleted);
+                            RexMacroHandler.Remove(deleted);
                     }
                     EditorGUILayout.EndScrollView();
                 }

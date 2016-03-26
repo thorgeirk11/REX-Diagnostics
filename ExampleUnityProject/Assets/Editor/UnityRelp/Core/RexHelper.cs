@@ -7,12 +7,13 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Rex.Utilities.Helpers;
 using System.Diagnostics;
+using System.Text;
 
 namespace Rex.Utilities
 {
     public static class RexHelper
     {
-        public class Varible
+        public struct Varible
         {
             public object VarValue { get; set; }
             public Type VarType { get; set; }
@@ -69,14 +70,14 @@ namespace Rex.Utilities
                 }
 
                 var output = new T();
-                output.LoadInDetails(val, message, Logger.ExtractDetails(val));
+                output.LoadInDetails(val, message, RexReflectionHelper.ExtractDetails(val));
                 if (!(val is string || val is Enum) && val is IEnumerable)
                 {
                     foreach (object o in (val as IEnumerable))
                     {
                         var member = new T();
                         var msg = o == null ? "null" : o.ToString();
-                        member.LoadInDetails(o, msg, Logger.ExtractDetails(o));
+                        member.LoadInDetails(o, msg, RexReflectionHelper.ExtractDetails(o));
                         output.Members.Add(member);
                     }
                 }
@@ -181,7 +182,7 @@ namespace Rex.Utilities
 
         public static bool ContainsAnonymousType(Type valType)
         {
-            if (Logger.IsAnonymousType(valType))
+            if (RexReflectionHelper.IsAnonymousType(valType))
                 return true;
 
             if (valType.IsGenericType)
@@ -263,53 +264,74 @@ namespace Rex.Utilities
             }
             return succsessful;
         }
-
         public static string MakeWrapper(ParseResult parseResult, FuncType returnType)
         {
-            var variableProps = Variables.Aggregate("", (codeString, var) =>
-                codeString + Environment.NewLine +
-                string.Format(@"    {0} {1} 
-    {{ 
-        get 
-        {{
-            if (!Rex.Utilities.RexHelper.Variables.ContainsKey(""{1}""))
-                throw new Rex.Utilities.Helpers.AccessingDeletedVariableException() {{ VarName = ""{1}"" }};
-            return ({0})Rex.Utilities.RexHelper.Variables[""{1}""].VarValue;
-        }} 
-        set {{ Rex.Utilities.RexHelper.Variables[""{1}""].VarValue = value; }} 
-    }}",
-            RexUtils.GetCSharpRepresentation(var.Value.VarType, true).ToString(), var.Key));
+            var variables = GetVaribleWrapper();
 
             var returnstring = parseResult.ExpressionString;
             if (!string.IsNullOrEmpty(parseResult.TypeString))
                 returnstring = string.Format("({0})({1})", parseResult.TypeString, parseResult.ExpressionString);
 
-            var baseWrapper = RexUtils.Usings + @"
-
-class " + RexUtils.className + @"
-{";
-
+            var wrapper = new StringBuilder();
+            wrapper.AppendLine(RexUtils.Usings);
+            wrapper.Append("class ");
+            wrapper.AppendLine(RexUtils.className);
+            wrapper.AppendLine("{");
+            wrapper.AppendLine(variables);
             if (parseResult.IsDeclaring || returnType == FuncType._object)
             {
-                return baseWrapper + @"
-        " + variableProps + @"
-    public Func<object> " + RexUtils.FuncName + @"() 
-    { 
-        return new Func<object>(() => " + returnstring + @");
-    }    
-}";
+                wrapper.AppendLine(FuncBodyWrapper(returnstring));
             }
             else
             {
-                return baseWrapper + @"
-        " + variableProps + @"
-    public Action " + RexUtils.FuncName + @"() 
-    { 
-        return new Action(() => " + returnstring + @");
-    }
-}";
+                wrapper.AppendLine(ActionBodyWrapper(returnstring));
             }
+            wrapper.AppendLine("}");
+            return wrapper.ToString();
+        }
 
+        private static string ActionBodyWrapper(string returnstring)
+        {
+            return string.Format(@"
+        public Action {0}() 
+        {{ 
+            return new Action(() => {1});
+        }}", RexUtils.FuncName, returnstring);
+        }
+
+        private static string FuncBodyWrapper(string returnstring)
+        {
+            return string.Format(@"
+        public Func<object> {0}() 
+        {{ 
+            return new Func<object>(() => {1});
+        }}", RexUtils.FuncName, returnstring);
+        }
+
+
+
+        public static IEnumerable<string> CurrentWrapperVaribles = new string[0];
+        public static string wrapperVariables = string.Empty;
+        private static string GetVaribleWrapper()
+        {
+            if (Variables.Keys.SequenceEqual(CurrentWrapperVaribles))
+                return wrapperVariables;
+
+            wrapperVariables = Variables.Aggregate("", (codeString, var) =>
+                 codeString + Environment.NewLine +
+                 string.Format(@"    {0} {1} 
+        {{
+            get
+            {{
+                if (!Rex.Utilities.RexHelper.Variables.ContainsKey(""{1}""))
+                    throw new Rex.Utilities.Helpers.AccessingDeletedVariableException() {{ VarName = ""{1}"" }};
+                return ({0})Rex.Utilities.RexHelper.Variables[""{1}""].VarValue;
+            }}
+            set {{ Rex.Utilities.RexHelper.Variables[""{1}""].VarValue = value; }}
+        }}",
+              RexUtils.GetCSharpRepresentation(var.Value.VarType, true).ToString(), var.Key));
+            CurrentWrapperVaribles = Variables.Keys.ToArray();
+            return wrapperVariables;
         }
         #endregion
 

@@ -6,12 +6,12 @@ using System.Text;
 
 namespace Rex.Utilities.Helpers
 {
-    public static class MacroHandler
+    public static class RexMacroHandler
     {
         private static Dictionary<string, string> MacroDic;
         public static IEnumerable<string> Macros { get { return MacroDic.Values; } }
 
-        static MacroHandler()
+        static RexMacroHandler()
         { Loaded = false; }
         public static bool Loaded { get; private set; }
         #region Macros

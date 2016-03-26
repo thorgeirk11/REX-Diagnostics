@@ -325,22 +325,27 @@ namespace Rex.Utilities
                 return compiler;
             }
         }
+
         private static CSharpCodeProvider compiler;
+        private static string[] currentAssemblies;
 
         public static CompilerResults CompileCode(string code)
         {
-            var compilerparams = new CompilerParameters
+            var compilerOptions = new CompilerParameters(GetCurrentAssemblies())
             {
                 GenerateExecutable = false,
                 GenerateInMemory = false
             };
 
-            compilerparams.AddCurrentAssemblies();
-
-            return Compiler.CompileAssemblyFromSource(compilerparams, code);
+            return Compiler.CompileAssemblyFromSource(compilerOptions, code);
         }
-        static void AddCurrentAssemblies(this CompilerParameters compilerparams)
+
+        static string[] GetCurrentAssemblies()
         {
+            if (currentAssemblies != null)
+                return currentAssemblies;
+
+            var assemblies = new List<string>();
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 try
@@ -348,7 +353,7 @@ namespace Rex.Utilities
                     var location = assembly.Location;
                     if (!string.IsNullOrEmpty(location))
                     {
-                        compilerparams.ReferencedAssemblies.Add(location);
+                        assemblies.Add(location);
                     }
                 }
                 catch (NotSupportedException)
@@ -356,6 +361,8 @@ namespace Rex.Utilities
                     // this happens for dynamic assemblies, so just ignore it. 
                 }
             }
+            currentAssemblies = assemblies.ToArray();
+            return currentAssemblies;
         }
 
 

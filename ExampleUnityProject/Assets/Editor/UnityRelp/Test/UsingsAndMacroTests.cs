@@ -70,18 +70,18 @@ namespace Rex.Utilities.Test
         [Test]
         public void MacroTest()
         {
-            MacroHandler.LoadMacros();
-            Assert.IsEmpty(MacroHandler.Macros);
+            RexMacroHandler.LoadMacros();
+            Assert.IsEmpty(RexMacroHandler.Macros);
 
-            MacroHandler.Save("Lol");
-            Assert.IsTrue(MacroHandler.Macros.Contains("Lol"));
-            MacroHandler.Remove("Lol");
-            Assert.IsEmpty(MacroHandler.Macros);
+            RexMacroHandler.Save("Lol");
+            Assert.IsTrue(RexMacroHandler.Macros.Contains("Lol"));
+            RexMacroHandler.Remove("Lol");
+            Assert.IsEmpty(RexMacroHandler.Macros);
 
-            MacroHandler.Save("Lol1");
-            MacroHandler.Save("Lol2");
-            MacroHandler.Save("Lol3");
-            Assert.AreEqual(new[] { "Lol1", "Lol2", "Lol3" }, MacroHandler.Macros);
+            RexMacroHandler.Save("Lol1");
+            RexMacroHandler.Save("Lol2");
+            RexMacroHandler.Save("Lol3");
+            Assert.AreEqual(new[] { "Lol1", "Lol2", "Lol3" }, RexMacroHandler.Macros);
         }
 
         [Test]
