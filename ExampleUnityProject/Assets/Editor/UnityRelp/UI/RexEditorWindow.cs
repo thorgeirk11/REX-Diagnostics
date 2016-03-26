@@ -144,7 +144,7 @@ namespace Rex.Window
             if (string.IsNullOrEmpty(code))
                 return;
 
-            var compile = RexHelper.GetCompile(code);
+            var compile = RexCompileEngine.GetCompile(code);
             if (compile != null)
             {
                 ExpressionHistory.Add(code, new HistoryItem { Compile = compile });

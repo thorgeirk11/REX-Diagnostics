@@ -26,14 +26,6 @@ namespace Rex.Utilities
         private static readonly LinkedList<AConsoleOutput> outputList = new LinkedList<AConsoleOutput>();
         const int OUTPUT_LENGHT = 20;
 
-        private static Thread _compileThread;
-        private static bool _runParserThread;
-        /// <summary>
-        /// The continues compiled result by the <see cref="_compileThread"/>.
-        /// </summary>
-        private static volatile CompiledExpression _currentCompiledExpression;
-        public static readonly object CompilerLockObject = new object();
-
         private static IEnumerable<string> _currentWrapperVaribles = new string[0];
         private static string _wrapperVariables = string.Empty;
 
@@ -149,33 +141,6 @@ namespace Rex.Utilities
             return val;
         }
 
-        internal static CompiledExpression GetCompile(string code)
-        {
-            var startedWaiting = DateTime.Now;
-            while (true)
-            {
-                lock (CompilerLockObject)
-                {
-                    if (_currentCompiledExpression != null &&
-                        _currentCompiledExpression.Parse.WholeCode == code)
-                    {
-                        if (_currentCompiledExpression.Errors.Count > 0)
-                        {
-                            Messages[MsgType.Error].AddRange(_currentCompiledExpression.Errors);
-                            return null;
-                        }
-
-                        return _currentCompiledExpression;
-                    }
-                }
-                Thread.Sleep(10);
-                if (DateTime.Now - startedWaiting > TimeSpan.FromSeconds(2))
-                {
-                    Messages[MsgType.Error].Add("Time out on compiling expression, " + code);
-                    return null;
-                }
-            }
-        }
 
         /// <summary>
         /// Handles a variable declaration.
@@ -915,82 +880,10 @@ namespace Rex.Utilities
         }
         #endregion
 
-        /// <summary>
-        /// This is run on a seprate thread than Unity. Used to Load into memory stuff that will be used.
-        /// </summary>
         public static void SetupHelper()
         {
             RexUtils.LoadNamespaceInfos(includeIngoredUsings: false);
-            //var cmp = Compile(ParseAssigment("1+1"), new Dictionary<string, HistoryItem>());
-            //Execute<DummyOutput>(cmp, showMessages: true);
-
-            if (_compileThread == null)
-            {
-                _runParserThread = true;
-                _compileThread = new Thread(() =>
-                {
-                    UnityEngine.Debug.Log("Running Compiler thread!");
-                    var lastCode = "";
-                    CompileJob lastJob = null;
-                    while (_runParserThread)
-                    {
-                        Thread.Sleep(1);
-                        if (lastCode != ISM.Code)
-                        {
-                            lastCode = ISM.Code;
-                            if (lastJob != null)
-                            {
-                                lastJob.RequestStop();
-                            }
-                            lastJob = new CompileJob();
-                            ThreadPool.QueueUserWorkItem(lastJob.CompileCode, lastCode);
-                        }
-                    }
-                });
-                _compileThread.Start();
-                _compileThread.Name = "REX Compiler thread";
-            }
-        }
-
-        private class CompileJob
-        {
-            // This method will be called when the thread is started. 
-            public void CompileCode(object code)
-            {
-                if (_shouldStop)
-                {
-                    UnityEngine.Debug.Log("Stoped1: " + code);
-                    return;
-                }
-                var parseResult = ParseAssigment((string)code);
-                if (_shouldStop)
-                {
-                    UnityEngine.Debug.Log("Stoped2: " + code);
-                    return;
-                }
-                var result = Compile(parseResult);
-                if (_shouldStop)
-                {
-                    UnityEngine.Debug.Log("Stoped3: " + code);
-                    return;
-                }
-                lock (CompilerLockObject)
-                {
-                    if (!_shouldStop)
-                    {
-                        UnityEngine.Debug.Log("Done Compiling: " + code);
-                        _currentCompiledExpression = result;
-                    }
-                }
-                UnityEngine.Debug.Log("Finishing: " + code);
-            }
-            public void RequestStop()
-            {
-                _shouldStop = true;
-            }
-            // Volatile is used as hint to the compiler that this data 
-            // member will be accessed by multiple threads. 
-            private volatile bool _shouldStop;
+            RexCompileEngine.SetupHelper();
         }
 
         private class DummyOutput : AConsoleOutput

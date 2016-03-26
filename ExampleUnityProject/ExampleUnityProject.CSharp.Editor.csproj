@@ -119,6 +119,7 @@
     <Compile Include="Assets\Editor\UnityRelp\Core\Helpers\UsingsHandler.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Core\Input\InputStateMachine.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Core\Input\_KeyCode.cs" />
+    <Compile Include="Assets\Editor\UnityRelp\Core\RexCompileEngine.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Core\RexHelper.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Core\RexUtils.cs" />
     <Compile Include="Assets\Editor\UnityRelp\Test\InputStateMachineTest.cs" />
