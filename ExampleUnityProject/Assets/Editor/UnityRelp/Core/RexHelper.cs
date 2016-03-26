@@ -31,7 +31,7 @@ namespace Rex.Utilities
         /// <summary>
         /// The continues compiled result by the <see cref="_compileThread"/>.
         /// </summary>
-        private static CompiledExpression _currentCompiledExpression;
+        private static volatile CompiledExpression _currentCompiledExpression;
         public static readonly object CompilerLockObject = new object();
 
         private static IEnumerable<string> _currentWrapperVaribles = new string[0];
@@ -931,23 +931,68 @@ namespace Rex.Utilities
                 {
                     UnityEngine.Debug.Log("Running Compiler thread!");
                     var lastCode = "";
+                    CompileJob lastJob = null;
                     while (_runParserThread)
                     {
                         Thread.Sleep(1);
                         if (lastCode != ISM.Code)
                         {
                             lastCode = ISM.Code;
-                            var parseResult = ParseAssigment(lastCode);
-                            lock (CompilerLockObject)
+                            if (lastJob != null)
                             {
-                                _currentCompiledExpression = Compile(parseResult);
+                                lastJob.RequestStop();
                             }
+                            lastJob = new CompileJob();
+                            ThreadPool.QueueUserWorkItem(lastJob.CompileCode, lastCode);
                         }
                     }
                 });
                 _compileThread.Start();
+                _compileThread.Name = "REX Compiler thread";
             }
         }
+
+        private class CompileJob
+        {
+            // This method will be called when the thread is started. 
+            public void CompileCode(object code)
+            {
+                if (_shouldStop)
+                {
+                    UnityEngine.Debug.Log("Stoped1: " + code);
+                    return;
+                }
+                var parseResult = ParseAssigment((string)code);
+                if (_shouldStop)
+                {
+                    UnityEngine.Debug.Log("Stoped2: " + code);
+                    return;
+                }
+                var result = Compile(parseResult);
+                if (_shouldStop)
+                {
+                    UnityEngine.Debug.Log("Stoped3: " + code);
+                    return;
+                }
+                lock (CompilerLockObject)
+                {
+                    if (!_shouldStop)
+                    {
+                        UnityEngine.Debug.Log("Done Compiling: " + code);
+                        _currentCompiledExpression = result;
+                    }
+                }
+                UnityEngine.Debug.Log("Finishing: " + code);
+            }
+            public void RequestStop()
+            {
+                _shouldStop = true;
+            }
+            // Volatile is used as hint to the compiler that this data 
+            // member will be accessed by multiple threads. 
+            private volatile bool _shouldStop;
+        }
+
         private class DummyOutput : AConsoleOutput
         {
             public DummyOutput() : base() { }
