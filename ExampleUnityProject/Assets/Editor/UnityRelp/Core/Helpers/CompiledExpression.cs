@@ -11,8 +11,11 @@ namespace Rex.Utilities.Helpers
         public Assembly Assembly { get; set; }
         public ParseResult Parse { get; set; }
 
+        public List<string> Errors { get; set; }
+
         public Func<object> InitializedFunction { get; set; }
         public Action InitializedAction { get; set; }
+
         public bool HasInitialized
         {
             get { return InitializedFunction != null || InitializedAction != null; }

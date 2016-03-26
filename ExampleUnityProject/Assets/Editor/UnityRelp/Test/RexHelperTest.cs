@@ -16,11 +16,11 @@ namespace Rex.Utilities.Test
             RexUtils.MacroDirectory = "TestMacros";
             RexHelper.Variables.Clear();
             RexHelper.ClearOutput();
-            History = new Dictionary<string, HistoryItem>();
+            //History = new Dictionary<string, HistoryItem>();
 
             var expression = "1+1";
             var pResult = RexHelper.ParseAssigment(expression);
-            var cResult = RexHelper.Compile(pResult, History);
+            var cResult = RexHelper.Compile(pResult);
             var output = RexHelper.Execute<DummyOutput>(cResult);
         }
 
@@ -30,10 +30,7 @@ namespace Rex.Utilities.Test
             RexHelper.Variables.Clear();
             RexHelper.ClearOutput();
             foreach (var output in RexHelper.Messages) output.Value.Clear();
-            History = new Dictionary<string, HistoryItem>();
         }
-
-        public static Dictionary<string, HistoryItem> History { get; set; }
 
         [Test]
         public void TopLevelNameSpaceTest()
@@ -52,7 +49,7 @@ namespace Rex.Utilities.Test
             Assert.AreEqual(expression, pResult.WholeCode);
             Assert.IsFalse(pResult.IsDeclaring);
 
-            var cResult = RexHelper.Compile(pResult, History);
+            var cResult = RexHelper.Compile(pResult);
             Assert.IsNull(cResult);
             Assert.IsNotEmpty(RexHelper.Messages[MsgType.Error]);
             var errors = RexHelper.Messages[MsgType.Error];
@@ -170,7 +167,7 @@ namespace Rex.Utilities.Test
             Assert.AreEqual(expression, pResult.WholeCode);
             Assert.IsFalse(pResult.IsDeclaring);
 
-            var cResult = RexHelper.Compile(pResult, History);
+            var cResult = RexHelper.Compile(pResult);
             Assert.AreEqual(pResult, cResult.Parse);
             Assert.IsNotNull(cResult.Assembly);
 
@@ -228,7 +225,7 @@ namespace Rex.Utilities.Test
             Assert.AreEqual(expression, pResult.WholeCode);
             Assert.IsTrue(pResult.IsDeclaring);
 
-            var cResult = RexHelper.Compile(pResult, History);
+            var cResult = RexHelper.Compile(pResult);
             Assert.AreEqual(pResult, cResult.Parse);
             Assert.IsNotNull(cResult.Assembly);
 
@@ -248,7 +245,7 @@ namespace Rex.Utilities.Test
             Assert.AreEqual(expression, pResult.WholeCode);
             Assert.IsTrue(pResult.IsDeclaring);
 
-            var cResult = RexHelper.Compile(pResult, History);
+            var cResult = RexHelper.Compile(pResult);
             Assert.AreEqual(pResult, cResult.Parse);
             Assert.IsNotNull(cResult.Assembly);
 
@@ -268,7 +265,7 @@ namespace Rex.Utilities.Test
             Assert.AreEqual(expr, pResult.ExpressionString);
             Assert.AreEqual(expression, pResult.WholeCode);
             Assert.IsTrue(pResult.IsDeclaring);
-            var cResult = RexHelper.Compile(pResult, History);
+            var cResult = RexHelper.Compile(pResult);
             Assert.AreEqual(pResult, cResult.Parse);
             Assert.IsNotNull(cResult.Assembly);
 
@@ -299,7 +296,7 @@ namespace Rex.Utilities.Test
         public static DummyOutput CompileAndRun(string code)
         {
             var pResult = RexHelper.ParseAssigment(code);
-            var cResult = RexHelper.Compile(pResult, History);
+            var cResult = RexHelper.Compile(pResult);
             return RexHelper.Execute<DummyOutput>(cResult);
         }
     }

@@ -8,14 +8,41 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Text;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace Rex.Utilities
 {
     public static class RexUtils
     {
         #region Constants
-        public static string MacroDirectory;// = Application.persistentDataPath + @"_macros.txt";
-        public static string UsingsFileName;// = Application.persistentDataPath + @"_macros.txt";
+        private static string _macroDicrectory;
+        public static string MacroDirectory
+        {
+            get
+            {
+                if (_macroDicrectory == null)
+                {
+                    _macroDicrectory = Application.persistentDataPath + @"_macros.txt";
+                }
+                return _macroDicrectory;
+            }
+            set { _macroDicrectory = value; }
+        }
+        
+        private static string _usingsFileName;
+        public static string UsingsFileName
+        {
+            get
+            {
+                if (_usingsFileName == null)
+                {
+                    _usingsFileName = Application.persistentDataPath + @"_macros.txt";
+                }
+                return _usingsFileName;
+            }
+            set { _usingsFileName = value; }
+        }
+
         public static readonly Regex Assignment = new Regex(@"^(?<type>\S*\s+)?(?<var>[^ .,=]+)\s*=(?<expr>[^=].*)$", RegexOptions.Compiled | RegexOptions.Singleline);
         public static readonly Regex DotExpressionSearch = new Regex(@"^(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<search>\w*)$", RegexOptions.Compiled);
         public static readonly Regex ParameterRegex = new Regex(@"(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<search>\w*)(\((?<para>[^)]*))$", RegexOptions.Compiled);

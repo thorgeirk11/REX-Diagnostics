@@ -8,6 +8,7 @@ using Rex.Utilities.Helpers;
 using System.IO;
 using Rex.Utilities.Input;
 using System.Threading;
+using System.Diagnostics;
 
 namespace Rex.Window
 {
@@ -56,6 +57,8 @@ namespace Rex.Window
             get { return Application.persistentDataPath + "REX_Usings.txt"; }
         }
 
+        public static bool RunParserThread { get; private set; }
+
         #region UI
         const double stopwatchTime = 0.5;
         bool updateSkins = true;
@@ -101,13 +104,15 @@ namespace Rex.Window
         {
             // Get existing open window or if none, make a new one:
             instance = GetWindow<RexEditorWindow>();
-            new Thread(() => RexHelper.SetupHelper()).Start();
+            RexHelper.SetupHelper();
         }
 
         void OnEnable()
         {
+            RexHelper.SetupHelper();
+
             ISM.Repaint = Repaint;
-            ISM.DebugLog = Debug.Log;
+            ISM.DebugLog = UnityEngine.Debug.Log;
             ISM.ExecuteCode = Execute;
             ISM.Enter_NoInput();
 
@@ -139,11 +144,16 @@ namespace Rex.Window
             if (string.IsNullOrEmpty(code))
                 return;
 
-            var parseResult = RexHelper.ParseAssigment(code);
-            var compileOutput = RexHelper.Compile(parseResult, ExpressionHistory);
-            if (compileOutput != null)
+            var compile = RexHelper.GetCompile(code);
+            if (compile != null)
             {
-                var output = RexHelper.Execute<ConsoleOutput>(compileOutput);
+                ExpressionHistory.Add(code, new HistoryItem { Compile = compile });
+                var sw = Stopwatch.StartNew();
+
+                var output = RexHelper.Execute<ConsoleOutput>(compile);
+
+                UnityEngine.Debug.Log("Execute: " + sw.ElapsedMilliseconds);
+
                 if (output != null)
                     RexHelper.AddOutput(output);
 
@@ -584,6 +594,7 @@ namespace Rex.Window
         #region GUI Layout functions
 
         private static readonly MsgType[] MessageInfos = new MsgType[] { MsgType.Error, MsgType.Warning, MsgType.Info, MsgType.None };
+
         private void DrawMainLayout(Rect layout)
         {
             ratio = (showHistory || showMacros || showVariables || showUsings) ? 0.6f : 0.9f;

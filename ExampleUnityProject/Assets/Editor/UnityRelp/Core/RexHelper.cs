@@ -8,6 +8,8 @@ using System.Text.RegularExpressions;
 using Rex.Utilities.Helpers;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
+using Rex.Utilities.Input;
 
 namespace Rex.Utilities
 {
@@ -20,8 +22,20 @@ namespace Rex.Utilities
         }
         public static readonly Dictionary<string, Varible> Variables = new Dictionary<string, Varible>();
         public static IEnumerable<AConsoleOutput> Output { get { return outputList; } }
+
         private static readonly LinkedList<AConsoleOutput> outputList = new LinkedList<AConsoleOutput>();
         const int OUTPUT_LENGHT = 20;
+
+        private static Thread _compileThread;
+        private static bool _runParserThread;
+        /// <summary>
+        /// The continues compiled result by the <see cref="_compileThread"/>.
+        /// </summary>
+        private static CompiledExpression _currentCompiledExpression;
+        public static readonly object CompilerLockObject = new object();
+
+        private static IEnumerable<string> _currentWrapperVaribles = new string[0];
+        private static string _wrapperVariables = string.Empty;
 
         public static readonly Dictionary<MsgType, List<string>> Messages = new Dictionary<MsgType, List<string>>
         {
@@ -135,6 +149,34 @@ namespace Rex.Utilities
             return val;
         }
 
+        internal static CompiledExpression GetCompile(string code)
+        {
+            var startedWaiting = DateTime.Now;
+            while (true)
+            {
+                lock (CompilerLockObject)
+                {
+                    if (_currentCompiledExpression != null &&
+                        _currentCompiledExpression.Parse.WholeCode == code)
+                    {
+                        if (_currentCompiledExpression.Errors.Count > 0)
+                        {
+                            Messages[MsgType.Error].AddRange(_currentCompiledExpression.Errors);
+                            return null;
+                        }
+
+                        return _currentCompiledExpression;
+                    }
+                }
+                Thread.Sleep(10);
+                if (DateTime.Now - startedWaiting > TimeSpan.FromSeconds(2))
+                {
+                    Messages[MsgType.Error].Add("Time out on compiling expression, " + code);
+                    return null;
+                }
+            }
+        }
+
         /// <summary>
         /// Handles a variable declaration.
         /// </summary>
@@ -203,50 +245,47 @@ namespace Rex.Utilities
         }
         #endregion
         #region Compile
-        public static CompiledExpression Compile(
-            ParseResult parseResult,
-            Dictionary<string, HistoryItem> history)
+        public static CompiledExpression Compile(ParseResult parseResult)
         {
-            if (history.ContainsKey(parseResult.WholeCode))
-                return history[parseResult.WholeCode].Compile;
-
+            var Errors = new List<string>();
             var returnTypes = new[] { FuncType._object, FuncType._void };
             foreach (var type in returnTypes)
             {
                 var wrapper = MakeWrapper(parseResult, type);
-
-                UnityEngine.Debug.Log(wrapper);
                 var result = RexUtils.CompileCode(wrapper);
 
-                if (DealWithErrors(result))
+                Errors = DealWithErrors(result);
+                if (Errors.Count == 0)
                 {
                     if (type == FuncType._void)
-                        Messages[MsgType.Error].Clear();
+                        Errors.Clear();
 
-                    var compile = new CompiledExpression
+                    return new CompiledExpression
                     {
                         Assembly = result.CompiledAssembly,
                         Parse = parseResult,
                         FuncType = type,
+                        Errors = Errors
                     };
-                    history.Add(parseResult.WholeCode, new HistoryItem { Compile = compile });
-                    return compile;
                 }
             }
-            return null;
+            return new CompiledExpression
+            {
+                Parse = parseResult,
+                Errors = Errors
+            };
         }
 
         /// <summary>
         /// Outputs errors if there are any. returns true if there are none.
         /// </summary>
-        public static bool DealWithErrors(CompilerResults result)
+        public static List<string> DealWithErrors(CompilerResults result)
         {
-            var succsessful = true;
+            var errorList = new List<string>();
             foreach (CompilerError error in result.Errors)
             {
                 if (!error.IsWarning)
                 {
-                    succsessful = false;
                     if (error.ErrorText.StartsWith("Cannot implicitly convert type"))
                         continue;
 
@@ -259,10 +298,10 @@ namespace Rex.Utilities
                         continue;
 
                     if (!Messages[MsgType.Error].Contains(error.ErrorText))
-                        Messages[MsgType.Error].Add(error.ErrorText);
+                        errorList.Add(error.ErrorText);
                 }
             }
-            return succsessful;
+            return errorList;
         }
         public static string MakeWrapper(ParseResult parseResult, FuncType returnType)
         {
@@ -308,16 +347,12 @@ namespace Rex.Utilities
         }}", RexUtils.FuncName, returnstring);
         }
 
-
-
-        public static IEnumerable<string> CurrentWrapperVaribles = new string[0];
-        public static string wrapperVariables = string.Empty;
         private static string GetVaribleWrapper()
         {
-            if (Variables.Keys.SequenceEqual(CurrentWrapperVaribles))
-                return wrapperVariables;
+            if (Variables.Keys.SequenceEqual(_currentWrapperVaribles))
+                return _wrapperVariables;
 
-            wrapperVariables = Variables.Aggregate("", (codeString, var) =>
+            _wrapperVariables = Variables.Aggregate("", (codeString, var) =>
                  codeString + Environment.NewLine +
                  string.Format(@"    {0} {1} 
         {{
@@ -330,8 +365,8 @@ namespace Rex.Utilities
             set {{ Rex.Utilities.RexHelper.Variables[""{1}""].VarValue = value; }}
         }}",
               RexUtils.GetCSharpRepresentation(var.Value.VarType, true).ToString(), var.Key));
-            CurrentWrapperVaribles = Variables.Keys.ToArray();
-            return wrapperVariables;
+            _currentWrapperVaribles = Variables.Keys.ToArray();
+            return _wrapperVariables;
         }
         #endregion
 
@@ -523,8 +558,6 @@ namespace Rex.Utilities
             return possibleMethods;
         }
 
-
-
         private static IEnumerable<CodeCompletion> DotExpression(Match match, int offset)
         {
             var full = match.Groups["fullType"];
@@ -636,7 +669,6 @@ namespace Rex.Utilities
                    };
         }
 
-
         public static void RemoveOutput(AConsoleOutput deleted)
         {
             outputList.Remove(deleted);
@@ -731,6 +763,7 @@ namespace Rex.Utilities
         }
 
         private static readonly Regex propsRegex = new Regex("(.et|add|remove)_(?<Name>.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         private static IEnumerable<CodeCompletion> ExtractMemberInfo(Group search, Type varType, BindingFlags bindings, int offset)
         {
             var helpList = new Dictionary<string, List<MemberDetails>>();
@@ -888,8 +921,32 @@ namespace Rex.Utilities
         public static void SetupHelper()
         {
             RexUtils.LoadNamespaceInfos(includeIngoredUsings: false);
-            var cmp = Compile(ParseAssigment("1+1"), new Dictionary<string, HistoryItem>());
-            Execute<DummyOutput>(cmp, showMessages: true);
+            //var cmp = Compile(ParseAssigment("1+1"), new Dictionary<string, HistoryItem>());
+            //Execute<DummyOutput>(cmp, showMessages: true);
+
+            if (_compileThread == null)
+            {
+                _runParserThread = true;
+                _compileThread = new Thread(() =>
+                {
+                    UnityEngine.Debug.Log("Running Compiler thread!");
+                    var lastCode = "";
+                    while (_runParserThread)
+                    {
+                        Thread.Sleep(1);
+                        if (lastCode != ISM.Code)
+                        {
+                            lastCode = ISM.Code;
+                            var parseResult = ParseAssigment(lastCode);
+                            lock (CompilerLockObject)
+                            {
+                                _currentCompiledExpression = Compile(parseResult);
+                            }
+                        }
+                    }
+                });
+                _compileThread.Start();
+            }
         }
         private class DummyOutput : AConsoleOutput
         {
