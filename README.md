@@ -16,3 +16,19 @@ Testing various aspects of a game at runtime has proven difficult, e.g. having t
 - No T-REX included
 
  
+## Screen shots
+ 
+![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/1.png)
+
+
+ 
+![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/2.png)
+
+ 
+![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/3.png)
+
+ 
+![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/4.png)
+
+ 
+![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/5.png)
