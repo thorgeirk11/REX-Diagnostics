@@ -103,7 +103,8 @@ namespace Rex.Utilities.Helpers
         public static Syntax ParaName(string name) { return new Syntax(name, SyntaxType.ParaName); }
         public static Syntax ConstVal(string v) { return new Syntax(v, SyntaxType.ConstVal); }
 
-
+        public static readonly Syntax Space = new Syntax(" ", SyntaxType.Space);
+        public static readonly Syntax QuotationMark = new Syntax("\"", SyntaxType.QuotationMark);
         public static readonly Syntax ReadonlyKeyword = new Syntax("readonly", SyntaxType.Keyword);
         public static readonly Syntax ConstKeyword = new Syntax("const", SyntaxType.Keyword);
         public static readonly Syntax StaticKeyword = new Syntax("static", SyntaxType.Keyword);
@@ -161,5 +162,7 @@ namespace Rex.Utilities.Helpers
         GenericParaClose,
         Semicolon,
         EqualsOp,
+        Space,
+        QuotationMark,
     }
 }

@@ -894,8 +894,8 @@ namespace Rex.Window
             {
                 highlightedString = RexUIUtils.SyntaxHighlingting(type.Concat(new[] {
                                             Syntax.Name(VarName),
-                                            Syntax.EqualsOp,
-                                            Syntax.Keyword("null")
+                                            Syntax.Space, Syntax.EqualsOp,
+                                            Syntax.Space, Syntax.Keyword("null")
                                         }));
                 defaultMsg = "null";
             }
@@ -903,10 +903,19 @@ namespace Rex.Window
             {
                 // Format the code for syntax highlighting using richtext.
                 highlightedString = RexUIUtils.SyntaxHighlingting(type.Concat(new[] {
-                                            Syntax.Name(VarName),
-                                            Syntax.EqualsOp,
+                                            Syntax.Space, Syntax.Name(VarName),
+                                            Syntax.Space, Syntax.EqualsOp,
+                                            Syntax.Space
+                                        }).Concat(var.VarValue.GetType() == typeof(string) ?
+                                        new[] {
+                                            Syntax.QuotationMark,
+                                            Syntax.ConstVal(var.VarValue.ToString()),
+                                            Syntax.QuotationMark,
+                                        } :
+                                        new[] {
                                             Syntax.ConstVal(var.VarValue.ToString())
-                                        }));
+                                        })
+                                    );
                 defaultMsg = var.VarValue.ToString();
             }
 

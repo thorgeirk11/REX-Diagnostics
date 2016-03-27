@@ -28,7 +28,7 @@ namespace Rex.Utilities
             }
             set { _macroDicrectory = value; }
         }
-        
+
         private static string _usingsFileName;
         public static string UsingsFileName
         {
@@ -330,9 +330,10 @@ namespace Rex.Utilities
             var argsCount = availableArguments.Count;
             for (int i = 0; i < argsCount && availableArguments.Count > 0; i++)
             {
-                if (i != 0) genericArguments.Add(Syntax.Comma);
+                if (i != 0) genericArguments.AddRange(new[] { Syntax.Comma, Syntax.Space });
 
-                genericArguments.AddRange(GetCSharpRepresentation(availableArguments[0], showFullName, availableArguments[0].GetGenericArguments().ToList()));
+                var genericType = GetCSharpRepresentation(availableArguments[0], showFullName, availableArguments[0].GetGenericArguments().ToList());
+                genericArguments.AddRange(genericType);
                 availableArguments.RemoveAt(0);
             }
 
@@ -395,24 +396,29 @@ namespace Rex.Utilities
 
         public static readonly Dictionary<SyntaxType, string> SyntaxHighlightColors = new Dictionary<SyntaxType, string>
         {
-            { SyntaxType.Type,       "#008000ff" },
-            { SyntaxType.Keyword,    "#008080ff" },
+            { SyntaxType.Type,          "#008000ff" },
+            { SyntaxType.Keyword,       "#008080ff" },
+            { SyntaxType.QuotationMark, "green" },
+            { SyntaxType.ConstVal,      "green" },
         };
         public static readonly Dictionary<SyntaxType, string> SyntaxHighlightProColors = new Dictionary<SyntaxType, string>
         {
-            { SyntaxType.Type,       "#6f00ff" },
-            { SyntaxType.Keyword,    "blue" },
+            { SyntaxType.Type,          "#6f00ff" },
+            { SyntaxType.Keyword,       "blue" },
+            { SyntaxType.QuotationMark, "green" },
+            { SyntaxType.ConstVal,      "green" },
         };
 
         /// <summary>
         /// Takes in a member detail and builds a formated rich text string.
         /// </summary>
         /// <param name="intellisenseHelp">Syntax to highlight</param>
+        /// <param name="colors">Color of the SyntaxHighlingting</param>
+        /// <param name="search">Bold the part that user is searching for</param>
         /// <returns>Syntax highlighted rich text string</returns>
         public static string SyntaxHighlingting(MemberDetails intellisenseHelp, Dictionary<SyntaxType, string> colors, string search)
         {
             var str = new StringBuilder();
-            Syntax last = null;
             var name = intellisenseHelp.Name;
             foreach (var syntax in intellisenseHelp)
             {
@@ -431,74 +437,22 @@ namespace Rex.Utilities
                 if (colors.ContainsKey(syntax.Type))
                     syntaxStr = ColoredString(syntaxStr, colors[syntax.Type]);
 
-                BuildHighlight(ref str, ref last, syntax, syntaxStr);
-                last = syntax;
+                str.Append(syntaxStr);
             }
-            return str.Replace("  ", " ").ToString();
+            return str.ToString();
         }
         public static string SyntaxHighlingting(IEnumerable<Syntax> intellisenseHelp, Dictionary<SyntaxType, string> colors)
         {
             var str = new StringBuilder();
-            Syntax last = null;
             foreach (var syntax in intellisenseHelp)
             {
                 var syntaxStr = syntax.String;
                 if (colors.ContainsKey(syntax.Type))
                     syntaxStr = ColoredString(syntax.String, colors[syntax.Type]);
 
-                BuildHighlight(ref str, ref last, syntax, syntaxStr);
+                str.Append(syntaxStr);
             }
-            return str.Replace("  ", " ").ToString();
-        }
-
-        private static void BuildHighlight(ref StringBuilder str, ref Syntax last, Syntax syntax, string nameStr)
-        {
-            switch (syntax.Type)
-            {
-                case SyntaxType.Keyword:
-                    if (last != null && last.Type == SyntaxType.Keyword)
-                        str.Append(" ");// style.padding.left = paddAmount;
-                    break;
-
-                case SyntaxType.ParaName:
-                case SyntaxType.Name:
-                    str.Append(" ");
-                    //style.padding.left = paddAmount;
-                    break;
-
-                case SyntaxType.CurlyOpen:
-                case SyntaxType.EqualsOp:
-                    str.Append(" ");
-                    //style.padding.left = style.padding.right = paddAmount;
-                    break;
-
-                case SyntaxType.GenericParaClose:
-                case SyntaxType.GenericParaOpen:
-                    str = new StringBuilder(str.ToString().Trim());
-                    break;
-
-            }
-            str.Append(nameStr);
-            switch (syntax.Type)
-            {
-                case SyntaxType.Keyword:
-                    str.Append(" ");// style.padding.left = paddAmount;
-                    break;
-
-                case SyntaxType.CurlyOpen:
-                case SyntaxType.EqualsOp:
-                    str.Append(" ");
-                    //style.padding.left = style.padding.right = paddAmount;
-                    break;
-
-                case SyntaxType.Comma:
-                case SyntaxType.Semicolon:
-                    str.Append(" ");
-                    //style.padding.right = paddAmount;
-                    break;
-
-            }
-            last = syntax;
+            return str.ToString();
         }
 
         /// <summary>

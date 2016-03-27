@@ -346,8 +346,16 @@ namespace Rex.Utilities
                 {
                     type = string.Empty;
                 }
-
-                if (RexUtils.Compiler.IsValidIdentifier(variable))
+                bool validIdentifier;
+                try
+                {
+                    validIdentifier = RexUtils.Compiler.IsValidIdentifier(variable);
+                }
+                catch (Exception)
+                {
+                    validIdentifier = false;
+                }
+                if (validIdentifier)
                 {
                     return new ParseResult
                     {
@@ -597,15 +605,22 @@ namespace Rex.Utilities
                                 ReplacementString = i.Key,
                                 Details = new MemberDetails(i.Value.VarValue == null ? new[] {
                                     Syntax.Name(i.Key),
-                                    Syntax.EqualsOp,
-                                    Syntax.ConstVal("null")
+                                    Syntax.Space, Syntax.EqualsOp,
+                                    Syntax.Space, Syntax.ConstVal("null")
                                 } :
                                 RexUtils.GetCSharpRepresentation(i.Value.VarType, false)
                                 .Concat(new[] {
-                                    Syntax.Name(i.Key),
-                                    Syntax.EqualsOp,
-                                    Syntax.ConstVal(i.Value.VarValue.ToString())
-                                }))
+                                    Syntax.Space, Syntax.Name(i.Key),
+                                    Syntax.Space, Syntax.EqualsOp,
+                                    Syntax.Space
+                                }).Concat(i.Value.VarValue.GetType() == typeof(string) ?
+                                    new[] {
+                                        Syntax.QuotationMark,
+                                        Syntax.ConstVal(i.Value.VarValue.ToString()),
+                                        Syntax.QuotationMark,
+                                    } :
+                                    new[] { Syntax.ConstVal(i.Value.VarValue.ToString()) })
+                                )
                             };
 
             var types = from t in RexUtils.AllVisibleTypes
@@ -730,16 +745,19 @@ namespace Rex.Utilities
         {
             var helpList = new Dictionary<string, List<MemberDetails>>();
 
+            // properties
             foreach (var prop in varType.GetProperties(bindings))
             {
                 helpList.Add(prop.Name, new List<MemberDetails> { GetMemberDetails(prop) });
             }
 
+            // fields
             foreach (var field in varType.GetFields(bindings))
             {
                 helpList.Add(field.Name, new List<MemberDetails> { GetMemberDetails(field) });
             }
 
+            // methods
             foreach (var metod in from met in varType.GetMethods(bindings)
                                   where !propsRegex.IsMatch(met.Name) && met.Name.Contains(search.Value)
                                   select met)
@@ -753,6 +771,7 @@ namespace Rex.Utilities
                     helpList[metod.Name].Add(infoStr);
             }
 
+            // extension methods
             //foreach (var metod in from met in Utils.GetExtensionMethods(varType)
             //                      where met.Name.Contains(search.Value)
             //                      select met)
@@ -795,18 +814,23 @@ namespace Rex.Utilities
 
             if ((get != null && get.IsStatic) ||
                 (set != null && set.IsStatic))
-                syntax.Add(Syntax.StaticKeyword);
+                syntax.AddRange(new[] { Syntax.StaticKeyword, Syntax.Space });
 
             syntax.AddRange(RexUtils.GetCSharpRepresentation(prop.PropertyType));
-            syntax.Add(Syntax.Name(prop.Name));
-            syntax.Add(Syntax.CurlyOpen);
+            syntax.AddRange(new[] {
+                Syntax.Space,
+                Syntax.Name(prop.Name),
+                Syntax.Space,
+                Syntax.CurlyOpen
+            });
 
             if (get != null)
-                syntax.AddRange(new[] { Syntax.GetKeyword, Syntax.Semicolon });
+                syntax.AddRange(new[] { Syntax.Space, Syntax.GetKeyword, Syntax.Semicolon });
 
             if (set != null)
-                syntax.AddRange(new[] { Syntax.SetKeyword, Syntax.Semicolon });
+                syntax.AddRange(new[] { Syntax.Space, Syntax.SetKeyword, Syntax.Semicolon });
 
+            syntax.Add(Syntax.Space);
             syntax.Add(Syntax.CurlyClose);
 
             return new MemberDetails(syntax);
@@ -820,20 +844,38 @@ namespace Rex.Utilities
         {
             var syntax = new List<Syntax>();
             if (field.IsStatic && !field.IsLiteral)
-                syntax.Add(Syntax.StaticKeyword);
+                syntax.AddRange(new[] { Syntax.StaticKeyword, Syntax.Space });
 
             if (field.IsInitOnly)
-                syntax.Add(Syntax.ReadonlyKeyword);
+                syntax.AddRange(new[] { Syntax.ReadonlyKeyword, Syntax.Space });
 
             if (field.IsLiteral)
-                syntax.Add(Syntax.ConstKeyword);
+                syntax.AddRange(new[] { Syntax.ConstKeyword, Syntax.Space });
 
 
             syntax.AddRange(RexUtils.GetCSharpRepresentation(field.FieldType));
-            syntax.Add(Syntax.Name(field.Name));
+            syntax.AddRange(new[] { Syntax.Space, Syntax.Name(field.Name) });
 
             if (field.IsLiteral)
-                syntax.AddRange(new[] { Syntax.EqualsOp, Syntax.ConstVal(field.GetRawConstantValue().ToString()) });
+            {
+                syntax.AddRange(new[] {
+                    Syntax.Space,
+                    Syntax.EqualsOp,
+                    Syntax.Space,
+                });
+                if (field.GetRawConstantValue().GetType() == typeof(string))
+                {
+                    syntax.AddRange(new[] {
+                        Syntax.QuotationMark,
+                        Syntax.ConstVal(field.GetRawConstantValue().ToString()),
+                        Syntax.QuotationMark,
+                    });
+                }
+                else
+                {
+                    syntax.Add(Syntax.ConstVal(field.GetRawConstantValue().ToString()));
+                }
+            }
 
             return new MemberDetails(syntax);
         }
@@ -846,10 +888,10 @@ namespace Rex.Utilities
             var syntax = new List<Syntax>();
 
             if (meth.IsStatic)
-                syntax.Add(Syntax.StaticKeyword);
+                syntax.AddRange(new[] { Syntax.StaticKeyword, Syntax.Space });
 
             syntax.AddRange(RexUtils.GetCSharpRepresentation(meth.ReturnType));
-            syntax.Add(Syntax.Name(meth.Name));
+            syntax.AddRange(new[] { Syntax.Space, Syntax.Name(meth.Name) });
             if (meth.IsGenericMethod)
             {
                 syntax.Add(Syntax.GenericParaOpen);
@@ -863,14 +905,14 @@ namespace Rex.Utilities
             for (int i = 0; i < paras.Length; i++)
             {
                 if (paras[i].IsOut)
-                    syntax.Add(Syntax.OutKeyword);
+                    syntax.AddRange(new[] { Syntax.OutKeyword, Syntax.Space });
                 if (!paras[i].IsOut && !paras[i].IsIn && paras[i].ParameterType.IsByRef)
-                    syntax.Add(Syntax.RefKeyword);
+                    syntax.AddRange(new[] { Syntax.RefKeyword, Syntax.Space });
 
                 syntax.AddRange(RexUtils.GetCSharpRepresentation(paras[i].ParameterType));
-                syntax.Add(Syntax.ParaName(paras[i].Name));
+                syntax.AddRange(new[] { Syntax.Space, Syntax.ParaName(paras[i].Name) });
                 if (i + 1 != paras.Length)
-                    syntax.Add(Syntax.Comma);
+                    syntax.AddRange(new[] { Syntax.Comma, Syntax.Space });
             }
             syntax.Add(Syntax.ParaClose);
             return new MemberDetails(syntax);

@@ -70,15 +70,18 @@ namespace Rex.Utilities.Helpers
             string val;
             if (value == null)
             {
-                return new MemberDetails(value, new[] { Syntax.EqualsOp, Syntax.ConstVal("null") });
+                return new MemberDetails(value, 
+                    new[] { Syntax.EqualsOp, Syntax.Space, Syntax.ConstVal("null") });
             }
             else if (ExtractValue(value, out val))
             {
-                return new MemberDetails(value, new[] { Syntax.EqualsOp, Syntax.ConstVal(val) });
+                return new MemberDetails(value, 
+                    new[] { Syntax.EqualsOp, Syntax.Space, Syntax.ConstVal(val) });
             }
             else
             {
-                return new MemberDetails(value, new[] { Syntax.EqualsOp, Syntax.ConstVal(value.ToString()) });
+                return new MemberDetails(value, 
+                    new[] { Syntax.EqualsOp, Syntax.Space, Syntax.ConstVal(value.ToString()) });
             }
         }
 
