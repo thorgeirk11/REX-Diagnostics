@@ -15,7 +15,7 @@ namespace Rex.Utilities
 {
     public static class RexHelper
     {
-        public struct Varible
+        public class Varible
         {
             public object VarValue { get; set; }
             public Type VarType { get; set; }
@@ -222,9 +222,6 @@ namespace Rex.Utilities
                 Errors = DealWithErrors(result);
                 if (Errors.Count == 0)
                 {
-                    if (type == FuncType._void)
-                        Errors.Clear();
-
                     return new CompiledExpression
                     {
                         Assembly = result.CompiledAssembly,
@@ -623,7 +620,7 @@ namespace Rex.Utilities
                         };
 
             return from i in types.Concat(variables)
-                   orderby i.SearchName.IndexOf(lowerSearch), i.IsNested, i.SearchName
+                   orderby i.SearchName.IndexOf(lowerSearch), i.SearchName.Length, i.IsNested, i.SearchName
                    select new CodeCompletion
                    {
                        Details = i.Details,

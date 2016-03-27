@@ -3,9 +3,6 @@ using Rex.Utilities.Helpers;
 using Rex.Utilities.Input;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using UnityEngine;
 
@@ -27,13 +24,10 @@ public class RexCompileEngine : ScriptableObject, IDisposable
     {
         hideFlags = HideFlags.HideAndDontSave;
 
-        if (_compileThreadID == -1)
-        {
-            var _compileThread = new Thread(CompilerMainThread);
-            _compileThread.Start();
-            _compileThread.Name = "REX Compiler thread";
-            _compileThreadID = _compileThread.ManagedThreadId;
-        }
+        var _compileThread = new Thread(CompilerMainThread);
+        _compileThread.Start();
+        _compileThread.Name = "REX Compiler thread";
+        _compileThreadID = _compileThread.ManagedThreadId;
     }
 
     public void Dispose()
@@ -44,20 +38,19 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 
     private void CompilerMainThread()
     {
-        UnityEngine.Debug.Log("Running Compiler thread!", this);
+        Debug.Log("Running Compiler thread! " + Thread.CurrentThread.ManagedThreadId, this);
         var lastCode = "";
         CompileJob lastJob = null;
         Thread lastThread = null;
         var activeThreads = new List<Thread>();
         while (_compileThreadID == Thread.CurrentThread.ManagedThreadId)
         {
-            activeThreads.RemoveAll(i => (i.ThreadState & System.Threading.ThreadState.Stopped) != 0);
-
+            activeThreads.RemoveAll(i => (i.ThreadState & ThreadState.Stopped) != 0);
             Thread.Sleep(1);
-            if (ISM.Code != string.Empty &&
-                lastCode != ISM.Code)
+            if (!string.IsNullOrEmpty(RexISM.Code) &&
+                lastCode != RexISM.Code)
             {
-                lastCode = ISM.Code;
+                lastCode = RexISM.Code;
                 if (lastJob != null)
                 {
                     lastJob.RequestStop();
@@ -69,7 +62,14 @@ public class RexCompileEngine : ScriptableObject, IDisposable
                 activeThreads.Add(lastThread);
             }
         }
-        UnityEngine.Debug.Log("Compiler thread finished!", this);
+        if (activeThreads.Count > 0)
+        {
+            foreach (var thread in activeThreads)
+            {
+                thread.Join();
+            }
+        }
+        Debug.Log("Compiler thread finished! " + Thread.CurrentThread.ManagedThreadId, this);
     }
 
     public CompiledExpression GetCompile(string code)
@@ -100,18 +100,16 @@ public class RexCompileEngine : ScriptableObject, IDisposable
         }
     }
 
-
     private class CompileJob
     {
         public void CompileCode(object code)
         {
             var parseResult = RexHelper.ParseAssigment((string)code);
             var result = RexHelper.Compile(parseResult);
-            lock (CompilerLockObject)
+            if (!_shouldStop)
             {
-                if (!_shouldStop)
+                lock (CompilerLockObject)
                 {
-                    UnityEngine.Debug.Log("Done Compiling: " + code);
                     _currentCompiledExpression = result;
                 }
             }

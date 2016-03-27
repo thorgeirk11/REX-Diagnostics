@@ -115,14 +115,14 @@ namespace Rex.Window
         {
             hideFlags = HideFlags.HideAndDontSave;
             RexHelper.SetupHelper();
-            
+
             if (_compileEngine == null)
                 _compileEngine = new RexCompileEngine();
 
-            ISM.Repaint = Repaint;
-            ISM.DebugLog = UnityEngine.Debug.Log;
-            ISM.ExecuteCode = Execute;
-            ISM.Enter_NoInput();
+            RexISM.Repaint = Repaint;
+            RexISM.DebugLog = UnityEngine.Debug.Log;
+            RexISM.ExecuteCode = Execute;
+            RexISM.Enter_NoInput();
 
             if (!RexMacroHandler.Loaded)
             {
@@ -203,8 +203,8 @@ namespace Rex.Window
                 inp = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
                 if (inp != null)
                 {
-                    inp.cursorIndex = ISM.Code.Length + 1;
-                    inp.selectIndex = ISM.Code.Length + 1;
+                    inp.cursorIndex = RexISM.Code.Length + 1;
+                    inp.selectIndex = RexISM.Code.Length + 1;
                 }
             }
             var hasFocus = GUI.GetNameOfFocusedControl() == NAME_OF_INPUT_FIELD;
@@ -233,7 +233,7 @@ namespace Rex.Window
             GUI.Label(inpLabelRect, new GUIContent("Expression:"));
             var oldColor = ColorInput();
             GUI.SetNextControlName(NAME_OF_INPUT_FIELD);
-            ISM.Code = GUI.TextField(inpStringRect, ISM.Code);
+            RexISM.Code = GUI.TextField(inpStringRect, RexISM.Code);
 
             //To have the cursor change to the 'I' on hover:
             GUI.color = Color.clear;
@@ -244,7 +244,7 @@ namespace Rex.Window
             if (GUI.Button(inpButRect, new GUIContent("Evaluate", "Evaluates the expression")))
             {
                 GUI.FocusControl(NAME_OF_INPUT_FIELD);
-                ISM.PressKey(_KeyCode.Return);
+                RexISM.PressKey(KeyCode.Return);
             }
         }
 
@@ -326,15 +326,15 @@ namespace Rex.Window
         private void HandleInputHistory(bool hasFocus)
         {
             if (_inputHistroy.Count == 0 ||
-                            _inputHistroy.First.Value != ISM.Code)
+                            _inputHistroy.First.Value != RexISM.Code)
             {
                 if (_inputHistroy.Count > INPUT_HISTORY_LENGTH)
                 {
                     _inputHistroy.RemoveLast();
                 }
-                _inputHistroy.AddFirst(ISM.Code);
+                _inputHistroy.AddFirst(RexISM.Code);
             }
-            if (hasFocus && ISM.AnyKeyDown() && Event.current.type == EventType.Layout)
+            if (hasFocus && RexISM.AnyKeyDown() && Event.current.type == EventType.Layout)
             {
                 UpdateStateMachine();
             }
@@ -361,7 +361,7 @@ namespace Rex.Window
                     //else
                 }
 
-                else if (ISM.DisplayHelp && Event.current.isKey && Event.current.keyCode == KeyCode.Tab)
+                else if (RexISM.DisplayHelp && Event.current.isKey && Event.current.keyCode == KeyCode.Tab)
                 {
                     //Event.current.Use();
                     //ISM.PressKey(_KeyCode.Tab);
@@ -380,30 +380,30 @@ namespace Rex.Window
         {
             if (Event.current.isKey)
             {
-                var keyCode = (_KeyCode)Event.current.keyCode;
+                var keyCode = Event.current.keyCode;
                 var eventType = Event.current.type;
-                if (ISM.InputBuffer.ContainsKey(keyCode))
+                if (RexISM.InputBuffer.ContainsKey(keyCode))
                 {
                     if (eventType == EventType.keyUp)
                     {
-                        ISM.InputBuffer.Remove(keyCode);
+                        RexISM.InputBuffer.Remove(keyCode);
                     }
                     else if (eventType == EventType.keyDown &&
-                        DateTime.Now >= ISM.InputBuffer[keyCode].LastPressed + ISM.KeyInput.DelayAmount)
+                        DateTime.Now >= RexISM.InputBuffer[keyCode].LastPressed + RexISM.KeyInput.DelayAmount)
                     {
-                        ISM.InputBuffer[keyCode].LastPressed = DateTime.Now;
-                        ISM.InputBuffer[keyCode].IsHandled = false;
+                        RexISM.InputBuffer[keyCode].LastPressed = DateTime.Now;
+                        RexISM.InputBuffer[keyCode].IsHandled = false;
                     }
                 }
                 else if (eventType == EventType.keyDown)
                 {
-                    foreach (var item in ISM.InputBuffer.ToArray())
+                    foreach (var item in RexISM.InputBuffer.ToArray())
                     {
-                        if (!item.Value.IsHandled && item.Value.LastPressed + ISM.KeyInput.DelayAmount < DateTime.Now)
-                            ISM.InputBuffer.Remove(item.Key);
+                        if (!item.Value.IsHandled && item.Value.LastPressed + RexISM.KeyInput.DelayAmount < DateTime.Now)
+                            RexISM.InputBuffer.Remove(item.Key);
                     }
 
-                    ISM.PressKey(keyCode);
+                    RexISM.PressKey(keyCode);
                 }
             }
         }
@@ -414,31 +414,31 @@ namespace Rex.Window
             EditorGUIUtility.editingTextField = false;
 
             // Update state machine
-            ISM.Update();
+            RexISM.Update();
 
             // Only reenable editing if the state is NOT intelliselect
-            if (ISM.State != InputState.IntelliSelect)
+            if (RexISM.State != RexInputState.IntelliSelect)
                 EditorGUIUtility.editingTextField = true;
             else
             {
-                inp.cursorIndex = ISM.Code.Length + 1;
-                inp.selectIndex = ISM.Code.Length + 1;
+                inp.cursorIndex = RexISM.Code.Length + 1;
+                inp.selectIndex = RexISM.Code.Length + 1;
             }
 
-            if (ISM.ShouldReplaceCode)
+            if (RexISM.ShouldReplaceCode)
             {
-                ISM.Code = ISM.ReplacementCode;
+                RexISM.Code = RexISM.ReplacementCode;
                 //EditorGUI.FocusTextInControl(NameOfInputField);
 
-                ISM.ShouldReplaceCode = false;
+                RexISM.ShouldReplaceCode = false;
                 // This doesnt seem to work in with EditorGUI TextField
 
                 GUI.FocusControl(NAME_OF_INPUT_FIELD);
                 if (inp != null)
                 {
 
-                    inp.cursorIndex = ISM.Code.Length + 1;
-                    inp.selectIndex = ISM.Code.Length + 1;
+                    inp.cursorIndex = RexISM.Code.Length + 1;
+                    inp.selectIndex = RexISM.Code.Length + 1;
                     //inp.Copy();
                     //inp.Paste();
                 }
@@ -447,13 +447,13 @@ namespace Rex.Window
 
         private Rect DisplayIntellisense(Rect intelliRect, bool hasFocus, bool canSelect)
         {
-            if (ISM.DisplayHelp && ISM.IntelliSenceHelp.Any() && hasFocus)
+            if (RexISM.DisplayHelp && RexISM.IntelliSenceHelp.Any() && hasFocus)
             {
-                var help = ISM.IntelliSenceHelp.Where(i => !i.IsMethodOverload).ToList();
+                var help = RexISM.IntelliSenceHelp.Where(i => !i.IsMethodOverload).ToList();
                 intelliRect = DisplayHelp(intelliRect, help, canSelect, ref intelliScroll);
 
                 //Deal with Overloads
-                var overloads = ISM.IntelliSenceHelp.Where(i => i.IsMethodOverload);
+                var overloads = RexISM.IntelliSenceHelp.Where(i => i.IsMethodOverload);
                 intelliRect.y += intelliRect.height;
                 if (overloads.Any())
                     intelliRect = DisplayHelp(intelliRect, overloads.ToList(), false, ref intelliOverLoadScroll);
@@ -479,7 +479,7 @@ namespace Rex.Window
                 var helpstr = RexUIUtils.SyntaxHighlingting(help[i].Details, help[i].Search);
                 var rect = new Rect(1, i * lineHeigth, intelliRect.width, intelliRect.height);
 
-                if (IsSelectable && i == ISM.SelectedHelp)
+                if (IsSelectable && i == RexISM.SelectedHelp)
                 {
                     GUI.Label(rect, "<b>" + helpstr + "</b>", style);
                     GUI.ScrollTo(rect);
@@ -507,7 +507,7 @@ namespace Rex.Window
                     if (Event.current.keyCode == KeyCode.V)
                     {
                         inp.Paste();
-                        ISM.Code = inp.text;
+                        RexISM.Code = inp.text;
                         Repaint();
                     }
                     if (Event.current.keyCode == KeyCode.A)
@@ -518,7 +518,7 @@ namespace Rex.Window
                     if (Event.current.keyCode == KeyCode.Z && _inputHistroy.Count > 1)
                     {
                         _inputHistroy.RemoveFirst();
-                        ISM.Code = _inputHistroy.First.Value;
+                        RexISM.Code = _inputHistroy.First.Value;
                         _inputHistroy.RemoveFirst();
                         Repaint();
                     }
@@ -526,7 +526,7 @@ namespace Rex.Window
 
             }
             else
-                ISM.DisplayHelp = false;
+                RexISM.DisplayHelp = false;
         }
 
         private static void GetRects(out Rect inpRect, out Rect inpLabelRect, out Rect inpButRect, out Rect inpStringRect, out Rect intelliRect, out Rect layoutRect)
@@ -965,8 +965,8 @@ namespace Rex.Window
                                 // TODO: Highlight this...
                                 if (GUILayout.Button(new GUIContent(macro, "Select macro: <b>" + macro + "</b>"), GUI.skin.label))
                                 {
-                                    ISM.Code = macro;
-                                    ISM.DisplayHelp = false;
+                                    RexISM.Code = macro;
+                                    RexISM.DisplayHelp = false;
                                 }
                             }
                             EditorGUILayout.EndHorizontal();

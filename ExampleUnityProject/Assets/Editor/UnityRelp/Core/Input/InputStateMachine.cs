@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Rex.Utilities.Input
 {
@@ -11,7 +12,7 @@ namespace Rex.Utilities.Input
 	/// The State of the 
 	/// </summary>
 	[Flags]
-	public enum InputState
+	public enum RexInputState
 	{
 		NoInput,
 		Typing,
@@ -22,7 +23,7 @@ namespace Rex.Utilities.Input
 	/// <summary>
 	/// Input State Machine.
 	/// </summary>
-	public static class ISM
+	public static class RexISM
 	{
 		public static List<CodeCompletion> IntelliSenceHelp { get; set; }
 		/// <summary>
@@ -60,21 +61,21 @@ namespace Rex.Utilities.Input
 		/// </summary>
 		public static Action<string> ExecuteCode { get; set; }
 
-		static InputState currState = InputState.NoInput;
+		static RexInputState currState = RexInputState.NoInput;
 		public static string IntelliSenceLastCode = string.Empty;
 
-		static ISM()
+		static RexISM()
 		{
 			Code = string.Empty;
 			ShouldReplaceCode = false;
 			IntelliSenceHelp = new List<CodeCompletion>();
-			InputBuffer = new Dictionary<_KeyCode, KeyInput>();
+			InputBuffer = new Dictionary<KeyCode, KeyInput>();
 		}
 
 		/// <summary>
-		/// The current <see cref="InputState"/> of the state machine.
+		/// The current <see cref="RexInputState"/> of the state machine.
 		/// </summary>
-		public static InputState State
+		public static RexInputState State
 		{
 			get { return currState; }
 			private set
@@ -91,17 +92,17 @@ namespace Rex.Utilities.Input
 		{
 			switch (State)
 			{
-				case InputState.NoInput:
+				case RexInputState.NoInput:
 					{
 						Update_NoInput();
 						return;
 					}
-				case InputState.Typing:
+				case RexInputState.Typing:
 					{
 						Update_Typing();
 						return;
 					}
-				case InputState.IntelliSelect:
+				case RexInputState.IntelliSelect:
 					{
 						Update_IntelliSelect();
 						return;
@@ -118,7 +119,7 @@ namespace Rex.Utilities.Input
 		/// </summary>
 		public static void Enter_NoInput()
 		{
-			State = InputState.NoInput;
+			State = RexInputState.NoInput;
 			DisplayHelp = false;
 		}
 
@@ -132,7 +133,7 @@ namespace Rex.Utilities.Input
 			//{
 			//    Enter_HistorySelection();
 			//}
-			if (AnyKeyDown(_KeyCode.LeftArrow, _KeyCode.RightArrow, _KeyCode.UpArrow, _KeyCode.DownArrow))
+			if (AnyKeyDown(KeyCode.LeftArrow, KeyCode.RightArrow, KeyCode.UpArrow, KeyCode.DownArrow))
 			{
 				Enter_Typing();
 			}
@@ -146,7 +147,7 @@ namespace Rex.Utilities.Input
 		/// </summary>
 		public static void Enter_Typing()
 		{
-			State = InputState.Typing;
+			State = RexInputState.Typing;
 			DisplayHelp = true;
 			SelectedHelp = -1;
 		}
@@ -156,24 +157,24 @@ namespace Rex.Utilities.Input
 		/// </summary>
 		public static void Update_Typing()
 		{
-			if (IsKeyDown(_KeyCode.DownArrow) && IntelliSenceHelp.Any())
+			if (IsKeyDown(KeyCode.DownArrow) && IntelliSenceHelp.Any())
 			{
 				Enter_IntelliSelect();
 			}
-			else if (DisplayHelp && IsKeyDown(_KeyCode.Tab) && IntelliSenceHelp.Count > 0)
+			else if (DisplayHelp && IsKeyDown(KeyCode.Tab) && IntelliSenceHelp.Count > 0)
 			{
 				SelectedHelp = 0;
 				UseIntelliSelection();
 				Exit_IntelliSelect();
 			}
-			else if (IsKeyDown(_KeyCode.Return))
+			else if (IsKeyDown(KeyCode.Return))
 			{
 				// Replace code with selected history element.
 				Exit_Typing();
 				Execute();
 				return;
 			}
-			else if (IsKeyDown(_KeyCode.Escape))
+			else if (IsKeyDown(KeyCode.Escape))
 			{
 				DisplayHelp = false;
 			}
@@ -202,7 +203,7 @@ namespace Rex.Utilities.Input
 		{
 			if (IntelliSenceHelp.Count > 0)
 			{
-				State = InputState.IntelliSelect;
+				State = RexInputState.IntelliSelect;
 				SelectedHelp++;
 				if (SelectedHelp >= IntelliSenceHelp.Count)
 					SelectedHelp = IntelliSenceHelp.Count - 1;
@@ -210,26 +211,26 @@ namespace Rex.Utilities.Input
 		}
 		public static void Update_IntelliSelect()
 		{
-			if (IsKeyDown(_KeyCode.DownArrow))
+			if (IsKeyDown(KeyCode.DownArrow))
 			{
 				SelectedHelp++;
 				if (SelectedHelp >= IntelliSenceHelp.Count)
 					SelectedHelp = IntelliSenceHelp.Count - 1;
 				Repaint();
 			}
-			else if (IsKeyDown(_KeyCode.UpArrow))
+			else if (IsKeyDown(KeyCode.UpArrow))
 			{
 				SelectedHelp--;
 				if (SelectedHelp < 0)
 					SelectedHelp = 0;
 				Repaint();
 			}
-			else if (IsKeyDown(_KeyCode.Return) || IsKeyDown(_KeyCode.Tab))
+			else if (IsKeyDown(KeyCode.Return) || IsKeyDown(KeyCode.Tab))
 			{
 				UseIntelliSelection();
 				Exit_IntelliSelect();
 			}
-			else if (IsKeyDown(_KeyCode.Escape))
+			else if (IsKeyDown(KeyCode.Escape))
 			{
 				Exit_IntelliSelect();
 			}
@@ -279,14 +280,14 @@ namespace Rex.Utilities.Input
 		/// </summary>
 		public static void Execute()
 		{
-			State = InputState.Execute;
+			State = RexInputState.Execute;
 			ExecuteCode(Code);
 			Enter_NoInput();
 		}
 		#endregion
 
 		#region Key Input
-		public static Dictionary<_KeyCode, KeyInput> InputBuffer { get; private set; }
+		public static Dictionary<KeyCode, KeyInput> InputBuffer { get; private set; }
 
 		public class KeyInput
 		{
@@ -310,7 +311,7 @@ namespace Rex.Utilities.Input
 		/// </summary>
 		/// <param name="key"></param>
 		/// <returns></returns>
-		public static bool IsKeyDown(_KeyCode key)
+		public static bool IsKeyDown(KeyCode key)
 		{
 			if (InputBuffer.ContainsKey(key) &&
 				InputBuffer[key].IsHandled == false)
@@ -324,13 +325,13 @@ namespace Rex.Utilities.Input
 		{
 			return InputBuffer.Count > 0 ? InputBuffer.Any(k => !k.Value.IsHandled) : false;
 		}
-		public static bool AnyKeyDown(params _KeyCode[] except)
+		public static bool AnyKeyDown(params KeyCode[] except)
 		{
 			return InputBuffer.Count > 0 ? InputBuffer.Any(k => !k.Value.IsHandled && !except.Contains(k.Key)) : false;
 		}
-		public static void PressKey(_KeyCode key)
+		public static void PressKey(KeyCode key)
 		{
-			if (key != _KeyCode.None)
+			if (key != KeyCode.None)
 				InputBuffer[key] = new KeyInput();
 		}
 		#endregion

@@ -60,8 +60,8 @@ namespace Rex.Utilities
             "UnityEngine",
         };
         public static readonly string[] IgnoreUsings = new[] {
-			//"Rex",
-			"NUnit",
+            //"Rex",
+            "NUnit",
             "antlr",
             "CompilerGenerated",
             "TreeEditor",

@@ -50,10 +50,8 @@ namespace Rex.Utilities.Test
             Assert.IsFalse(pResult.IsDeclaring);
 
             var cResult = RexHelper.Compile(pResult);
-            Assert.IsNull(cResult);
-            Assert.IsNotEmpty(RexHelper.Messages[MsgType.Error]);
-            var errors = RexHelper.Messages[MsgType.Error];
-            Assert.IsTrue(errors[0].Contains("Division by constant zero"));
+            Assert.IsNotEmpty(cResult.Errors);
+            Assert.Contains("Division by constant zero\r", cResult.Errors);
         }
 
         [Test]

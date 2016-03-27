@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using UnityEngine;
 
 namespace Rex.Utilities.Test
 {
@@ -16,83 +17,83 @@ namespace Rex.Utilities.Test
         [SetUp]
         public void ClassSetup()
         {
-            ISM.Repaint = () => { };
-            ISM.DebugLog = msg => Console.WriteLine(msg);
-            ISM.ExecuteCode = TestExecute;
-            ISM.Code = string.Empty;
-            ISM.Enter_NoInput();
-            ISM.IntelliSenceHelp.Clear();
-            ISM.IntelliSenceLastCode = string.Empty;
-            ISM.InputBuffer.Clear();
+            RexISM.Repaint = () => { };
+            RexISM.DebugLog = msg => Console.WriteLine(msg);
+            RexISM.ExecuteCode = TestExecute;
+            RexISM.Code = string.Empty;
+            RexISM.Enter_NoInput();
+            RexISM.IntelliSenceHelp.Clear();
+            RexISM.IntelliSenceLastCode = string.Empty;
+            RexISM.InputBuffer.Clear();
         }
 
         [Test]
         public void UpdateTest()
         {
-            Assert.AreEqual(InputState.NoInput, ISM.State);
+            Assert.AreEqual(RexInputState.NoInput, RexISM.State);
 
-            ISM.Update();
-            Assert.AreEqual(InputState.NoInput, ISM.State);
+            RexISM.Update();
+            Assert.AreEqual(RexInputState.NoInput, RexISM.State);
 
             //ISM.Code = "Math.PI";
-            ISM.Enter_Typing();
-            Assert.AreEqual(InputState.Typing, ISM.State);
-            Assert.IsTrue(ISM.DisplayHelp);
+            RexISM.Enter_Typing();
+            Assert.AreEqual(RexInputState.Typing, RexISM.State);
+            Assert.IsTrue(RexISM.DisplayHelp);
 
-            ISM.Update();
-            Assert.AreEqual(InputState.Typing, ISM.State);
-            Assert.IsTrue(ISM.DisplayHelp);
+            RexISM.Update();
+            Assert.AreEqual(RexInputState.Typing, RexISM.State);
+            Assert.IsTrue(RexISM.DisplayHelp);
 
-            PressKey(_KeyCode.Escape);
-            ISM.Update();
-            Assert.AreEqual(InputState.Typing, ISM.State);
-            Assert.IsFalse(ISM.DisplayHelp);
-            Assert.IsEmpty(ISM.IntelliSenceHelp);
+            PressKey(KeyCode.Escape);
+            RexISM.Update();
+            Assert.AreEqual(RexInputState.Typing, RexISM.State);
+            Assert.IsFalse(RexISM.DisplayHelp);
+            Assert.IsEmpty(RexISM.IntelliSenceHelp);
         }
 
         [Test]
         public void IntellisenseTest()
         {
-            ISM.Enter_Typing();
-            ISM.Code = "Math.P";
-            ISM.Update();
-            Assert.AreEqual(InputState.Typing, ISM.State);
-            Assert.IsTrue(ISM.DisplayHelp);
-            Assert.IsNotEmpty(ISM.IntelliSenceHelp);
+            RexISM.Enter_Typing();
+            RexISM.Code = "Math.P";
+            RexISM.Update();
+            Assert.AreEqual(RexInputState.Typing, RexISM.State);
+            Assert.IsTrue(RexISM.DisplayHelp);
+            Assert.IsNotEmpty(RexISM.IntelliSenceHelp);
         }
 
         [Test]
         public void IntellisenseSelectionTest()
         {
-            ISM.Enter_Typing();
-            ISM.Code = "Math.P";
-            ISM.Update();
-            Assert.AreEqual(InputState.Typing, ISM.State);
-            Assert.IsTrue(ISM.DisplayHelp);
-            Assert.IsNotEmpty(ISM.IntelliSenceHelp);
-            Assert.AreEqual(ISM.SelectedHelp, -1);
+            RexISM.Enter_Typing();
+            RexISM.Code = "Math.P";
+            RexISM.Update();
+            Assert.AreEqual(RexInputState.Typing, RexISM.State);
+            Assert.IsTrue(RexISM.DisplayHelp);
+            Assert.IsNotEmpty(RexISM.IntelliSenceHelp);
+            Assert.AreEqual(RexISM.SelectedHelp, -1);
 
-            PressKey(_KeyCode.DownArrow);
-            Assert.AreEqual(InputState.IntelliSelect, ISM.State);
-            Assert.AreEqual(ISM.SelectedHelp, 0);
+            PressKey(KeyCode.DownArrow);
+            Assert.AreEqual(RexInputState.IntelliSelect, RexISM.State);
+            Assert.AreEqual(RexISM.SelectedHelp, 0);
 
-            ISM.Enter_Typing();
-            Assert.AreEqual(InputState.Typing, ISM.State);
-            Assert.AreEqual(ISM.SelectedHelp, -1);
+            RexISM.Enter_Typing();
+            Assert.AreEqual(RexInputState.Typing, RexISM.State);
+            Assert.AreEqual(RexISM.SelectedHelp, -1);
 
-            ISM.Code = "x = Math.";
-            ISM.Update();
-            PressKey(_KeyCode.DownArrow);
-            Assert.AreEqual(InputState.IntelliSelect, ISM.State);
-            Assert.AreEqual(ISM.SelectedHelp, 0);
+            RexISM.Code = "x = Math.";
+            RexISM.Update();
+            PressKey(KeyCode.DownArrow);
+            Assert.AreEqual(RexInputState.IntelliSelect, RexISM.State);
+            Assert.AreEqual(RexISM.SelectedHelp, 0);
 
 
-            PressKey(_KeyCode.DownArrow);
-            Assert.AreEqual(InputState.IntelliSelect, ISM.State);
-            Assert.AreEqual(ISM.SelectedHelp, 1);
+            PressKey(KeyCode.DownArrow);
+            Assert.AreEqual(RexInputState.IntelliSelect, RexISM.State);
+            Assert.AreEqual(RexISM.SelectedHelp, 1);
 
-            PressKey(_KeyCode.Return);
-            Assert.IsTrue(ISM.Code.Contains("x = Math."));
+            PressKey(KeyCode.Return);
+            Assert.IsTrue(RexISM.Code.Contains("x = Math."));
         }
 
         [Test]
@@ -135,14 +136,14 @@ namespace Rex.Utilities.Test
 
         void TestIntelliSelect(string code, IEnumerable<string> selections, bool withMethodOverloads = true)
         {
-            ISM.Enter_Typing();
-            ISM.Code = code;
-            ISM.Update();
-            Assert.AreEqual(InputState.Typing, ISM.State);
-            Assert.IsTrue(ISM.DisplayHelp);
+            RexISM.Enter_Typing();
+            RexISM.Code = code;
+            RexISM.Update();
+            Assert.AreEqual(RexInputState.Typing, RexISM.State);
+            Assert.IsTrue(RexISM.DisplayHelp);
 
-            var help = ISM.IntelliSenceHelp.Where(i => !i.IsMethodOverload);
-            var meth = ISM.IntelliSenceHelp.Where(i => i.IsMethodOverload);
+            var help = RexISM.IntelliSenceHelp.Where(i => !i.IsMethodOverload);
+            var meth = RexISM.IntelliSenceHelp.Where(i => i.IsMethodOverload);
 
             Assert.IsNotEmpty(help);
             if (withMethodOverloads)
@@ -150,13 +151,13 @@ namespace Rex.Utilities.Test
             else
                 Assert.IsEmpty(meth);
 
-            Assert.AreEqual(-1, ISM.SelectedHelp);
+            Assert.AreEqual(-1, RexISM.SelectedHelp);
             var count = 0;
             foreach (var select in selections)
             {
-                PressKey(_KeyCode.DownArrow);
-                Assert.AreEqual(select, ISM.ReplacementString(), "At i = " + count);
-                Assert.AreEqual(count++, ISM.SelectedHelp);
+                PressKey(KeyCode.DownArrow);
+                Assert.AreEqual(select, RexISM.ReplacementString(), "At i = " + count);
+                Assert.AreEqual(count++, RexISM.SelectedHelp);
             }
         }
 
@@ -169,12 +170,12 @@ namespace Rex.Utilities.Test
             RexHelper.Messages[MsgType.Error].Clear();
             RexHelperTest.CompileAndRun(code);
         }
-        public static void PressKey(_KeyCode key, int repeat = 1)
+        public static void PressKey(KeyCode key, int repeat = 1)
         {
             for (int i = 0; i < repeat; i++)
             {
-                ISM.PressKey(key);
-                ISM.Update();
+                RexISM.PressKey(key);
+                RexISM.Update();
             }
         }
     }
