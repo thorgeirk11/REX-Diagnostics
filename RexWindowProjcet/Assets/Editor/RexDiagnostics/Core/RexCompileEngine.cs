@@ -38,7 +38,6 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 
     private void CompilerMainThread()
     {
-        Debug.Log("Running Compiler thread! " + Thread.CurrentThread.ManagedThreadId, this);
         var lastCode = "";
         CompileJob lastJob = null;
         Thread lastThread = null;
@@ -69,7 +68,6 @@ public class RexCompileEngine : ScriptableObject, IDisposable
                 thread.Join();
             }
         }
-        Debug.Log("Compiler thread finished! " + Thread.CurrentThread.ManagedThreadId, this);
     }
 
     public CompiledExpression GetCompile(string code)

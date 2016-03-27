@@ -14,7 +14,7 @@ namespace Rex.Utilities.Helpers
         static RexMacroHandler()
         { Loaded = false; }
         public static bool Loaded { get; private set; }
-        #region Macros
+
         public static void LoadMacros()
         {
             MacroDic = new Dictionary<string, string>();
@@ -77,6 +77,5 @@ namespace Rex.Utilities.Helpers
                 File.Delete(file);
             }
         }
-        #endregion
     }
 }

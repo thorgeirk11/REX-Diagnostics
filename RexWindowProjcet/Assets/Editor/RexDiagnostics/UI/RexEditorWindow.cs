@@ -152,6 +152,7 @@ namespace Rex.Window
             if (string.IsNullOrEmpty(code))
                 return;
 
+            RexISM.Code = code;
             var compile = _compileEngine.GetCompile(code);
             if (compile != null)
             {

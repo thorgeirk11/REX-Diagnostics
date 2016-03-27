@@ -9,7 +9,6 @@ namespace Rex.Utilities.Helpers
     public static class UsingsHandler
     {
         public static HashSet<string> Usings { get; private set; }
-        #region Macros
 
         /// <summary>
         /// Loads saved namespaces into the <see cref="Usings"/> <see cref="HashSet{string}"/>
@@ -62,6 +61,5 @@ namespace Rex.Utilities.Helpers
                 File.WriteAllLines(RexUtils.UsingsFileName, Usings.ToArray());
             }
         }
-        #endregion
     }
 }
