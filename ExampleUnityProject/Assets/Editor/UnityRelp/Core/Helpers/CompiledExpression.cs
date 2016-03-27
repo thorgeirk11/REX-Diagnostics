@@ -31,6 +31,7 @@ namespace Rex.Utilities.Helpers
         public string ExpressionString { get; set; }
         public string WholeCode { get; set; }
     }
+
     public class HistoryItem
     {
         public CompiledExpression Compile { get; set; }

@@ -883,7 +883,6 @@ namespace Rex.Utilities
         public static void SetupHelper()
         {
             RexUtils.LoadNamespaceInfos(includeIngoredUsings: false);
-            RexCompileEngine.SetupHelper();
         }
 
         private class DummyOutput : AConsoleOutput

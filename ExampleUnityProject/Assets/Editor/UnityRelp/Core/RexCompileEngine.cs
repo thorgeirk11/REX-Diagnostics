@@ -3,14 +3,19 @@ using Rex.Utilities.Helpers;
 using Rex.Utilities.Input;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using UnityEngine;
 
-static class RexCompileEngine
+[Serializable]
+public class RexCompileEngine : ScriptableObject, IDisposable
 {
-    private static Thread _compileThread;
-    private static bool _runCompilerThread;
+    public const float TIME_OUT_FOR_COMPILE_SEC = 2;
+
+    [SerializeField]
+    private volatile int _compileThreadID = -1;
 
     /// <summary>
     /// The continues compiled result by the <see cref="_compileThread"/>.
@@ -18,31 +23,39 @@ static class RexCompileEngine
     private static volatile CompiledExpression _currentCompiledExpression;
     public static readonly object CompilerLockObject = new object();
 
-    public static void SetupHelper()
+    public void OnEnable()
     {
-        RexUtils.LoadNamespaceInfos(includeIngoredUsings: false);
-        if (_compileThread == null)
+        hideFlags = HideFlags.HideAndDontSave;
+
+        if (_compileThreadID == -1)
         {
-            _runCompilerThread = true;
-            _compileThread = new Thread(CompilerMainThread);
+            var _compileThread = new Thread(CompilerMainThread);
             _compileThread.Start();
             _compileThread.Name = "REX Compiler thread";
+            _compileThreadID = _compileThread.ManagedThreadId;
         }
     }
 
-    private static void CompilerMainThread()
+    public void Dispose()
     {
-        UnityEngine.Debug.Log("Running Compiler thread!");
+        _compileThreadID = -1;
+        DestroyImmediate(this);
+    }
+
+    private void CompilerMainThread()
+    {
+        UnityEngine.Debug.Log("Running Compiler thread!", this);
         var lastCode = "";
         CompileJob lastJob = null;
         Thread lastThread = null;
         var activeThreads = new List<Thread>();
-        while (_runCompilerThread)
+        while (_compileThreadID == Thread.CurrentThread.ManagedThreadId)
         {
             activeThreads.RemoveAll(i => (i.ThreadState & System.Threading.ThreadState.Stopped) != 0);
 
             Thread.Sleep(1);
-            if (lastCode != ISM.Code)
+            if (ISM.Code != string.Empty &&
+                lastCode != ISM.Code)
             {
                 lastCode = ISM.Code;
                 if (lastJob != null)
@@ -56,9 +69,10 @@ static class RexCompileEngine
                 activeThreads.Add(lastThread);
             }
         }
+        UnityEngine.Debug.Log("Compiler thread finished!", this);
     }
 
-    internal static CompiledExpression GetCompile(string code)
+    public CompiledExpression GetCompile(string code)
     {
         var startedWaiting = DateTime.Now;
         while (true)
@@ -78,13 +92,14 @@ static class RexCompileEngine
                 }
             }
             Thread.Sleep(10);
-            if (DateTime.Now - startedWaiting > TimeSpan.FromSeconds(2))
+            if (DateTime.Now - startedWaiting > TimeSpan.FromSeconds(TIME_OUT_FOR_COMPILE_SEC))
             {
                 RexHelper.Messages[MsgType.Error].Add("Time out on compiling expression, " + code);
                 return null;
             }
         }
     }
+
 
     private class CompileJob
     {

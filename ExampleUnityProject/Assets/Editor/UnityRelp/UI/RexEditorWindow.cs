@@ -34,19 +34,20 @@ namespace Rex.Window
     }
     #endregion
 
+    [Serializable]
     public sealed class RexEditorWindow : EditorWindow
     {
-        public static RexEditorWindow instance;
-
         /// <summary>
         /// Maximunm length of the history.
         /// </summary>
-        private const int InputHistoryLength = 50;
-        private readonly LinkedList<string> InputHistroy = new LinkedList<string>();
+        private const int INPUT_HISTORY_LENGTH = 50;
+        private const string NAME_OF_INPUT_FIELD = "ExpressionInput";
 
-        private readonly Dictionary<string, HistoryItem> ExpressionHistory = new Dictionary<string, HistoryItem>();
+        private readonly LinkedList<string> _inputHistroy = new LinkedList<string>();
+        private readonly Dictionary<string, HistoryItem> _expressionHistory = new Dictionary<string, HistoryItem>();
 
-        private const string NameOfInputField = "ExpressionInput";
+        [SerializeField]
+        private RexCompileEngine _compileEngine;
 
         static string MacroDirectorPath
         {
@@ -56,8 +57,6 @@ namespace Rex.Window
         {
             get { return Application.persistentDataPath + "REX_Usings.txt"; }
         }
-
-        public static bool RunParserThread { get; private set; }
 
         #region UI
         const double stopwatchTime = 0.5;
@@ -103,13 +102,22 @@ namespace Rex.Window
         static void Init()
         {
             // Get existing open window or if none, make a new one:
-            instance = GetWindow<RexEditorWindow>();
-            RexHelper.SetupHelper();
+            var window = GetWindow<RexEditorWindow>();
+            window.Show();
+        }
+
+        void OnDestroy()
+        {
+            _compileEngine.Dispose();
         }
 
         void OnEnable()
         {
+            hideFlags = HideFlags.HideAndDontSave;
             RexHelper.SetupHelper();
+            
+            if (_compileEngine == null)
+                _compileEngine = new RexCompileEngine();
 
             ISM.Repaint = Repaint;
             ISM.DebugLog = UnityEngine.Debug.Log;
@@ -144,10 +152,10 @@ namespace Rex.Window
             if (string.IsNullOrEmpty(code))
                 return;
 
-            var compile = RexCompileEngine.GetCompile(code);
+            var compile = _compileEngine.GetCompile(code);
             if (compile != null)
             {
-                ExpressionHistory.Add(code, new HistoryItem { Compile = compile });
+                _expressionHistory[code] = new HistoryItem { Compile = compile };
                 var sw = Stopwatch.StartNew();
 
                 var output = RexHelper.Execute<ConsoleOutput>(compile);
@@ -191,7 +199,7 @@ namespace Rex.Window
             if (refocus)
             {
                 refocus = false;
-                GUI.FocusControl(NameOfInputField);
+                GUI.FocusControl(NAME_OF_INPUT_FIELD);
                 inp = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
                 if (inp != null)
                 {
@@ -199,7 +207,7 @@ namespace Rex.Window
                     inp.selectIndex = ISM.Code.Length + 1;
                 }
             }
-            var hasFocus = GUI.GetNameOfFocusedControl() == NameOfInputField;
+            var hasFocus = GUI.GetNameOfFocusedControl() == NAME_OF_INPUT_FIELD;
 
             HandleInputShortcuts(hasFocus);
             HandleInputHistory(hasFocus);
@@ -224,7 +232,7 @@ namespace Rex.Window
         {
             GUI.Label(inpLabelRect, new GUIContent("Expression:"));
             var oldColor = ColorInput();
-            GUI.SetNextControlName(NameOfInputField);
+            GUI.SetNextControlName(NAME_OF_INPUT_FIELD);
             ISM.Code = GUI.TextField(inpStringRect, ISM.Code);
 
             //To have the cursor change to the 'I' on hover:
@@ -235,7 +243,7 @@ namespace Rex.Window
 
             if (GUI.Button(inpButRect, new GUIContent("Evaluate", "Evaluates the expression")))
             {
-                GUI.FocusControl(NameOfInputField);
+                GUI.FocusControl(NAME_OF_INPUT_FIELD);
                 ISM.PressKey(_KeyCode.Return);
             }
         }
@@ -317,14 +325,14 @@ namespace Rex.Window
 
         private void HandleInputHistory(bool hasFocus)
         {
-            if (InputHistroy.Count == 0 ||
-                            InputHistroy.First.Value != ISM.Code)
+            if (_inputHistroy.Count == 0 ||
+                            _inputHistroy.First.Value != ISM.Code)
             {
-                if (InputHistroy.Count > InputHistoryLength)
+                if (_inputHistroy.Count > INPUT_HISTORY_LENGTH)
                 {
-                    InputHistroy.RemoveLast();
+                    _inputHistroy.RemoveLast();
                 }
-                InputHistroy.AddFirst(ISM.Code);
+                _inputHistroy.AddFirst(ISM.Code);
             }
             if (hasFocus && ISM.AnyKeyDown() && Event.current.type == EventType.Layout)
             {
@@ -425,7 +433,7 @@ namespace Rex.Window
                 ISM.ShouldReplaceCode = false;
                 // This doesnt seem to work in with EditorGUI TextField
 
-                GUI.FocusControl(NameOfInputField);
+                GUI.FocusControl(NAME_OF_INPUT_FIELD);
                 if (inp != null)
                 {
 
@@ -507,11 +515,11 @@ namespace Rex.Window
                         inp.SelectAll();
                         Repaint();
                     }
-                    if (Event.current.keyCode == KeyCode.Z && InputHistroy.Count > 1)
+                    if (Event.current.keyCode == KeyCode.Z && _inputHistroy.Count > 1)
                     {
-                        InputHistroy.RemoveFirst();
-                        ISM.Code = InputHistroy.First.Value;
-                        InputHistroy.RemoveFirst();
+                        _inputHistroy.RemoveFirst();
+                        ISM.Code = _inputHistroy.First.Value;
+                        _inputHistroy.RemoveFirst();
                         Repaint();
                     }
                 }
@@ -727,7 +735,7 @@ namespace Rex.Window
 
         #region History
         /// <summary>
-        /// Displays the <see cref="ExpressionHistory"/> at the given width with the given style
+        /// Displays the <see cref="_expressionHistory"/> at the given width with the given style
         /// </summary>
         /// <param name="box"></param>
         /// <param name="width"></param>
@@ -740,10 +748,10 @@ namespace Rex.Window
 
                 if (showHistory)
                 {
-                    if (ExpressionHistory.Count > 0 &&
+                    if (_expressionHistory.Count > 0 &&
                         GUILayout.Button(new GUIContent("Clear", "Clear History"), GUILayout.Width(50)))
                     {
-                        ExpressionHistory.Clear();
+                        _expressionHistory.Clear();
                     }
                 }
 
@@ -757,7 +765,7 @@ namespace Rex.Window
                 scroll = EditorGUILayout.BeginScrollView(scroll);
                 string deleted = null;
 
-                foreach (var expr in ExpressionHistory)
+                foreach (var expr in _expressionHistory)
                 {
                     EditorGUILayout.BeginVertical();
                     {
@@ -769,7 +777,7 @@ namespace Rex.Window
                             if (before != expr.Value.IsExpanded &&
                                 !before)
                             {
-                                foreach (var expr2 in ExpressionHistory)
+                                foreach (var expr2 in _expressionHistory)
                                     if (expr.Key != expr2.Key)
                                         expr2.Value.IsExpanded = false;
                             }
@@ -794,7 +802,7 @@ namespace Rex.Window
 
                 }
                 EditorGUILayout.EndScrollView();
-                if (deleted != null) ExpressionHistory.Remove(deleted);
+                if (deleted != null) _expressionHistory.Remove(deleted);
             }
             EditorGUILayout.EndVertical();
 
