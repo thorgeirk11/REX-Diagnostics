@@ -219,8 +219,7 @@ namespace Rex.Window
                 inp = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
                 if (inp != null)
                 {
-                    inp.cursorIndex = RexISM.Code.Length + 1;
-                    inp.selectIndex = RexISM.Code.Length + 1;
+                    inp.MoveLineEnd();
                 }
             }
             var hasFocus = GUI.GetNameOfFocusedControl() == NAME_OF_INPUT_FIELD;
@@ -342,7 +341,7 @@ namespace Rex.Window
         private void HandleInputHistory(bool hasFocus)
         {
             if (_inputHistroy.Count == 0 ||
-                            _inputHistroy.First.Value != RexISM.Code)
+                _inputHistroy.First.Value != RexISM.Code)
             {
                 if (_inputHistroy.Count > INPUT_HISTORY_LENGTH)
                 {
@@ -358,34 +357,10 @@ namespace Rex.Window
 
         private void HandleTabKeyPress()
         {
-            if (Event.current.isKey && Event.current.keyCode == KeyCode.Tab)
+            if (Event.current.keyCode == KeyCode.Tab || Event.current.character == '\t')
             {
-                if (Event.current.alt)
-                {
-                    Event.current.Use();
-                }
-                else if (quellTab)
-                {
-                    if (Event.current.type == EventType.keyUp)
-                    {
-                        //Debug.Log("Reseting TAB Status");
-                        quellTab = false;
-                        refocus = true;
-                    }
-                    //else
-                    //Event.current.Use();
-                    //else
-                }
-
-                else if (RexISM.DisplayHelp && Event.current.isKey && Event.current.keyCode == KeyCode.Tab)
-                {
-                    //Event.current.Use();
-                    //ISM.PressKey(_KeyCode.Tab);
-                    quellTab = true;
-                    //UpdateStateMachine();
-                    //quellTab = true;
-                    //refocus = true;
-                }
+                if (RexISM.DisplayHelp) RexISM.PressKey(KeyCode.Tab);
+                Event.current.Use();
             }
         }
 
@@ -434,11 +409,12 @@ namespace Rex.Window
 
             // Only reenable editing if the state is NOT intelliselect
             if (RexISM.State != RexInputState.IntelliSelect)
+            {
                 EditorGUIUtility.editingTextField = true;
+            }
             else
             {
-                inp.cursorIndex = RexISM.Code.Length + 1;
-                inp.selectIndex = RexISM.Code.Length + 1;
+                inp.MoveLineEnd();
             }
 
             if (RexISM.ShouldReplaceCode)
@@ -452,11 +428,8 @@ namespace Rex.Window
                 GUI.FocusControl(NAME_OF_INPUT_FIELD);
                 if (inp != null)
                 {
-
-                    inp.cursorIndex = RexISM.Code.Length + 1;
-                    inp.selectIndex = RexISM.Code.Length + 1;
-                    //inp.Copy();
-                    //inp.Paste();
+                    inp.text = RexISM.Code;
+                    inp.MoveLineEnd();
                 }
             }
         }
