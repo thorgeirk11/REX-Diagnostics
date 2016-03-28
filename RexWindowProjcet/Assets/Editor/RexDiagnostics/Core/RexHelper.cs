@@ -613,14 +613,7 @@ namespace Rex.Utilities
                                     Syntax.Space, Syntax.Name(i.Key),
                                     Syntax.Space, Syntax.EqualsOp,
                                     Syntax.Space
-                                }).Concat(i.Value.VarValue.GetType() == typeof(string) ?
-                                    new[] {
-                                        Syntax.QuotationMark,
-                                        Syntax.ConstVal(i.Value.VarValue.ToString()),
-                                        Syntax.QuotationMark,
-                                    } :
-                                    new[] { Syntax.ConstVal(i.Value.VarValue.ToString()) })
-                                )
+                                }).Concat(GetSyntaxForValue(i.Value.VarValue)))
                             };
 
             var types = from t in RexUtils.AllVisibleTypes
@@ -856,29 +849,33 @@ namespace Rex.Utilities
             syntax.AddRange(RexUtils.GetCSharpRepresentation(field.FieldType));
             syntax.AddRange(new[] { Syntax.Space, Syntax.Name(field.Name) });
 
+            var showValue = false;
+            object value = null;
             if (field.IsLiteral)
+            {
+                showValue = true;
+                value = field.GetRawConstantValue();
+            }
+            else if (field.IsStatic && field.IsInitOnly)
+            {
+                showValue = true;
+                value = field.GetValue(null);
+            }
+
+            if (showValue)
             {
                 syntax.AddRange(new[] {
                     Syntax.Space,
                     Syntax.EqualsOp,
                     Syntax.Space,
                 });
-                if (field.GetRawConstantValue().GetType() == typeof(string))
-                {
-                    syntax.AddRange(new[] {
-                        Syntax.QuotationMark,
-                        Syntax.ConstVal(field.GetRawConstantValue().ToString()),
-                        Syntax.QuotationMark,
-                    });
-                }
-                else
-                {
-                    syntax.Add(Syntax.ConstVal(field.GetRawConstantValue().ToString()));
-                }
+                syntax.AddRange(GetSyntaxForValue(value));
             }
 
             return new MemberDetails(syntax);
         }
+
+
         /// <summary>
         /// Uses the method info to build an member details.
         /// </summary>
@@ -916,6 +913,40 @@ namespace Rex.Utilities
             }
             syntax.Add(Syntax.ParaClose);
             return new MemberDetails(syntax);
+        }
+
+        /// <summary>
+        /// Generates the equals and value part of the syntax e.g '= 3.52' 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static IEnumerable<Syntax> GetSyntaxForValue(object value)
+        {
+            if (value == null)
+            {
+                return new[] { Syntax.ConstVal("null") };
+            }
+
+            var type = value.GetType();
+            if (type == typeof(string))
+            {
+                return new[] {
+                    Syntax.QuotationMark,
+                    Syntax.ConstVal(value.ToString()),
+                    Syntax.QuotationMark,
+                };
+            }
+
+            if (type == typeof(char))
+            {
+                return new[] {
+                    Syntax.SingleQuotationMark,
+                    Syntax.ConstVal(value.ToString()),
+                    Syntax.SingleQuotationMark,
+                };
+            }
+
+            return new[] { Syntax.ConstVal(value.ToString()) };
         }
         #endregion
 

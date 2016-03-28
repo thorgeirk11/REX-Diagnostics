@@ -54,8 +54,8 @@ namespace Rex.Window
                 };
             }
             Details = (from detail in details
-                       let highlight = RexUIUtils.SyntaxHighlingting(detail.Where(i => i.Type != SyntaxType.EqualsOp && i.Type != SyntaxType.ConstVal))
-                       let content = new GUIContent(detail.Name.String, highlight)
+                       let tooltip = RexUIUtils.SyntaxHighlingting(detail.Where(i => i.Type != SyntaxType.EqualsOp && i.Type != SyntaxType.ConstVal))
+                       let content = new GUIContent(detail.Name.String, tooltip)
                        let displayAction = DisplayFieldFor(detail.Value, detail.Constant.String)
                        select new { displayAction, content }).ToDictionary(i => i.displayAction, i => i.content);
         }
@@ -87,11 +87,14 @@ namespace Rex.Window
                             {
                                 EditorGUILayout.BeginHorizontal();
                                 {
-                                    var style = new GUIStyle(GUI.skin.label)
+                                    var style = new GUIStyle
                                     {
-                                        alignment = TextAnchor.MiddleLeft
+                                        alignment = TextAnchor.MiddleLeft,
+                                        margin = new RectOffset(5, 5, 0, 0),
+                                        wordWrap = true,
+                                        richText = true
                                     };
-                                    GUILayout.Label(detail.Value, style, GUILayout.Width(150));
+                                    EditorGUILayout.LabelField(detail.Value, style, GUILayout.Width(150));
                                     detail.Key();
                                 }
                                 EditorGUILayout.EndHorizontal();
@@ -160,6 +163,8 @@ namespace Rex.Window
             { typeof(Rect),             value => EditorGUILayout.RectField((Rect)value) },
             { typeof(AnimationCurve),   value => EditorGUILayout.CurveField((AnimationCurve)value) },
             { typeof(Enum),             value => EditorGUILayout.EnumPopup((Enum)value) },
+            { typeof(Bounds),           value => EditorGUILayout.BoundsField((Bounds)value) },
+            { typeof(bool),             value => EditorGUILayout.ToggleLeft(value.ToString(), (bool)value, GUI.skin.textField) },
         };
 
     }

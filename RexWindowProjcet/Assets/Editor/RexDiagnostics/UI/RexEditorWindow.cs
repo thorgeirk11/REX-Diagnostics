@@ -55,12 +55,14 @@ namespace Rex.Window
         /// History of all the expressions executed in this editor session.
         /// </summary>
         [SerializeField]
-        private List<string> _expressionHistory = new List<string>();
-        /// <summary>
-        /// The item that is expanded in history view.
-        /// </summary>
-        [SerializeField]
-        private string _expandedHistoryItem;
+        private List<ExpressionHitoryItem> _expressionHistory = new List<ExpressionHitoryItem>();
+
+        [Serializable]
+        private class ExpressionHitoryItem
+        {
+            public string Code;
+            public bool IsExpanded;
+        }
 
         static string MacroDirectorPath
         {
@@ -169,14 +171,8 @@ namespace Rex.Window
             var compile = _compileEngine.GetCompile(code);
             if (compile != null)
             {
-                _expressionHistory.Add(code);
-
-                var sw = Stopwatch.StartNew();
-
+                _expressionHistory.Insert(0, new ExpressionHitoryItem { Code = code });
                 var output = RexHelper.Execute<ConsoleOutput>(compile);
-
-                UnityEngine.Debug.Log("Execute: " + sw.ElapsedMilliseconds);
-
                 if (output != null)
                     RexHelper.AddOutput(output);
 
@@ -232,7 +228,7 @@ namespace Rex.Window
             layoutRect = DisplayMessages(layoutRect);
 
             #region MainLayout
-            GUILayout.BeginArea(layoutRect, "");
+            GUILayout.BeginArea(layoutRect, "", new GUIStyle { richText = true });
             {
                 DrawMainLayout(layoutRect);
             }
@@ -778,37 +774,35 @@ namespace Rex.Window
             EditorGUILayout.BeginVertical(slimBox);
             {
                 scroll = EditorGUILayout.BeginScrollView(scroll);
-                string deleted = null;
+                int deleteIndex = -1;
 
-                foreach (var expr in _expressionHistory)
+                for (int i = 0; i < _expressionHistory.Count; i++)
                 {
+                    var expr = _expressionHistory[i];
                     EditorGUILayout.BeginVertical();
                     {
                         GUILayout.BeginHorizontal();
                         {
                             GUILayout.Space(10f);
-                            var toolTip = new GUIContent(expr, (expr == _expandedHistoryItem ? "Hide" : "Show") + " options");
-                            var isExpaned = GUILayout.Toggle(expr == _expandedHistoryItem, toolTip, EditorStyles.foldout, GUILayout.Width(20));
+                            var toolTip = new GUIContent(expr.Code, (expr.IsExpanded ? "Hide" : "Show") + " options");
+                            var isExpaned = GUILayout.Toggle(expr.IsExpanded, toolTip, EditorStyles.foldout, GUILayout.Width(20));
 
-                            if (!isExpaned && expr == _expandedHistoryItem)
+                            if (isExpaned != expr.IsExpanded)
                             {
-                                _expandedHistoryItem = string.Empty;
-                            }
-                            else if (isExpaned)
-                            {
-                                _expandedHistoryItem = expr;
+                                _expressionHistory.ForEach(e => e.IsExpanded = false);
+                                expr.IsExpanded = isExpaned;
                             }
                         }
                         GUILayout.EndHorizontal();
 
-                        if (expr == _expandedHistoryItem)
+                        if (expr.IsExpanded)
                         {
                             // Draw dropdown
                             EditorGUILayout.BeginVertical();
                             {
                                 var IsDeleted = false;
-                                DisplayHistorySelectionToggle(expr, out IsDeleted);
-                                if (IsDeleted) deleted = expr;
+                                DisplayHistorySelectionToggle(expr.Code, out IsDeleted);
+                                if (IsDeleted) deleteIndex = i;
                             }
                             EditorGUILayout.EndVertical();
                         }
@@ -818,7 +812,7 @@ namespace Rex.Window
 
                 }
                 EditorGUILayout.EndScrollView();
-                if (deleted != null) _expressionHistory.Remove(deleted);
+                if (deleteIndex >= 0) _expressionHistory.RemoveAt(deleteIndex);
             }
             EditorGUILayout.EndVertical();
 
@@ -920,15 +914,7 @@ namespace Rex.Window
                                             Syntax.Space, Syntax.Name(VarName),
                                             Syntax.Space, Syntax.EqualsOp,
                                             Syntax.Space
-                                        }).Concat(var.VarValue.GetType() == typeof(string) ?
-                                        new[] {
-                                            Syntax.QuotationMark,
-                                            Syntax.ConstVal(var.VarValue.ToString()),
-                                            Syntax.QuotationMark,
-                                        } :
-                                        new[] {
-                                            Syntax.ConstVal(var.VarValue.ToString())
-                                        })
+                                        }).Concat(RexHelper.GetSyntaxForValue(var.VarValue))
                                     );
                 defaultMsg = var.VarValue.ToString();
             }

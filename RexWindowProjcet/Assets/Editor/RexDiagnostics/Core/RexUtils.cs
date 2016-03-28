@@ -304,7 +304,7 @@ namespace Rex.Utilities
         /// <summary>
         /// Map between types that have special names and there names.
         /// </summary>
-        internal readonly static Dictionary<Type, string> MapToKeyWords = new Dictionary<Type, string>
+        public readonly static Dictionary<Type, string> MapToKeyWords = new Dictionary<Type, string>
         {
             { typeof(float),    "float" },
             { typeof(double),   "double" },
@@ -319,6 +319,7 @@ namespace Rex.Utilities
             { typeof(ulong),    "ulong" },
             { typeof(bool),     "bool" },
             { typeof(string),   "string" },
+            { typeof(char),     "char" },
             { typeof(object),   "object" },
             { typeof(void),     "void" },
         };
@@ -396,17 +397,19 @@ namespace Rex.Utilities
 
         public static readonly Dictionary<SyntaxType, string> SyntaxHighlightColors = new Dictionary<SyntaxType, string>
         {
-            { SyntaxType.Type,          "#008000ff" },
-            { SyntaxType.Keyword,       "#008080ff" },
-            { SyntaxType.QuotationMark, "green" },
-            { SyntaxType.ConstVal,      "green" },
+            { SyntaxType.Type,                  "#008000ff" },
+            { SyntaxType.Keyword,               "#008080ff" },
+            { SyntaxType.SingleQuotationMark,   "green" },
+            { SyntaxType.QuotationMark,         "green" },
+            { SyntaxType.ConstVal,              "green" },
         };
         public static readonly Dictionary<SyntaxType, string> SyntaxHighlightProColors = new Dictionary<SyntaxType, string>
         {
-            { SyntaxType.Type,          "#6f00ff" },
-            { SyntaxType.Keyword,       "blue" },
-            { SyntaxType.QuotationMark, "green" },
-            { SyntaxType.ConstVal,      "green" },
+            { SyntaxType.Type,                  "#6f00ff" },
+            { SyntaxType.Keyword,               "blue" },
+            { SyntaxType.SingleQuotationMark,   "green" },
+            { SyntaxType.QuotationMark,         "green" },
+            { SyntaxType.ConstVal,              "green" },
         };
 
         /// <summary>
