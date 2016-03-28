@@ -22,7 +22,8 @@ Testing various aspects of a game at runtime has proven difficult, e.g. having t
 ![Handles any expression](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/GreenCube.gif)
 
 #### Linq and anonymous function support
-![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/linq.gif)
+![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/Linq.gif)
 
 #### Useful error messages
 ![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/ErrorMessage.gif)
+
