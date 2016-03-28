@@ -33,6 +33,7 @@ Intelligent code completion makes writing expressions much easier. REX also help
 
 #### The UI Layout
 ![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/REX_instruction_pic.png)
+
 1. **Expression** - The primary input where you write expressions
 2. **Scope** - Determine which namespaces the expressions will have access to
 3. **History** - Keep all evaluated expressions
