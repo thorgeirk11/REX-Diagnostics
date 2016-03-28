@@ -26,9 +26,3 @@ Testing various aspects of a game at runtime has proven difficult, e.g. having t
 
 #### Useful error messages
 ![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/ErrorMessage.gif)
-
- 
-![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/4.png)
-
- 
-![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/5.png)
