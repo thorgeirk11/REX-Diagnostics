@@ -44,10 +44,24 @@ namespace Rex.Window
         private const string NAME_OF_INPUT_FIELD = "ExpressionInput";
 
         private readonly LinkedList<string> _inputHistroy = new LinkedList<string>();
-        private readonly Dictionary<string, HistoryItem> _expressionHistory = new Dictionary<string, HistoryItem>();
+        //private readonly Dictionary<string, HistoryItem> _expressionHistory = new Dictionary<string, HistoryItem>();
 
+        /// <summary>
+        /// The continues compile engine that compiles on a seperate thread.
+        /// </summary>
         [SerializeField]
         private RexCompileEngine _compileEngine;
+
+        /// <summary>
+        /// History of all the expressions executed in this editor session.
+        /// </summary>
+        [SerializeField]
+        private List<string> _expressionHistory;
+        /// <summary>
+        /// The item that is expanded in history view.
+        /// </summary>
+        [SerializeField]
+        private string _expandedHistoryItem;
 
         static string MacroDirectorPath
         {
@@ -156,7 +170,8 @@ namespace Rex.Window
             var compile = _compileEngine.GetCompile(code);
             if (compile != null)
             {
-                _expressionHistory[code] = new HistoryItem { Compile = compile };
+                _expressionHistory.Add(code);
+
                 var sw = Stopwatch.StartNew();
 
                 var output = RexHelper.Execute<ConsoleOutput>(compile);
@@ -773,27 +788,28 @@ namespace Rex.Window
                         GUILayout.BeginHorizontal();
                         {
                             GUILayout.Space(10f);
-                            var before = expr.Value.IsExpanded;
-                            expr.Value.IsExpanded = GUILayout.Toggle(expr.Value.IsExpanded, new GUIContent("", (expr.Value.IsExpanded ? "Hide" : "Show") + " options"), EditorStyles.foldout, GUILayout.Width(20));
-                            if (before != expr.Value.IsExpanded &&
-                                !before)
+                            var toolTip = new GUIContent(expr, (expr == _expandedHistoryItem ? "Hide" : "Show") + " options");
+                            var isExpaned = GUILayout.Toggle(expr == _expandedHistoryItem, toolTip, EditorStyles.foldout, GUILayout.Width(20));
+
+                            if (!isExpaned && expr == _expandedHistoryItem)
                             {
-                                foreach (var expr2 in _expressionHistory)
-                                    if (expr.Key != expr2.Key)
-                                        expr2.Value.IsExpanded = false;
+                                _expandedHistoryItem = string.Empty;
                             }
-                            EditorGUILayout.SelectableLabel(expr.Key, GUILayout.Height(18));
+                            else if (isExpaned)
+                            {
+                                _expandedHistoryItem = expr;
+                            }
                         }
                         GUILayout.EndHorizontal();
 
-                        if (expr.Value.IsExpanded)
+                        if (expr == _expandedHistoryItem)
                         {
                             // Draw dropdown
                             EditorGUILayout.BeginVertical();
                             {
                                 var IsDeleted = false;
-                                DisplayHistorySelectionToggle(expr.Key, expr.Value, out IsDeleted);
-                                if (IsDeleted) deleted = expr.Key;
+                                DisplayHistorySelectionToggle(expr, out IsDeleted);
+                                if (IsDeleted) deleted = expr;
                             }
                             EditorGUILayout.EndVertical();
                         }
@@ -812,11 +828,9 @@ namespace Rex.Window
         /// <summary>
         /// Draws the selection dropdown for the given <see cref="history"/> 
         /// </summary>
-        /// <param name="toggleSelection"></param>
         /// <param name="code"></param>
-        /// <param name="history"></param>
         /// <param name="deleted"></param>
-        private void DisplayHistorySelectionToggle(string code, HistoryItem history, out bool deleted)
+        private void DisplayHistorySelectionToggle(string code, out bool deleted)
         {
             deleted = false;
             GUILayout.BeginHorizontal();
