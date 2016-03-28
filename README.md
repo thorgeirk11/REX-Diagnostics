@@ -37,7 +37,7 @@ Intelligent code completion makes writing expressions much easier. REX also help
 1. **Expression** - The primary input where you write expressions
 2. **Scope** - Determine which namespaces the expressions will have access to
 3. **History** - Keep all evaluated expressions
-4. **Variables** - Access declared variables in this panel
+4. **Variables** - List of declared variables
 5. **Macros** - Save frequently used expressions between sessions
-6. **Output** - Access detailed expression results
+6. **Output** - Detailed expression results
 
