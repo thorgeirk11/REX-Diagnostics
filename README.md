@@ -20,14 +20,17 @@ Testing various aspects of a game at runtime has proven difficult, e.g. having t
  
 #### Handles any expression
 ![Handles any expression](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/GreenCube.gif)
+
 The ability to create variables at runtime is an easy process in REX.
 
 #### Linq and anonymous function support
 ![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/Linq.gif)
+
 Manipulating variables, complex linq statements, lambda expressions or just simple expressions. All are possible with REX
 
 #### Useful error messages
 ![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/ErrorMessage.gif)
+
 Intelligent code completion makes writing expressions much easier. REX also helps you get to the root of a problem with graceful error handling.
 
 
