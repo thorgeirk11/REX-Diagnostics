@@ -30,16 +30,19 @@ Manipulating variables, complex linq statements, lambda expressions or just simp
 ![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/ErrorMessage.gif)
 Intelligent code completion makes writing expressions much easier. REX also helps you get to the root of a problem with graceful error handling.
 
+
+#### The UI Layout
+![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/REX_instruction_pic.png)
 1. Expression
-The primary input where you write expressions
+  - The primary input where you write expressions
 2. Scope
-Determine which namespaces the expressions will have access to
+ - Determine which namespaces the expressions will have access to
 3. History
-Keep all evaluated expressions
+ - Keep all evaluated expressions
 4. Variables
-Access declared variables in this panel
+ - Access declared variables in this panel
 5. Macros
-Save frequently used expressions between sessions
+ - Save frequently used expressions between sessions
 6. Output
-Access detailed expression results
+ - Access detailed expression results
 
