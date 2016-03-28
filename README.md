@@ -16,16 +16,16 @@ Testing various aspects of a game at runtime has proven difficult, e.g. having t
 - No T-REX included
 
  
-## Screen shots
+## Quick reference
  
-![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/1.png)
+#### Handles any expression
+![Handles any expression](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/GreenCube.gif)
 
+#### Linq and anonymous function support
+![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/linq.gif)
 
- 
-![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/2.png)
-
- 
-![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/3.png)
+#### Useful error messages
+![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/ErrorMessage.gif)
 
  
 ![Screen shot](https://github.com/thorgeirk11/UnityRelpWindow/blob/master/Screenshots/4.png)
