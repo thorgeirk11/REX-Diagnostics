@@ -44,7 +44,6 @@ namespace Rex.Window
         private const string NAME_OF_INPUT_FIELD = "ExpressionInput";
 
         private readonly LinkedList<string> _inputHistroy = new LinkedList<string>();
-        //private readonly Dictionary<string, HistoryItem> _expressionHistory = new Dictionary<string, HistoryItem>();
 
         /// <summary>
         /// The continues compile engine that compiles on a seperate thread.
@@ -56,7 +55,7 @@ namespace Rex.Window
         /// History of all the expressions executed in this editor session.
         /// </summary>
         [SerializeField]
-        private List<string> _expressionHistory;
+        private List<string> _expressionHistory = new List<string>();
         /// <summary>
         /// The item that is expanded in history view.
         /// </summary>
