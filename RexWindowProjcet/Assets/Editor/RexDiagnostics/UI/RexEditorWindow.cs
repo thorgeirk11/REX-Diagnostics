@@ -171,7 +171,15 @@ namespace Rex.Window
             var compile = _compileEngine.GetCompile(code);
             if (compile != null)
             {
-                _expressionHistory.Insert(0, new ExpressionHitoryItem { Code = code });
+                if (_expressionHistory.Count == 0 ||
+                    _expressionHistory[0].Code != code)
+                {
+                    _expressionHistory.Insert(0, new ExpressionHitoryItem
+                    {
+                        Code = code
+                    });
+                }
+
                 var output = RexHelper.Execute<ConsoleOutput>(compile);
                 if (output != null)
                     RexHelper.AddOutput(output);
@@ -189,14 +197,11 @@ namespace Rex.Window
         /// </summary>
         void OnGUI()
         {
-
-#if !DEBUG
             if (!EditorApplication.isPlaying)
             {
                 EditorGUILayout.HelpBox("Need to be in play mode to evaluate expressions", MessageType.Info);
                 return;
             }
-#endif
 
             HandleTabKeyPress();
             UpdateSkins();
