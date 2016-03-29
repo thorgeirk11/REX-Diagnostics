@@ -116,8 +116,9 @@ namespace Rex.Utilities.Test
         [Test]
         public void AfterMethodTest()
         {
-            var afterMethod = RexHelper.Intellisence("Math.ToString().ToString().");
-            afterMethod = RexHelper.Intellisence("Math.PI.ToString().Length.MaxValue");
+            throw new NotImplementedException();
+            //var afterMethod = RexHelper.Intellisence("Math.ToString().ToString().");
+            //afterMethod = RexHelper.Intellisence("Math.PI.ToString().Length.MaxValue");
 
             //Assert.IsEmpty(RexHelper.Intellisence("Math.Max(Math.Abs(),"));
             //var insideMeth = RexHelper.Intellisence("Math.Abs(Math.Abs(20),Math.").ToList();
@@ -150,8 +151,7 @@ namespace Rex.Utilities.Test
         [Test]
         public void VariableInterfaceTest()
         {
-            VariableA TheA;
-            SetVar("TheA", TheA = new VariableA
+            SetVar("TheA", new VariableA
             {
                 TheInterface = new B
                 {

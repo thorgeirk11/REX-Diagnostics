@@ -94,19 +94,13 @@ namespace Rex.Window
         bool showMacros = true;
         bool showUsings = false;
 
-        bool quellTab = false;
         bool refocus = false;
         float ratio = 0.6f;
 
-        GUIStyle darkBox;
         GUIStyle box;
         GUIStyle lightBox;
-        GUIStyle lightSlimBox;
         GUIStyle slimBox;
         GUIStyle ttStyle;
-
-        // Red button for output removal
-        GUIStyle rmvOutputBtn;
 
         GUIStyle varLabelStyle;
         GUIStyle greenLabelStyle;
@@ -522,9 +516,6 @@ namespace Rex.Window
         private static void GetRects(out Rect inpRect, out Rect inpLabelRect, out Rect inpButRect, out Rect inpStringRect, out Rect intelliRect, out Rect layoutRect)
         {
             #region Rect initialization
-            var padding = GUI.skin.window.padding;
-            var overflow = GUI.skin.window.overflow;
-
             var scrn = UStrap.ScreenRect;
             inpRect = UStrap.GiveRect(scrn.width, 50f, VerticalAnchor.Top, HorizontalAnchor.Center);
             inpLabelRect = new Rect(0, 0, 70f, inpRect.height / 3f).Place(inpRect, VerticalAnchor.Center, HorizontalAnchor.Left).SetMargin(left: 20f);
@@ -533,7 +524,6 @@ namespace Rex.Window
 
             intelliRect = new Rect(inpStringRect.xMin, inpStringRect.yMax, inpStringRect.width, 150f);
             layoutRect = UStrap.GiveRect(inpRect.width, scrn.height - inpRect.height, VerticalAnchor.Bottom, HorizontalAnchor.Center);
-            var sliderRect = inpRect.SubRect(rows: 4, row: 3);
             #endregion
         }
 
@@ -548,10 +538,6 @@ namespace Rex.Window
             if (updateSkins)
             {
                 updateSkins = false;
-                darkBox = new GUIStyle(GUI.skin.box)
-                {
-                    margin = new RectOffset(0, 0, 0, 0)
-                };
                 box = new GUIStyle(GUI.skin.box)
                 {
                     stretchWidth = false,
@@ -567,15 +553,7 @@ namespace Rex.Window
                     margin = new RectOffset(0, 0, 0, 0)
                 };
                 lightBox.normal.background = EditorGUIUtility.whiteTexture;
-
-                lightSlimBox = new GUIStyle(lightBox)
-                {
-                    padding = new RectOffset(0, 0, 0, 0)
-                };
-
-
-                rmvOutputBtn = GUI.skin.FindStyle("WinBtnCloseMac");
-
+                
                 varLabelStyle = new GUIStyle(GUI.skin.label)
                 {
                     richText = true,

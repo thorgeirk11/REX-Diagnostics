@@ -22,6 +22,7 @@ namespace Rex.Utilities.Test
             var pResult = RexHelper.ParseAssigment(expression);
             var cResult = RexHelper.Compile(pResult);
             var output = RexHelper.Execute<DummyOutput>(cResult);
+            Assert.AreEqual(2, output.Value);
         }
 
         [SetUp]
@@ -279,10 +280,15 @@ namespace Rex.Utilities.Test
         [Test]
         public void AnonymousAssigmentTest()
         {
-            var expr = "new [] { new { MyString = \"Lol\", Number = 1 },new { MyString = \"Lol\", Number = 1 } }";
+            var expr = "new [] { new { MyString = \"Lol1\", Number = 1 },new { MyString = \"Lol2\", Number = 1 } }";
             var expression = "x = " + expr;
             var output = CompileAndRun(expression);
             Assert.IsEmpty(RexHelper.Variables);
+            Assert.AreEqual(output.Value, RexHelper.Variables["x"]);
+            Assert.AreEqual(output.Value, new[] {
+                new { MyString = "Lol1", Number = 1 },
+                new { MyString = "Lol2", Number = 1 }
+            });
             //Assert.AreEqual("Expression returned an compiler generated class, cannot declare variable 'x'", RexHelper.Messages[MsgType.Warning].Single());
         }
         [Test]
