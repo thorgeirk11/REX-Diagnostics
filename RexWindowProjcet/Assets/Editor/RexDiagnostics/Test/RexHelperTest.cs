@@ -94,35 +94,35 @@ namespace Rex.Utilities.Test
             GetCSharpRepTest("int", typeof(int), false);
 
             //Generic types:
-            GetCSharpRepTest("Action < bool , int , Action < IEnumerable < string > > >", typeof(Action<bool, int, Action<IEnumerable<string>>>), false);
+            GetCSharpRepTest("Action<bool, int, Action<IEnumerable<string>>>", typeof(Action<bool, int, Action<IEnumerable<string>>>), false);
             GetCSharpRepTest(
-                "System.Action < System.Boolean , System.Int32 , System.Action < System.Collections.Generic.IEnumerable < System.String > > >",
+                "System.Action<System.Boolean, System.Int32, System.Action<System.Collections.Generic.IEnumerable<System.String>>>",
                 typeof(Action<bool, int, Action<IEnumerable<string>>>), true);
 
             //nested types:
-            GetCSharpRepTest("RexHelperTest . ComplexValueType", typeof(ComplexValueType), false);
-            GetCSharpRepTest("Rex.Utilities.Test.RexHelperTest . ComplexValueType", typeof(ComplexValueType), true);
+            GetCSharpRepTest("RexHelperTest.ComplexValueType", typeof(ComplexValueType), false);
+            GetCSharpRepTest("Rex.Utilities.Test.RexHelperTest.ComplexValueType", typeof(ComplexValueType), true);
 
 
-            GetCSharpRepTest("RexHelperTest . ComplexValueType[]", typeof(ComplexValueType[]), false);
-            GetCSharpRepTest("Rex.Utilities.Test.RexHelperTest . ComplexValueType[]", typeof(ComplexValueType[]), true);
+            GetCSharpRepTest("RexHelperTest.ComplexValueType[]", typeof(ComplexValueType[]), false);
+            GetCSharpRepTest("Rex.Utilities.Test.RexHelperTest.ComplexValueType[]", typeof(ComplexValueType[]), true);
 
-            GetCSharpRepTest("Action < RexHelperTest . ComplexValueType[] >", typeof(Action<ComplexValueType[]>), false);
-            GetCSharpRepTest("System.Action < Rex.Utilities.Test.RexHelperTest . ComplexValueType[] >", typeof(Action<ComplexValueType[]>), true);
+            GetCSharpRepTest("Action<RexHelperTest.ComplexValueType[]>", typeof(Action<ComplexValueType[]>), false);
+            GetCSharpRepTest("System.Action<Rex.Utilities.Test.RexHelperTest.ComplexValueType[]>", typeof(Action<ComplexValueType[]>), true);
 
 
-            GetCSharpRepTest("Action < RexHelperTest . ComplexValueType >", typeof(Action<ComplexValueType>), false);
-            GetCSharpRepTest("System.Action < Rex.Utilities.Test.RexHelperTest . ComplexValueType >", typeof(Action<ComplexValueType>), true);
+            GetCSharpRepTest("Action<RexHelperTest.ComplexValueType>", typeof(Action<ComplexValueType>), false);
+            GetCSharpRepTest("System.Action<Rex.Utilities.Test.RexHelperTest.ComplexValueType>", typeof(Action<ComplexValueType>), true);
 
-            GetCSharpRepTest("Rex.Utilities.Test.RexHelperTest . ComplexValueType[]", typeof(ComplexValueType[]), true);
+            GetCSharpRepTest("Rex.Utilities.Test.RexHelperTest.ComplexValueType[]", typeof(ComplexValueType[]), true);
 
 
             //Nested Generic types:
-            GetCSharpRepTest("RexHelperTest . ComplexValueType < int >", typeof(ComplexValueType<int>), false);
-            GetCSharpRepTest("Rex.Utilities.Test.RexHelperTest . ComplexValueType < System.Int32 >", typeof(ComplexValueType<int>), true);
+            GetCSharpRepTest("RexHelperTest.ComplexValueType<int>", typeof(ComplexValueType<int>), false);
+            GetCSharpRepTest("Rex.Utilities.Test.RexHelperTest.ComplexValueType<System.Int32>", typeof(ComplexValueType<int>), true);
 
             GetCSharpRepTest(
-                "System.Action < Rex.Utilities.Test.RexHelperTest . ComplexValueType < System.Int32 > >",
+                "System.Action<Rex.Utilities.Test.RexHelperTest.ComplexValueType<System.Int32>>",
                 typeof(Action<ComplexValueType<int>>), true);
 
             GetCSharpRepTest("System.Action", typeof(Action), true);
@@ -210,9 +210,9 @@ namespace Rex.Utilities.Test
             Assert.AreEqual(new { One = 1, Two = 2.0, Three = 3f }.ToString(), output.Value.ToString());
 
             var details = RexReflectionHelper.ExtractDetails(output.Value).Select(i => i.ToString()).ToList();
-            Assert.Contains("int One { get ; } = 1", details);
-            Assert.Contains("double Two { get ; } = 2", details);
-            Assert.Contains("float Three { get ; } = 3", details);
+            Assert.Contains("int One { get; } = 1", details);
+            Assert.Contains("double Two { get; } = 2", details);
+            Assert.Contains("float Three { get; } = 3", details);
         }
 
         [Test]
@@ -280,15 +280,10 @@ namespace Rex.Utilities.Test
         [Test]
         public void AnonymousAssigmentTest()
         {
-            var expr = "new [] { new { MyString = \"Lol1\", Number = 1 },new { MyString = \"Lol2\", Number = 1 } }";
+            var expr = @"new [] { new { MyString = ""Lol1"", Number = 1 },new { MyString = ""Lol2"", Number = 1 } }";
             var expression = "x = " + expr;
             var output = CompileAndRun(expression);
             Assert.IsEmpty(RexHelper.Variables);
-            Assert.AreEqual(output.Value, RexHelper.Variables["x"]);
-            Assert.AreEqual(output.Value, new[] {
-                new { MyString = "Lol1", Number = 1 },
-                new { MyString = "Lol2", Number = 1 }
-            });
             //Assert.AreEqual("Expression returned an compiler generated class, cannot declare variable 'x'", RexHelper.Messages[MsgType.Warning].Single());
         }
         [Test]

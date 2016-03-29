@@ -13,7 +13,7 @@ namespace Rex.Utilities.Helpers
     }
     public abstract class AConsoleOutput
     {
-        public Exception Exception { get; set; }
+        public virtual Exception Exception { get; set; }
         public string Message { get; set; }
         public bool ShowMembers { get; set; }
         public bool ShowDetails { get; set; }

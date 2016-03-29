@@ -26,14 +26,14 @@ namespace Rex.Utilities.Test
             SetVar("x", new DummyOutput());
 
             var helpInfo = RexHelper.Intellisence("x.").Select(i => i.Details.ToString());
-            CollectionAssert.Contains(helpInfo, "object Value { get ; set ; }");
-            CollectionAssert.Contains(helpInfo, "string ToString ( )");
-            CollectionAssert.Contains(helpInfo, "Func < string > toString");
+            CollectionAssert.Contains(helpInfo, "object Value { get; set; }");
+            CollectionAssert.Contains(helpInfo, "string ToString()");
+            CollectionAssert.Contains(helpInfo, "Func<string> toString");
 
             helpInfo = RexHelper.Intellisence("x.ToStrin").Select(i => i.Details.ToString());
             Assert.AreEqual(2, helpInfo.Count());
-            CollectionAssert.Contains(helpInfo, "string ToString ( )");
-            CollectionAssert.Contains(helpInfo, "Func < string > toString"); ;
+            CollectionAssert.Contains(helpInfo, "string ToString()");
+            CollectionAssert.Contains(helpInfo, "Func<string> toString"); ;
         }
 
         [Test]
@@ -41,14 +41,14 @@ namespace Rex.Utilities.Test
         {
             var helpInfo = RexHelper.Intellisence("Math.Ab").Select(i => i.Details.ToString());
             Assert.AreEqual(7, helpInfo.Count());
-            CollectionAssert.Contains(helpInfo, "static sbyte Abs ( sbyte value )");
+            CollectionAssert.Contains(helpInfo, "static sbyte Abs(sbyte value)");
 
             helpInfo = RexHelper.Intellisence("Math.Abs.").Select(i => i.Details.ToString());
             Assert.IsEmpty(helpInfo);
 
             helpInfo = RexHelper.Intellisence("Math.Abs(").Select(i => i.Details.ToString());
             Assert.AreEqual(7, helpInfo.Count());
-            CollectionAssert.Contains(helpInfo, "static sbyte Abs ( sbyte value )");
+            CollectionAssert.Contains(helpInfo, "static sbyte Abs(sbyte value)");
         }
 
         [Test]
@@ -81,8 +81,8 @@ namespace Rex.Utilities.Test
 
             helpInfo = RexHelper.Intellisence("a = new Action(").Select(i => i.Details.ToString());
             CollectionAssert.Contains(helpInfo, "Action");
-            CollectionAssert.Contains(helpInfo, "Action < T >");
-            CollectionAssert.Contains(helpInfo, "Action < T1 , T2 >");
+            CollectionAssert.Contains(helpInfo, "Action<T>");
+            CollectionAssert.Contains(helpInfo, "Action<T1, T2>");
 
             helpInfo = RexHelper.Intellisence("Math.PI.GetHashCode().ToString(").Select(i => i.Details.ToString());
             Assert.IsEmpty(helpInfo);
@@ -114,18 +114,6 @@ namespace Rex.Utilities.Test
         }
 
         [Test]
-        public void AfterMethodTest()
-        {
-            throw new NotImplementedException();
-            //var afterMethod = RexHelper.Intellisence("Math.ToString().ToString().");
-            //afterMethod = RexHelper.Intellisence("Math.PI.ToString().Length.MaxValue");
-
-            //Assert.IsEmpty(RexHelper.Intellisence("Math.Max(Math.Abs(),"));
-            //var insideMeth = RexHelper.Intellisence("Math.Abs(Math.Abs(20),Math.").ToList();
-            //var mathDot = RexHelper.Intellisence("Math.").ToList();
-            //Assert.AreEqual(insideMeth, mathDot);
-        }
-        [Test]
         public void DeepIntellisensTest()
         {
             var x = new RecursiveTest(null);
@@ -133,18 +121,18 @@ namespace Rex.Utilities.Test
 
             var helpInfo = RexHelper.Intellisence("x.Recursion").Select(i => i.Details.ToString());
             Assert.AreEqual(2, helpInfo.Count());
-            CollectionAssert.Contains(helpInfo, "RecursiveTest RecursionProp { get ; set ; }");
+            CollectionAssert.Contains(helpInfo, "RecursiveTest RecursionProp { get; set; }");
             CollectionAssert.Contains(helpInfo, "readonly RecursiveTest RecursionField");
 
 
             helpInfo = RexHelper.Intellisence("x.RecursionProp.Recursion").Select(i => i.Details.ToString());
             Assert.AreEqual(2, helpInfo.Count());
-            CollectionAssert.Contains(helpInfo, "RecursiveTest RecursionProp { get ; set ; }");
+            CollectionAssert.Contains(helpInfo, "RecursiveTest RecursionProp { get; set; }");
             CollectionAssert.Contains(helpInfo, "readonly RecursiveTest RecursionField");
 
             helpInfo = RexHelper.Intellisence("x.RecursionField.Recursion").Select(i => i.Details.ToString());
             Assert.AreEqual(2, helpInfo.Count());
-            CollectionAssert.Contains(helpInfo, "RecursiveTest RecursionProp { get ; set ; }");
+            CollectionAssert.Contains(helpInfo, "RecursiveTest RecursionProp { get; set; }");
             CollectionAssert.Contains(helpInfo, "readonly RecursiveTest RecursionField");
         }
 
@@ -161,13 +149,13 @@ namespace Rex.Utilities.Test
 
             var helpInfo = RexHelper.Intellisence("TheA.TheIn").Select(i => i.Details.ToString());
             Assert.AreEqual(1, helpInfo.Count());
-            CollectionAssert.Contains(helpInfo, "I_B TheInterface { get ; set ; }");
+            CollectionAssert.Contains(helpInfo, "I_B TheInterface { get; set; }");
 
             helpInfo = RexHelper.Intellisence("TheA.TheInterface.").Select(i => i.Details.ToString());
-            CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get ; }");
+            CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get; }");
 
             helpInfo = RexHelper.Intellisence("TheA.TheInterface.InnerB.").Select(i => i.Details.ToString());
-            CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get ; }");
+            CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get; }");
         }
 
         [Test]
@@ -223,7 +211,7 @@ namespace Rex.Utilities.Test
             invoker = SetVar("invoker", new IntellisenseInvokeTest());
 
             var helpInfo = RexHelper.Intellisence("invoker.Counter").Select(i => i.Details.ToString()).First();
-            Assert.AreEqual("int Counter { get ; }", helpInfo);
+            Assert.AreEqual("int Counter { get; }", helpInfo);
             Assert.AreEqual(0, invoker.counter);
         }
 
@@ -232,13 +220,13 @@ namespace Rex.Utilities.Test
         {
             var helpInfo = RexHelper.Intellisence("StaticA.TheIn").Select(i => i.Details.ToString());
             Assert.AreEqual(1, helpInfo.Count());
-            CollectionAssert.Contains(helpInfo, "static I_B TheInterface { get ; set ; }");
+            CollectionAssert.Contains(helpInfo, "static I_B TheInterface { get; set; }");
 
             helpInfo = RexHelper.Intellisence("StaticA.TheInterface.").Select(i => i.Details.ToString());
-            CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get ; }");
+            CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get; }");
 
             helpInfo = RexHelper.Intellisence("StaticA.TheInterface.InnerB.").Select(i => i.Details.ToString());
-            CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get ; }");
+            CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get; }");
         }
 
         [Test]
@@ -268,14 +256,14 @@ namespace Rex.Utilities.Test
         {
             var syntax = new[] {
                 Syntax.StaticKeyword,
-                Syntax.NewType("int"),
-                Syntax.Name("num"),
-                Syntax.EqualsOp,
-                Syntax.ConstVal("5")
+                Syntax.Space,Syntax.NewType("int"),
+                Syntax.Space,Syntax.Name("num"),
+                Syntax.Space,Syntax.EqualsOp,
+                Syntax.Space,Syntax.ConstVal("5")
             };
 
             var syntaxHighlighting = RexUtils.SyntaxHighlingting(new MemberDetails(syntax), RexUtils.SyntaxHighlightColors);
-            var regex = new Regex("<color.*>(?<const>.*)</color> <color.*>(?<type>.*)</color> (?<name>.*) = (?<value>.*)");
+            var regex = new Regex("<color.*>(?<const>.*)</color> <color.*>(?<type>.*)</color> (?<name>.*) = <color.*>(?<value>.*)</color>");
             var match = regex.Match(syntaxHighlighting);
             Assert.IsTrue(match.Success);
 
@@ -288,7 +276,6 @@ namespace Rex.Utilities.Test
             Assert.AreEqual(syntax.First(i => i.Type == SyntaxType.Type).String, type.Value);
             Assert.AreEqual(syntax.First(i => i.Type == SyntaxType.Name).String, name.Value);
             Assert.AreEqual(syntax.First(i => i.Type == SyntaxType.ConstVal).String, value.Value);
-
         }
 
         [Test]
@@ -296,10 +283,10 @@ namespace Rex.Utilities.Test
         {
             var syntax = new MemberDetails(new[] {
                 Syntax.StaticKeyword,
-                Syntax.NewType("int"),
-                Syntax.Name("myNumber"),
-                Syntax.EqualsOp,
-                Syntax.ConstVal("5")
+                Syntax.Space, Syntax.NewType("int"),
+                Syntax.Space, Syntax.Name("myNumber"),
+                Syntax.Space, Syntax.EqualsOp,
+                Syntax.Space, Syntax.ConstVal("5")
             });
 
             var syntaxHighlighting = RexUtils.SyntaxHighlingting(syntax, RexUtils.SyntaxHighlightColors, "myNum");
@@ -314,7 +301,7 @@ namespace Rex.Utilities.Test
 
         private static void TestRest(MemberDetails syntax, string highlight, string search)
         {
-            var regex = new Regex("<color.*>(?<const>.*)</color> <color.*>(?<type>.*)</color> (?<name>.*) = (?<value>.*)");
+            var regex = new Regex("<color.*>(?<const>.*)</color> <color.*>(?<type>.*)</color> (?<name>.*) = <color.*>(?<value>.*)</color>");
             var match = regex.Match(highlight);
             Assert.IsTrue(match.Success);
 

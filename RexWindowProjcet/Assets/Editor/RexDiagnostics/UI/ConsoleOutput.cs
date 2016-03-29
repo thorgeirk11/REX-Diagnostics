@@ -21,6 +21,32 @@ namespace Rex.Window
         /// </summary>
         public Action DisplayMessage { get; private set; }
 
+        /// <summary>
+        /// Style used for the details section
+        /// </summary>
+        static readonly GUIStyle _detailsStyle = new GUIStyle
+        {
+            alignment = TextAnchor.MiddleLeft,
+            margin = new RectOffset(10, 10, 0, 0),
+            wordWrap = true,
+            richText = true
+        };
+
+        private MemberDetails _exceptionDetails;
+
+        public override Exception Exception
+        {
+            get { return base.Exception; }
+            set
+            {
+                base.Exception = value;
+                if (value != null)
+                {
+                    _exceptionDetails = RexUtils.GetCSharpRepresentation(Exception.GetType());
+                }
+            }
+        }
+
         public ConsoleOutput()
         {
             DisplayMessage = DisplayFieldFor(null, "null");
@@ -54,68 +80,78 @@ namespace Rex.Window
                 };
             }
             Details = (from detail in memberDetails
-                       let typeAndName = RexUIUtils.SyntaxHighlingting(detail.TakeWhile(i => i.Type != SyntaxType.CurlyOpen && i.Type != SyntaxType.EqualsOp))
-                       let tooltip = RexUIUtils.SyntaxHighlingting(detail)
-                       let content = new GUIContent(typeAndName, tooltip)
+                       let tooltip = RexUIUtils.SyntaxHighlingting(detail.TakeWhile(i => i.Type != SyntaxType.EqualsOp))
+                       let content = new GUIContent(detail.Name.String, tooltip)
                        let displayAction = DisplayFieldFor(detail.Value, detail.Constant.String)
                        select new { displayAction, content }).ToDictionary(i => i.displayAction, i => i.content);
         }
+
+        private void DisplayExcetion()
+        {
+            if (!string.IsNullOrEmpty(Message))
+                EditorGUILayout.HelpBox(Message, MessageType.Warning);
+
+            EditorGUILayout.BeginVertical();
+            {
+                EditorGUILayout.BeginHorizontal();
+                {
+                    EditorGUILayout.TextArea(_exceptionDetails.Name.String, _detailsStyle);
+                    EditorGUILayout.TextArea(Exception.Message, GUI.skin.textArea);
+                }
+                EditorGUILayout.EndHorizontal();
+
+                ShowDetails = EditorGUILayout.Foldout(ShowDetails, "Full StackTrace");
+                if (ShowDetails)
+                {
+                    EditorGUILayout.TextArea(Exception.ToString(), GUI.skin.textArea);
+                }
+            }
+            EditorGUILayout.EndVertical();
+        }
+
 
         public override void Display()
         {
             if (Exception != null)
             {
-                if (!string.IsNullOrEmpty(Message))
-                    EditorGUILayout.HelpBox(Message, MessageType.Warning);
-                //else if (Exception != null)
-                //    EditorGUILayout.HelpBox(Exception.Message, MessageType.Warning);
-
-                EditorGUILayout.TextArea(Exception.ToString(), GUI.skin.textArea);
+                DisplayExcetion();
+                return;
             }
-            else
-            {
-                EditorGUILayout.BeginVertical();
-                {
-                    EditorGUILayout.BeginHorizontal();
-                    DisplayMessage();
-                    EditorGUILayout.EndHorizontal();
-                    if (Details.Any())
-                    {
-                        ShowDetails = EditorGUILayout.Foldout(ShowDetails, "Details");
-                        if (ShowDetails)
-                        {
-                            foreach (var detail in Details)
-                            {
-                                EditorGUILayout.BeginHorizontal();
-                                {
-                                    var style = new GUIStyle
-                                    {
-                                        alignment = TextAnchor.MiddleLeft,
-                                        margin = new RectOffset(5, 5, 0, 0),
-                                        wordWrap = true,
-                                        richText = true
-                                    };
-                                    EditorGUILayout.LabelField(detail.Value, style, GUILayout.Width(150));
-                                    detail.Key();
-                                }
-                                EditorGUILayout.EndHorizontal();
-                            }
-                        }
-                    }
 
-                    if (Members.Count > 0)
+            EditorGUILayout.BeginVertical();
+            {
+                EditorGUILayout.BeginHorizontal();
+                DisplayMessage();
+                EditorGUILayout.EndHorizontal();
+                if (Details.Any())
+                {
+                    ShowDetails = EditorGUILayout.Foldout(ShowDetails, "Details");
+                    if (ShowDetails)
                     {
-                        if (ShowMembers = EditorGUILayout.Foldout(ShowMembers, "Members"))
+                        foreach (var detail in Details)
                         {
-                            EditorGUI.indentLevel++;
-                            foreach (var m in Members)
-                                m.Display();
-                            EditorGUI.indentLevel--;
+                            EditorGUILayout.BeginHorizontal();
+                            {
+                                EditorGUILayout.LabelField(detail.Value, _detailsStyle, GUILayout.Width(150));
+                                detail.Key();
+                            }
+                            EditorGUILayout.EndHorizontal();
                         }
                     }
                 }
-                EditorGUILayout.EndVertical();
+
+                if (Members.Count > 0)
+                {
+                    if (ShowMembers = EditorGUILayout.Foldout(ShowMembers, "Members"))
+                    {
+                        EditorGUI.indentLevel++;
+                        foreach (var m in Members)
+                            m.Display();
+                        EditorGUI.indentLevel--;
+                    }
+                }
             }
+            EditorGUILayout.EndVertical();
         }
 
         /// <summary>
@@ -170,6 +206,5 @@ namespace Rex.Window
             { typeof(Bounds),           value => EditorGUILayout.BoundsField((Bounds)value) },
             { typeof(bool),             value => EditorGUILayout.ToggleLeft(value.ToString(), (bool)value, GUI.skin.textField) },
         };
-
     }
 }

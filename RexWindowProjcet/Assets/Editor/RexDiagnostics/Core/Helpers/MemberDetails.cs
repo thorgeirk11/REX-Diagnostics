@@ -47,7 +47,7 @@ namespace Rex.Utilities.Helpers
 
         public override string ToString()
         {
-            return _details.Aggregate("", (a, j) => a + " " + j).Trim();
+            return _details.Aggregate("", (a, j) => a + j).Trim();
         }
 
         public int CompareTo(MemberDetails other)
