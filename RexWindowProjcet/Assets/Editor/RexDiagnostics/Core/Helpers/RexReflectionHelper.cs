@@ -33,9 +33,11 @@ namespace Rex.Utilities.Helpers
                     try
                     {
                         var value = prop.GetValue(details, null);
-                        var valueDetails = GetValueDetails(value);
-                        var detail = valueDetails.Merge(info);
-                        detailList.Add(detail);
+                        detailList.Add(new MemberDetails(value,
+                            info.
+                            Concat(new[] { Syntax.Space, Syntax.EqualsOp, Syntax.Space }).
+                            Concat(RexHelper.GetSyntaxForValue(value))
+                        ));
                     }
                     catch (Exception)
                     {
@@ -48,9 +50,11 @@ namespace Rex.Utilities.Helpers
                     try
                     {
                         var value = field.GetValue(details);
-                        var valueDetails = GetValueDetails(value);
-                        var detail = valueDetails.Merge(info);
-                        detailList.Add(detail);
+                        detailList.Add(new MemberDetails(value,
+                            info.
+                            Concat(new[] { Syntax.Space, Syntax.EqualsOp, Syntax.Space }).
+                            Concat(RexHelper.GetSyntaxForValue(value))
+                        ));
                     }
                     catch (Exception)
                     {
@@ -65,25 +69,6 @@ namespace Rex.Utilities.Helpers
             }
         }
 
-        private static MemberDetails GetValueDetails(object value)
-        {
-            string val;
-            if (value == null)
-            {
-                return new MemberDetails(value, 
-                    new[] { Syntax.EqualsOp, Syntax.Space, Syntax.ConstVal("null") });
-            }
-            else if (ExtractValue(value, out val))
-            {
-                return new MemberDetails(value, 
-                    new[] { Syntax.EqualsOp, Syntax.Space, Syntax.ConstVal(val) });
-            }
-            else
-            {
-                return new MemberDetails(value, 
-                    new[] { Syntax.EqualsOp, Syntax.Space, Syntax.ConstVal(value.ToString()) });
-            }
-        }
 
         public static bool IsAnonymousType(Type type)
         {

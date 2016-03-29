@@ -399,17 +399,17 @@ namespace Rex.Utilities
         {
             { SyntaxType.Type,                  "#008000ff" },
             { SyntaxType.Keyword,               "#008080ff" },
-            { SyntaxType.SingleQuotationMark,   "green" },
-            { SyntaxType.QuotationMark,         "green" },
-            { SyntaxType.ConstVal,              "green" },
+            { SyntaxType.SingleQuotationMark,   "brown" },
+            { SyntaxType.QuotationMark,         "brown" },
+            { SyntaxType.ConstVal,              "brown" },
         };
         public static readonly Dictionary<SyntaxType, string> SyntaxHighlightProColors = new Dictionary<SyntaxType, string>
         {
             { SyntaxType.Type,                  "#6f00ff" },
             { SyntaxType.Keyword,               "blue" },
-            { SyntaxType.SingleQuotationMark,   "green" },
-            { SyntaxType.QuotationMark,         "green" },
-            { SyntaxType.ConstVal,              "green" },
+            { SyntaxType.SingleQuotationMark,   "brown" },
+            { SyntaxType.QuotationMark,         "brown" },
+            { SyntaxType.ConstVal,              "brown" },
         };
 
         /// <summary>

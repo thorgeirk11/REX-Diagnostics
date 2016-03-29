@@ -60,7 +60,7 @@ namespace Rex.Window
         [Serializable]
         private class ExpressionHitoryItem
         {
-            public string Code;
+            public string Code = string.Empty;
             public bool IsExpanded;
         }
 
@@ -164,6 +164,7 @@ namespace Rex.Window
             RexHelper.Messages[MsgType.Error].Clear();
             lastRunSuccesfull = true;
 
+            code = code.Trim().Trim(';');
             if (string.IsNullOrEmpty(code))
                 return;
 

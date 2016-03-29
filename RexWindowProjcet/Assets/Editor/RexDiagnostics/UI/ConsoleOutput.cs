@@ -32,8 +32,8 @@ namespace Rex.Window
         /// </summary>
         /// <param name="value">Ouput Value of the Expression</param>
         /// <param name="message">Message from the Expression execute</param>
-        /// <param name="details"></param>
-        public override void LoadInDetails(object value, string message, IEnumerable<MemberDetails> details)
+        /// <param name="memberDetails"></param>
+        public override void LoadInDetails(object value, string message, IEnumerable<MemberDetails> memberDetails)
         {
             Message = message;
             var messageField = DisplayFieldFor(message, message);
@@ -53,9 +53,10 @@ namespace Rex.Window
                     messageField();
                 };
             }
-            Details = (from detail in details
-                       let tooltip = RexUIUtils.SyntaxHighlingting(detail.Where(i => i.Type != SyntaxType.EqualsOp && i.Type != SyntaxType.ConstVal))
-                       let content = new GUIContent(detail.Name.String, tooltip)
+            Details = (from detail in memberDetails
+                       let typeAndName = RexUIUtils.SyntaxHighlingting(detail.TakeWhile(i => i.Type != SyntaxType.CurlyOpen && i.Type != SyntaxType.EqualsOp))
+                       let tooltip = RexUIUtils.SyntaxHighlingting(detail)
+                       let content = new GUIContent(typeAndName, tooltip)
                        let displayAction = DisplayFieldFor(detail.Value, detail.Constant.String)
                        select new { displayAction, content }).ToDictionary(i => i.displayAction, i => i.content);
         }
@@ -134,6 +135,10 @@ namespace Rex.Window
             {
                 return () => FieldForType[type](value);
             }
+            if (type.IsEnum)
+            {
+                return () => EditorGUILayout.EnumPopup((Enum)value);
+            }
             else if (value is UnityEngine.Object)
             {
                 return () => EditorGUILayout.ObjectField(value as UnityEngine.Object, type, allowSceneObjects: true);
@@ -162,7 +167,6 @@ namespace Rex.Window
             { typeof(Color),            value => EditorGUILayout.ColorField((Color)value) },
             { typeof(Rect),             value => EditorGUILayout.RectField((Rect)value) },
             { typeof(AnimationCurve),   value => EditorGUILayout.CurveField((AnimationCurve)value) },
-            { typeof(Enum),             value => EditorGUILayout.EnumPopup((Enum)value) },
             { typeof(Bounds),           value => EditorGUILayout.BoundsField((Bounds)value) },
             { typeof(bool),             value => EditorGUILayout.ToggleLeft(value.ToString(), (bool)value, GUI.skin.textField) },
         };
