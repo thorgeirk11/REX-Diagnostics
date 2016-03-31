@@ -214,10 +214,52 @@ namespace Rex.Utilities
         {
             var Errors = new List<string>();
             var returnTypes = new[] { FuncType._object, FuncType._void };
-            foreach (var type in returnTypes)
+            foreach (var returnType in returnTypes)
             {
-                var wrapper = MakeWrapper(parseResult, type);
+                var wrapper = MakeWrapper(parseResult, returnType);
                 var result = RexUtils.CompileCode(wrapper);
+                //Path.
+                if (result.Errors.Count == 1)
+                {
+                    var error = result.Errors[0];
+                    if (error.ErrorNumber == "CS0103")
+                    {
+                        var errorRegex = Regex.Match(error.ErrorText, "The name (?<type>.*) does not exist in the current context");
+                        var typeNotFound = errorRegex.Groups["type"].Value.Substring(1).Trim('\'');
+
+                        var canditateTypes = from t in RexUtils.AllVisibleTypes
+                                             where t.Name == typeNotFound
+                                             select t;
+                        if (canditateTypes.Count() == 0)
+                        {
+                            return new CompiledExpression
+                            {
+                                Parse = parseResult,
+                                Errors = Errors
+                            };
+                        }
+                        if (canditateTypes.Count() > 1)
+                        {
+                            var names = from n in canditateTypes
+                                        select RexUtils.GetCSharpRepresentation(n, true).ToString();
+                            return new CompiledExpression
+                            {
+                                Parse = parseResult,
+                                Errors = new List<string> { "Ambiguous type name '" + typeNotFound + "':" + Environment.NewLine +
+                                string.Join(Environment.NewLine, names.ToArray()) }
+                            };
+                        }
+                        var name = canditateTypes.First().Namespace;
+                        var info = RexUtils.NamespaceInfos.First(i => i.Name == name);
+                        if (!info.Selected)
+                        {
+                            info.Selected = true;
+                            wrapper = MakeWrapper(parseResult, returnType);
+                            result = RexUtils.CompileCode(wrapper);
+                            info.Selected = false;
+                        }
+                    }
+                }
 
                 Errors = DealWithErrors(result);
                 if (Errors.Count == 0)
@@ -226,7 +268,7 @@ namespace Rex.Utilities
                     {
                         Assembly = result.CompiledAssembly,
                         Parse = parseResult,
-                        FuncType = type,
+                        FuncType = returnType,
                         Errors = Errors
                     };
                 }
@@ -613,22 +655,25 @@ namespace Rex.Utilities
                                     Syntax.Space, Syntax.Name(i.Key),
                                     Syntax.Space, Syntax.EqualsOp,
                                     Syntax.Space
-                                }).Concat(GetSyntaxForValue(i.Value.VarValue)))
+                                }).Concat(GetSyntaxForValue(i.Value.VarValue))),
+                                isInScope = true
                             };
 
             var types = from t in RexUtils.AllVisibleTypes
                         let lowerItem = t.Name.ToLower()
-                        where lowerItem.Contains(lowerSearch)
+                        where lowerItem.Contains(lowerSearch) && !RexReflectionHelper.IsCompilerGenerated(t)
+                        let isInScope = RexUtils.NamespaceInfos.Any(i => i.Name == t.Namespace && i.Selected)
                         select new
                         {
                             SearchName = lowerItem,
                             t.IsNested,
                             ReplacementString = GetNestedName(t),
-                            Details = RexUtils.GetCSharpRepresentation(t, false)
+                            Details = RexUtils.GetCSharpRepresentation(t, !isInScope),
+                            isInScope
                         };
 
             return from i in types.Concat(variables)
-                   orderby i.SearchName.IndexOf(lowerSearch), i.SearchName.Length, i.IsNested, i.SearchName
+                   orderby i.SearchName.IndexOf(lowerSearch), i.SearchName.Length, i.isInScope, i.IsNested
                    select new CodeCompletion
                    {
                        Details = i.Details,

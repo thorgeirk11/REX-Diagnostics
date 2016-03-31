@@ -43,6 +43,8 @@ namespace Rex.Utilities
             set { _usingsFileName = value; }
         }
 
+        public static List<NameSpaceInfo> namespaceInfos;
+
         public static readonly Regex Assignment = new Regex(@"^(?<type>\S*\s+)?(?<var>[^ .,=]+)\s*=(?<expr>[^=].*)$", RegexOptions.Compiled | RegexOptions.Singleline);
         public static readonly Regex DotExpressionSearch = new Regex(@"^(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<search>\w*)$", RegexOptions.Compiled);
         public static readonly Regex ParameterRegex = new Regex(@"(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<search>\w*)(\((?<para>[^)]*))$", RegexOptions.Compiled);
@@ -81,7 +83,10 @@ namespace Rex.Utilities
         {
             get
             {
-                return NamespaceInfos.Where(i => i.Selected).Aggregate("", (i, j) => i + string.Format(Environment.NewLine + "using {0};", j.Name));
+                var usingsFormats = from ns in NamespaceInfos
+                                    where ns.Selected
+                                    select string.Format("using {0};", ns.Name);
+                return string.Join(Environment.NewLine, usingsFormats.ToArray());
             }
         }
         public static IEnumerable<NameSpaceInfo> NamespaceInfos
@@ -114,7 +119,6 @@ namespace Rex.Utilities
             }
             return string.Empty;
         }
-        private static List<NameSpaceInfo> namespaceInfos;
         /// <summary>
         /// Refreshes the <see cref="NameSpaceInfo"/> list.
         /// </summary>
@@ -249,7 +253,16 @@ namespace Rex.Utilities
             }
 
             if (nested.IsEmpty())
-                return new MemberDetails(new[] { Syntax.NewType(showFullName ? t.FullName : t.Name) });
+            {
+                if (showFullName && t.FullName != null)
+                {
+                    return new MemberDetails(new[] {
+                        Syntax.NameSpaceForType(t.FullName.Substring(0, t.FullName.Length- t.Name.Length)),
+                        Syntax.NewType(t.Name)
+                    });
+                }
+                return new MemberDetails(new[] { Syntax.NewType(t.Name) });
+            }
             else
                 return new MemberDetails(nested.Concat(new[] { Syntax.NewType(t.Name) }));
 
@@ -261,16 +274,26 @@ namespace Rex.Utilities
             {
                 var nested = NestedType(t, showFullName);
 
-                var value = showFullName && nested.IsEmpty() ? t.FullName : t.Name;
-                if (value.IndexOf("`") > -1)
+                var name = t.Name;
+                if (name.IndexOf("`") > -1)
                 {
-                    value = value.Substring(0, value.IndexOf("`"));
+                    name = name.Substring(0, name.IndexOf("`"));
                 }
 
                 var details = new List<Syntax>();
                 details.AddRange(nested);
-                details.Add(Syntax.NewType(value));
 
+                if (showFullName)
+                {
+                    details.AddRange(new[] {
+                        Syntax.NameSpaceForType(t.FullName.Substring(0, t.FullName.Length - t.Name.Length)),
+                        Syntax.NewType(name)
+                    });
+                }
+                else
+                {
+                    details.Add(Syntax.NewType(name));
+                }
                 var genericArguments = GenericArgumentsToSyntax(availableArguments, showFullName);
 
                 // If there are type arguments, add them with < >

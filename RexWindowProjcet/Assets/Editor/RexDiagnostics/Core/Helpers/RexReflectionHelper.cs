@@ -69,12 +69,15 @@ namespace Rex.Utilities.Helpers
             }
         }
 
+        public static bool IsCompilerGenerated(Type type)
+        {
+            return type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Length > 0;
+        }
 
         public static bool IsAnonymousType(Type type)
         {
-            var hasCompilerGeneratedAttribute = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Length > 0;
             var nameContainsAnonymousType = type.FullName.Contains("AnonymousType") || type.FullName.Contains("<>__AnonType");
-            var isAnonymousType = hasCompilerGeneratedAttribute && nameContainsAnonymousType;
+            var isAnonymousType = IsCompilerGenerated(type) && nameContainsAnonymousType;
             return isAnonymousType;
             //return Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute), false) && type.IsGenericType
             //       && (type.Name.Contains("AnonymousType") || type.FullName.Contains("<>__AnonType"))

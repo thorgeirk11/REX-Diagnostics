@@ -35,7 +35,6 @@ namespace Rex.Utilities.Test
             RexISM.Update();
             Assert.AreEqual(RexInputState.NoInput, RexISM.State);
 
-            //ISM.Code = "Math.PI";
             RexISM.Enter_Typing();
             Assert.AreEqual(RexInputState.Typing, RexISM.State);
             Assert.IsTrue(RexISM.DisplayHelp);

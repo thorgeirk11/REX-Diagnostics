@@ -44,7 +44,10 @@ namespace Rex.Utilities.Helpers
                 if (!File.Exists(RexUtils.UsingsFileName))
                     File.Create(RexUtils.UsingsFileName);
 
-                using (var writer = File.AppendText(RexUtils.UsingsFileName)) writer.WriteLine(nameSpace);
+                using (var writer = File.AppendText(RexUtils.UsingsFileName))
+                {
+                    writer.WriteLine(nameSpace);
+                }
                 Usings.Add(nameSpace);
             }
         }
