@@ -876,7 +876,7 @@ namespace Rex.Utilities
 			syntax.Add(Syntax.Space);
 			syntax.Add(Syntax.CurlyClose);
 
-			return new MemberDetails(syntax);
+			return new MemberDetails(syntax) { Type = MemberType.Property };
 		}
 
 		/// <summary>
@@ -922,7 +922,7 @@ namespace Rex.Utilities
 				syntax.AddRange(GetSyntaxForValue(value));
 			}
 
-			return new MemberDetails(syntax);
+			return new MemberDetails(syntax) { Type = MemberType.Field };
 		}
 
 
@@ -962,7 +962,7 @@ namespace Rex.Utilities
 					syntax.AddRange(new[] { Syntax.Comma, Syntax.Space });
 			}
 			syntax.Add(Syntax.ParaClose);
-			return new MemberDetails(syntax);
+			return new MemberDetails(syntax) { Type = MemberType.Method };
 		}
 
 		/// <summary>
