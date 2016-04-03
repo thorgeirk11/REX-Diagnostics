@@ -99,6 +99,7 @@ namespace Rex.Utilities.Helpers
 
         public static Syntax Name(string name) { return new Syntax(name, SyntaxType.Name); }
         public static Syntax Keyword(string keyword) { return new Syntax(keyword, SyntaxType.Keyword); }
+        public static Syntax NameSpaceForType(string nameSpace) { return new Syntax(nameSpace, SyntaxType.NameSpaceForType); }
         public static Syntax NewType(string typeStr) { return new Syntax(typeStr, SyntaxType.Type); }
         public static Syntax ParaName(string name) { return new Syntax(name, SyntaxType.ParaName); }
         public static Syntax ConstVal(string v) { return new Syntax(v, SyntaxType.ConstVal); }
@@ -166,5 +167,6 @@ namespace Rex.Utilities.Helpers
         Space,
         QuotationMark,
         SingleQuotationMark,
+        NameSpaceForType,
     }
 }
