@@ -62,8 +62,8 @@ namespace Rex.Utilities
 			"UnityEngine",
 		};
 		public static readonly string[] IgnoreUsings = new[] {
-            //"Rex",
-            "NUnit",
+			//"Rex",
+			"NUnit",
 			"antlr",
 			"CompilerGenerated",
 			"TreeEditor",
@@ -79,7 +79,7 @@ namespace Rex.Utilities
 		#endregion
 
 		#region NameSpace related
-		
+
 		public static IEnumerable<NameSpaceInfo> NamespaceInfos
 		{
 			get
@@ -230,6 +230,12 @@ namespace Rex.Utilities
 		private static MemberDetails DealWithRefParameters(Type t, bool showFullName)
 		{
 			var nested = NestedType(t, showFullName);
+
+			if (t.IsArray)
+			{
+				return new MemberDetails(nested);
+			}
+
 			if (!showFullName)
 			{
 				var typeName = t.Name.TrimEnd('&');
@@ -305,7 +311,7 @@ namespace Rex.Utilities
 		{
 			if (t.IsArray)
 			{
-				return NestedType(t.GetElementType(), showFullName);
+				return GetCSharpRepresentation(t.GetElementType(), showFullName).Concat(new[] { Syntax.BracketOpen, Syntax.BracketClose });
 			}
 			if (!t.IsGenericParameter && t.DeclaringType != null)
 			{

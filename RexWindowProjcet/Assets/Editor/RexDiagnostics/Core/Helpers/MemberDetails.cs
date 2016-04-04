@@ -114,6 +114,8 @@ namespace Rex.Utilities.Helpers
 		public static readonly Syntax ParaClose = new Syntax(")", SyntaxType.ParanClose);
 		public static readonly Syntax CurlyOpen = new Syntax("{", SyntaxType.CurlyOpen);
 		public static readonly Syntax CurlyClose = new Syntax("}", SyntaxType.CurlyClose);
+		public static readonly Syntax BracketOpen = new Syntax("[", SyntaxType.BracketOpen);
+		public static readonly Syntax BracketClose = new Syntax("]", SyntaxType.BracketClose);
 		public static readonly Syntax Empty = new Syntax(string.Empty, SyntaxType._Default);
 		public static readonly Syntax Dot = new Syntax(".", SyntaxType.Dot);
 		public static readonly Syntax Comma = new Syntax(",", SyntaxType.Comma);
@@ -164,5 +166,7 @@ namespace Rex.Utilities.Helpers
 		QuotationMark,
 		SingleQuotationMark,
 		NameSpaceForType,
+		BracketOpen,
+		BracketClose,
 	}
 }

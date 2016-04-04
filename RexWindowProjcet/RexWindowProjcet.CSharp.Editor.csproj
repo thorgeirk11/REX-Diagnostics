@@ -118,6 +118,7 @@
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\ExtentionMethods.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\MacroHandler.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\MemberDetails.cs" />
+    <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\MemberType.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\NameSpaceInfo.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\RexReflectionHelper.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\UsingsHandler.cs" />

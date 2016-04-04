@@ -209,6 +209,7 @@ namespace Rex.Utilities
 			return false;
 		}
 		#endregion
+
 		#region Compile
 		public static CompiledExpression Compile(ParseResult parseResult)
 		{
@@ -235,7 +236,7 @@ namespace Rex.Utilities
 							return new CompiledExpression
 							{
 								Parse = parseResult,
-								Errors = Errors
+								Errors = new List<string> { result.Errors.Cast<CompilerError>().First().ErrorText }
 							};
 						}
 						if (canditateTypes.Length > 1)
@@ -341,19 +342,19 @@ namespace Rex.Utilities
 		private static string ActionBodyWrapper(string returnstring)
 		{
 			return string.Format(@"
-        public Action {0}() 
-        {{ 
-            return new Action(() => {1});
-        }}", RexUtils.FuncName, returnstring);
+		public Action {0}() 
+		{{ 
+			return new Action(() => {1});
+		}}", RexUtils.FuncName, returnstring);
 		}
 
 		private static string FuncBodyWrapper(string returnstring)
 		{
 			return string.Format(@"
-        public Func<object> {0}() 
-        {{ 
-            return new Func<object>(() => {1});
-        }}", RexUtils.FuncName, returnstring);
+		public Func<object> {0}() 
+		{{ 
+			return new Func<object>(() => {1});
+		}}", RexUtils.FuncName, returnstring);
 		}
 
 		private static string GetVaribleWrapper()
@@ -364,15 +365,15 @@ namespace Rex.Utilities
 			_wrapperVariables = Variables.Aggregate("", (codeString, var) =>
 				 codeString + Environment.NewLine +
 				 string.Format(@"    {0} {1} 
-        {{
-            get
-            {{
-                if (!Rex.Utilities.RexHelper.Variables.ContainsKey(""{1}""))
-                    throw new Rex.Utilities.Helpers.AccessingDeletedVariableException() {{ VarName = ""{1}"" }};
-                return ({0})Rex.Utilities.RexHelper.Variables[""{1}""].VarValue;
-            }}
-            set {{ Rex.Utilities.RexHelper.Variables[""{1}""].VarValue = value; }}
-        }}",
+		{{
+			get
+			{{
+				if (!Rex.Utilities.RexHelper.Variables.ContainsKey(""{1}""))
+					throw new Rex.Utilities.Helpers.AccessingDeletedVariableException() {{ VarName = ""{1}"" }};
+				return ({0})Rex.Utilities.RexHelper.Variables[""{1}""].VarValue;
+			}}
+			set {{ Rex.Utilities.RexHelper.Variables[""{1}""].VarValue = value; }}
+		}}",
 			  RexUtils.GetCSharpRepresentation(var.Value.VarType, true).ToString(), var.Key));
 			_currentWrapperVaribles = Variables.Keys.ToArray();
 			return _wrapperVariables;
@@ -711,6 +712,7 @@ namespace Rex.Utilities
 			}
 			outputList.AddFirst(output);
 		}
+
 		public static void ClearOutput()
 		{
 			outputList.Clear();
@@ -886,6 +888,7 @@ namespace Rex.Utilities
 		internal static MemberDetails GetMemberDetails(FieldInfo field)
 		{
 			var syntax = new List<Syntax>();
+
 			if (field.IsStatic && !field.IsLiteral)
 				syntax.AddRange(new[] { Syntax.StaticKeyword, Syntax.Space });
 
@@ -894,8 +897,7 @@ namespace Rex.Utilities
 
 			if (field.IsLiteral)
 				syntax.AddRange(new[] { Syntax.ConstKeyword, Syntax.Space });
-
-
+			
 			syntax.AddRange(RexUtils.GetCSharpRepresentation(field.FieldType));
 			syntax.AddRange(new[] { Syntax.Space, Syntax.Name(field.Name) });
 
@@ -924,7 +926,6 @@ namespace Rex.Utilities
 
 			return new MemberDetails(syntax) { Type = MemberType.Field };
 		}
-
 
 		/// <summary>
 		/// Uses the method info to build an member details.
@@ -996,6 +997,22 @@ namespace Rex.Utilities
 				};
 			}
 
+			var constVal = value.ToString();
+			var enumerableItems = "";
+			if (!RexReflectionHelper.IsOverridingToStirng(type) &&
+				value is IEnumerable &&
+				RexReflectionHelper.ExtractValue(value, out enumerableItems))
+			{
+				return RexUtils.GetCSharpRepresentation(type).Concat(new[]
+				{
+					Syntax.Space,
+					Syntax.CurlyOpen,
+					Syntax.Space,
+					Syntax.ConstVal(enumerableItems.Replace("\n","\\n")),
+					Syntax.Space,
+					Syntax.CurlyClose
+				});
+			}
 			return new[] { Syntax.ConstVal(value.ToString()) };
 		}
 		#endregion
