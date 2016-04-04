@@ -45,10 +45,6 @@ namespace Rex.Utilities
 
 		public static List<NameSpaceInfo> namespaceInfos;
 
-		public static readonly Regex Assignment = new Regex(@"^(?<type>\S*\s+)?(?<var>[^ .,=]+)\s*=(?<expr>[^=].*)$", RegexOptions.Compiled | RegexOptions.Singleline);
-		public static readonly Regex DotExpressionSearch = new Regex(@"^(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<search>\w*)$", RegexOptions.Compiled);
-		public static readonly Regex ParameterRegex = new Regex(@"(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<search>\w*)(\((?<para>[^)]*))$", RegexOptions.Compiled);
-		public static readonly Regex DotAfterMethodRegex = new Regex(@"(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<method>\w*)[(](?<params>[^)]*)[)]\.", RegexOptions.Compiled);
 
 		public const BindingFlags InstanceBindings = BindingFlags.Public | BindingFlags.Instance;
 		public const BindingFlags StaticBindings = BindingFlags.Public | BindingFlags.Static;
@@ -214,6 +210,7 @@ namespace Rex.Utilities
 			var method = Class.GetType().GetMethod(FuncName);
 			return method.Invoke(Class, null) as T;
 		}
+
 		public static MemberDetails GetCSharpRepresentation(Type t)
 		{
 			return GetCSharpRepresentation(t, false);
@@ -374,60 +371,6 @@ namespace Rex.Utilities
 
 			return genericArguments;
 		}
-
-		public static CSharpCodeProvider Compiler
-		{
-			get
-			{
-				if (compiler == null)
-				{
-					var providerOptions = new Dictionary<string, string>();
-					providerOptions.Add("CompilerVersion", "v4.0");
-					compiler = new CSharpCodeProvider(providerOptions);
-				}
-				return compiler;
-			}
-		}
-
-		private static CSharpCodeProvider compiler;
-		private static string[] currentAssemblies;
-
-		public static CompilerResults CompileCode(string code)
-		{
-			var compilerOptions = new CompilerParameters(GetCurrentAssemblies())
-			{
-				GenerateExecutable = false,
-				GenerateInMemory = false
-			};
-
-			return Compiler.CompileAssemblyFromSource(compilerOptions, code);
-		}
-
-		static string[] GetCurrentAssemblies()
-		{
-			if (currentAssemblies != null)
-				return currentAssemblies;
-
-			var assemblies = new List<string>();
-			foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				try
-				{
-					var location = assembly.Location;
-					if (!string.IsNullOrEmpty(location))
-					{
-						assemblies.Add(location);
-					}
-				}
-				catch (NotSupportedException)
-				{
-					// this happens for dynamic assemblies, so just ignore it. 
-				}
-			}
-			currentAssemblies = assemblies.ToArray();
-			return currentAssemblies;
-		}
-
 
 		public static readonly Dictionary<SyntaxType, string> SyntaxHighlightColors = new Dictionary<SyntaxType, string>
 		{

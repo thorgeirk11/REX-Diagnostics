@@ -871,7 +871,7 @@ namespace Rex.Window
 											Syntax.Space, Syntax.Name(VarName),
 											Syntax.Space, Syntax.EqualsOp,
 											Syntax.Space
-										}).Concat(RexHelper.GetSyntaxForValue(var.VarValue))
+										}).Concat(RexReflectionUtils.GetSyntaxForValue(var.VarValue))
 									);
 				defaultMsg = var.VarValue.ToString();
 			}
@@ -886,7 +886,7 @@ namespace Rex.Window
 			{
 				// Construct a new output entry...
 				var ouput = new ConsoleOutput();
-				ouput.LoadInDetails(var.VarValue, defaultMsg, Utilities.Helpers.RexReflectionHelper.ExtractDetails(var.VarValue));
+				ouput.LoadInDetails(var.VarValue, defaultMsg, Utilities.Helpers.RexReflectionUtils.ExtractDetails(var.VarValue));
 				RexHelper.AddOutput(ouput);
 			}
 
