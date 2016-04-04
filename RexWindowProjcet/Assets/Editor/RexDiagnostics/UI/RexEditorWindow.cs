@@ -436,7 +436,7 @@ namespace Rex.Window
 				var help = RexISM.IntelliSenceHelp.Where(i => !i.IsMethodOverload).ToList();
 				intelliRect = DisplayHelp(intelliRect, help, canSelect, ref intelliScroll);
 
-				//Deal with Overloads
+				// Deal with Overloads
 				var overloads = RexISM.IntelliSenceHelp.Where(i => i.IsMethodOverload);
 				intelliRect.y += intelliRect.height;
 				if (overloads.Any())
@@ -460,7 +460,7 @@ namespace Rex.Window
 			};
 			for (int i = 0; i < help.Count; i++)
 			{
-				var helpstr = help[i].Details.Type + " " + RexUIUtils.SyntaxHighlingting(help[i].Details, help[i].Search);
+				var helpstr = RexUIUtils.SyntaxHighlingting(help[i].Details, help[i].Search);
 				var rect = new Rect(1, i * lineHeigth, intelliRect.width, intelliRect.height);
 
 				if (IsSelectable && i == RexISM.SelectedHelp)

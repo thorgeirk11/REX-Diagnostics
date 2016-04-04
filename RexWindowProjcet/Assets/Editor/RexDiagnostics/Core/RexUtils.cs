@@ -214,8 +214,11 @@ namespace Rex.Utilities
 			var method = Class.GetType().GetMethod(FuncName);
 			return method.Invoke(Class, null) as T;
 		}
-
-		public static MemberDetails GetCSharpRepresentation(Type t, bool showFullName = false)
+		public static MemberDetails GetCSharpRepresentation(Type t)
+		{
+			return GetCSharpRepresentation(t, false);
+		}
+		public static MemberDetails GetCSharpRepresentation(Type t, bool showFullName)
 		{
 			if (t.IsGenericType)
 			{
@@ -269,12 +272,14 @@ namespace Rex.Utilities
 		{
 			if (t.IsGenericType)
 			{
-				var nested = NestedType(t, showFullName);
+				var nested = NestedType(t, false);
 
+				bool isGeneric = false;
 				var name = t.Name;
 				if (name.IndexOf("`") > -1)
 				{
 					name = name.Substring(0, name.IndexOf("`"));
+					isGeneric = true;
 				}
 
 				var details = new List<Syntax>();
@@ -282,10 +287,19 @@ namespace Rex.Utilities
 
 				if (showFullName)
 				{
-					details.AddRange(new[] {
-						Syntax.NameSpaceForType(t.FullName.Substring(0, t.FullName.Length - t.Name.Length)),
-						Syntax.NewType(name)
-					});
+					string declaringNamespace;
+					if (isGeneric)
+					{
+						declaringNamespace = t.FullName.Substring(0, t.FullName.IndexOf("`") - name.Length);
+						declaringNamespace = declaringNamespace.Replace('+', '.');
+					}
+					else
+					{
+						declaringNamespace = t.FullName.Substring(0, t.FullName.Length - t.Name.Length);
+					}
+					declaringNamespace = declaringNamespace.Substring(0, declaringNamespace.Length - nested.Sum(i => i.String.Length));
+					details.Insert(0, Syntax.NameSpaceForType(declaringNamespace));
+					details.Add(Syntax.NewType(name));
 				}
 				else
 				{

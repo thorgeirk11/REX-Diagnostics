@@ -651,30 +651,24 @@ namespace Rex.Utilities
 								SearchName = lowerItem,
 								IsNested = false,
 								ReplacementString = i.Key,
-								Details = new MemberDetails(i.Value.VarValue == null ? new[] {
-									Syntax.Name(i.Key),
-									Syntax.Space, Syntax.EqualsOp,
-									Syntax.Space, Syntax.ConstVal("null")
-								} :
-								RexUtils.GetCSharpRepresentation(i.Value.VarType, false)
-								.Concat(new[] {
+								Details = new MemberDetails(i.Value.VarValue,
+									RexUtils.GetCSharpRepresentation(i.Value.VarType, false).Concat(new[] {
 									Syntax.Space, Syntax.Name(i.Key),
 									Syntax.Space, Syntax.EqualsOp,
-									Syntax.Space
-								}).Concat(GetSyntaxForValue(i.Value.VarValue))),
+									Syntax.Space}).Concat(GetSyntaxForValue(i.Value.VarValue))),
 								isInScope = true
 							};
 
-			var types = from t in RexUtils.AllVisibleTypes
-						let lowerItem = t.Name.ToLower()
-						where lowerItem.Contains(lowerSearch) && !RexReflectionHelper.IsCompilerGenerated(t)
-						let isInScope = RexUtils.NamespaceInfos.Any(i => i.Name == t.Namespace && i.Selected)
+			var types = from type in RexUtils.AllVisibleTypes
+						let lowerItem = type.Name.ToLower()
+						where lowerItem.Contains(lowerSearch) && !RexReflectionHelper.IsCompilerGenerated(type)
+						let isInScope = RexUtils.NamespaceInfos.Any(i => i.Name == type.Namespace && i.Selected)
 						select new
 						{
 							SearchName = lowerItem,
-							t.IsNested,
-							ReplacementString = GetNestedName(t),
-							Details = RexUtils.GetCSharpRepresentation(t, !isInScope),
+							type.IsNested,
+							ReplacementString = GetNestedName(type),
+							Details = RexUtils.GetCSharpRepresentation(type),
 							isInScope
 						};
 
@@ -686,7 +680,8 @@ namespace Rex.Utilities
 					   Start = offset,
 					   End = offset + search.Length - 1,
 					   ReplaceString = i.ReplacementString,//.Details.Name.String,
-					   Search = search.Value
+					   Search = search.Value,
+					   IsInScope = i.isInScope
 				   };
 		}
 
@@ -831,19 +826,19 @@ namespace Rex.Utilities
 			//}
 
 			var lowerSearch = search.Value.ToLower();
-			return (from item in helpList
-					from val in item.Value
-					let lowerItem = item.Key.ToLower()
-					where lowerItem.Contains(lowerSearch)
-					orderby lowerItem.IndexOf(lowerSearch), lowerItem
-					select new CodeCompletion
-					{
-						Details = val,
-						ReplaceString = val.Name.String,
-						Start = offset + search.Index,
-						End = offset + search.Index + search.Length - 1,
-						Search = search.Value
-					});
+			return from help in helpList
+				   from val in help.Value
+				   let lowerItem = help.Key.ToLower()
+				   where lowerItem.Contains(lowerSearch)
+				   orderby lowerItem.IndexOf(lowerSearch), lowerItem
+				   select new CodeCompletion
+				   {
+					   Details = val,
+					   ReplaceString = val.Name.String,
+					   Start = offset + search.Index,
+					   End = offset + search.Index + search.Length - 1,
+					   Search = search.Value
+				   };
 		}
 
 		/// <summary>
@@ -889,15 +884,15 @@ namespace Rex.Utilities
 		{
 			var syntax = new List<Syntax>();
 
-			if (field.IsStatic && !field.IsLiteral)
-				syntax.AddRange(new[] { Syntax.StaticKeyword, Syntax.Space });
+			//if (field.IsStatic && !field.IsLiteral)
+			//	syntax.AddRange(new[] { Syntax.StaticKeyword, Syntax.Space });
 
 			if (field.IsInitOnly)
 				syntax.AddRange(new[] { Syntax.ReadonlyKeyword, Syntax.Space });
 
 			if (field.IsLiteral)
 				syntax.AddRange(new[] { Syntax.ConstKeyword, Syntax.Space });
-			
+
 			syntax.AddRange(RexUtils.GetCSharpRepresentation(field.FieldType));
 			syntax.AddRange(new[] { Syntax.Space, Syntax.Name(field.Name) });
 
@@ -935,8 +930,8 @@ namespace Rex.Utilities
 		{
 			var syntax = new List<Syntax>();
 
-			if (meth.IsStatic)
-				syntax.AddRange(new[] { Syntax.StaticKeyword, Syntax.Space });
+			//if (meth.IsStatic)
+			//	syntax.AddRange(new[] { Syntax.StaticKeyword, Syntax.Space });
 
 			syntax.AddRange(RexUtils.GetCSharpRepresentation(meth.ReturnType));
 			syntax.AddRange(new[] { Syntax.Space, Syntax.Name(meth.Name) });
