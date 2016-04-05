@@ -26,8 +26,10 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 	private static volatile CompiledExpression _currentCompiledExpression;
 	public static readonly object CompilerLockObject = new object();
 
-	private static IEnumerable<string> _currentWrapperVaribles = new string[0];
+	private static Dictionary<string, RexHelper.Varible> _currentWrapperVaribles = new Dictionary<string, RexHelper.Varible>();
+
 	private static string _wrapperVariables = string.Empty;
+	private static IRexParser parser = new RexParser();
 
 	public void OnEnable()
 	{
@@ -111,7 +113,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 	{
 		public void CompileCode(object code)
 		{
-			var parseResult = RexParser.ParseAssigment((string)code);
+			var parseResult = parser.ParseAssigment((string)code);
 			var result = Compile(parseResult);
 			if (!_shouldStop)
 			{
@@ -306,7 +308,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 
 	private static string GetVaribleWrapper()
 	{
-		if (RexHelper.Variables.Keys.SequenceEqual(_currentWrapperVaribles))
+		if (RexHelper.Variables.SequenceEqual(_currentWrapperVaribles))
 			return _wrapperVariables;
 
 		_wrapperVariables = RexHelper.Variables.Aggregate("", (codeString, var) =>
@@ -322,7 +324,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 			set {{ Rex.Utilities.RexHelper.Variables[""{1}""].VarValue = value; }}
 		}}",
 		  RexUtils.GetCSharpRepresentation(var.Value.VarType, true).ToString(), var.Key));
-		_currentWrapperVaribles = RexHelper.Variables.Keys.ToArray();
+		_currentWrapperVaribles = RexHelper.Variables.ToDictionary(i => i.Key, i => i.Value);
 		return _wrapperVariables;
 	}
 	#endregion

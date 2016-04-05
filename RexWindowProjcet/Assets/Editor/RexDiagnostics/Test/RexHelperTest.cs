@@ -14,24 +14,21 @@ namespace Rex.Utilities.Test
 		{
 			RexUtils.UsingsFileName = "testUsings.txt";
 			RexUtils.MacroDirectory = "TestMacros";
-			RexHelper.Variables.Clear();
-			RexHelper.ClearOutput();
-			//History = new Dictionary<string, HistoryItem>();
+			if (Parser == null)
+				Parser = new RexParser();
 
 			var expression = "1+1";
-			var pResult = RexParser.ParseAssigment(expression);
+			var pResult = Parser.ParseAssigment(expression);
 			var cResult = RexCompileEngine.Compile(pResult);
 			var output = RexHelper.Execute<DummyOutput>(cResult);
 			Assert.AreEqual(2, output.Value);
-		}
 
-		[SetUp]
-		public void Setup()
-		{
 			RexHelper.Variables.Clear();
 			RexHelper.ClearOutput();
-			foreach (var output in RexHelper.Messages) output.Value.Clear();
+			foreach (var o in RexHelper.Messages) o.Value.Clear();
 		}
+
+		RexParser Parser { get; set; }
 
 		[Test]
 		public void TopLevelNameSpaceTest()
@@ -45,7 +42,7 @@ namespace Rex.Utilities.Test
 		public void CompileFailTest()
 		{
 			var expression = "1 / 0";
-			var pResult = RexParser.ParseAssigment(expression);
+			var pResult = Parser.ParseAssigment(expression);
 			Assert.AreEqual(expression, pResult.ExpressionString);
 			Assert.AreEqual(expression, pResult.WholeCode);
 			Assert.IsFalse(pResult.IsDeclaring);
@@ -157,11 +154,32 @@ namespace Rex.Utilities.Test
 			Assert.AreEqual(new[] { 1 }, RexHelper.Variables["x"].VarValue);
 		}
 
+
+		[Test]
+		public void OverrideVaribleTest()
+		{
+			var output = CompileAndRun("myX = new List<int>()");
+			Assert.AreEqual(output.Value, RexHelper.Variables["myX"].VarValue);
+			Assert.IsTrue(ReferenceEquals(output.Value, RexHelper.Variables["myX"].VarValue));
+
+			output = CompileAndRun("myX.Add(1)");
+			Assert.IsNull(output.Value);
+			Assert.AreEqual(new[] { 1 }, RexHelper.Variables["myX"].VarValue);
+
+			output = CompileAndRun("myX = 15");
+			Assert.AreEqual(output.Value, RexHelper.Variables["myX"].VarValue);
+			Assert.AreEqual(15, output.Value);
+
+			Assert.AreEqual(CompileAndRun(@"myX = ""This is a string""").Value, CompileAndRun(@"myY = myX").Value);
+			Assert.AreEqual("This is a string", RexHelper.Variables["myX"].VarValue);
+			Assert.AreEqual("This is a string", RexHelper.Variables["myY"].VarValue);
+		}
+
 		[Test]
 		public void SimpleExpressionTest()
 		{
 			var expression = "1+1";
-			var pResult = RexParser.ParseAssigment(expression);
+			var pResult = Parser.ParseAssigment(expression);
 			Assert.AreEqual(expression, pResult.ExpressionString);
 			Assert.AreEqual(expression, pResult.WholeCode);
 			Assert.IsFalse(pResult.IsDeclaring);
@@ -219,7 +237,7 @@ namespace Rex.Utilities.Test
 		public void SimpleAssigmentTest()
 		{
 			var expression = "x = 1 + 1";
-			var pResult = RexParser.ParseAssigment(expression);
+			var pResult = Parser.ParseAssigment(expression);
 			Assert.AreEqual("1 + 1", pResult.ExpressionString);
 			Assert.AreEqual(expression, pResult.WholeCode);
 			Assert.IsTrue(pResult.IsDeclaring);
@@ -239,7 +257,7 @@ namespace Rex.Utilities.Test
 		{
 			var expr = "new Func<int, bool>(i => i < 5)";
 			var expression = "x = " + expr;
-			var pResult = RexParser.ParseAssigment(expression);
+			var pResult = Parser.ParseAssigment(expression);
 			Assert.AreEqual(expr, pResult.ExpressionString);
 			Assert.AreEqual(expression, pResult.WholeCode);
 			Assert.IsTrue(pResult.IsDeclaring);
@@ -260,7 +278,7 @@ namespace Rex.Utilities.Test
 		{
 			var expr = "new[] { 1, 2, 3 }.Select(i => i)";
 			var expression = "x = " + expr;
-			var pResult = RexParser.ParseAssigment(expression);
+			var pResult = Parser.ParseAssigment(expression);
 			Assert.AreEqual(expr, pResult.ExpressionString);
 			Assert.AreEqual(expression, pResult.WholeCode);
 			Assert.IsTrue(pResult.IsDeclaring);
@@ -294,12 +312,11 @@ namespace Rex.Utilities.Test
 
 		public static DummyOutput CompileAndRun(string code)
 		{
-			var pResult = RexParser.ParseAssigment(code);
+			var pResult = new RexParser().ParseAssigment(code);
 			var cResult = RexCompileEngine.Compile(pResult);
 			return RexHelper.Execute<DummyOutput>(cResult);
 		}
 	}
-
 
 	public class DummyOutput : AConsoleOutput
 	{

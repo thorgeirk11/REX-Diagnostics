@@ -18,19 +18,22 @@ namespace Rex.Utilities.Test
 			RexUtils.UsingsFileName = "testUsings.txt";
 			RexUtils.MacroDirectory = "TestMacros";
 			RexUtils.LoadNamespaceInfos(true);
+			Parser = new RexParser();
 		}
+
+		RexParser Parser { get; set; }
 
 		[Test]
 		public void SimpleIntellisensTest()
 		{
 			SetVar("x", new DummyOutput());
 
-			var helpInfo = RexParser.Intellisence("x.").Select(i => i.Details.ToString());
+			var helpInfo = Parser.Intellisence("x.").Select(i => i.Details.ToString());
 			CollectionAssert.Contains(helpInfo, "object Value { get; set; }");
 			CollectionAssert.Contains(helpInfo, "string ToString()");
 			CollectionAssert.Contains(helpInfo, "Func<string> toString");
 
-			helpInfo = RexParser.Intellisence("x.ToStrin").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisence("x.ToStrin").Select(i => i.Details.ToString());
 			Assert.AreEqual(2, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "string ToString()");
 			CollectionAssert.Contains(helpInfo, "Func<string> toString"); ;
@@ -39,14 +42,14 @@ namespace Rex.Utilities.Test
 		[Test]
 		public void SimpleStaticIntellisensTest()
 		{
-			var helpInfo = RexParser.Intellisence("Math.Ab").Select(i => i.Details.ToString());
+			var helpInfo = Parser.Intellisence("Math.Ab").Select(i => i.Details.ToString());
 			Assert.AreEqual(7, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "sbyte Abs(sbyte value)");
 
-			helpInfo = RexParser.Intellisence("Math.Abs.").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisence("Math.Abs.").Select(i => i.Details.ToString());
 			Assert.IsEmpty(helpInfo);
 
-			helpInfo = RexParser.Intellisence("Math.Abs(").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisence("Math.Abs(").Select(i => i.Details.ToString());
 			Assert.AreEqual(7, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "sbyte Abs(sbyte value)");
 		}
@@ -54,57 +57,57 @@ namespace Rex.Utilities.Test
 		[Test]
 		public void TypeNotFoundTest()
 		{
-			var helpInfo = RexParser.Intellisence("ASDASDASDASDASDASD");
+			var helpInfo = Parser.Intellisence("ASDASDASDASDASDASD");
 			Assert.IsEmpty(helpInfo);
-			helpInfo = RexParser.Intellisence("Math.PI.ToString().g");
+			helpInfo = Parser.Intellisence("Math.PI.ToString().g");
 			Assert.IsNotEmpty(helpInfo);
 		}
 
 		[Test]
 		public void GetNestedNameTest()
 		{
-			var name = RexParser.GetNestedName(typeof(NestedTest.MyNestedClass.NestTest2));
+			var name = Parser.GetNestedName(typeof(NestedTest.MyNestedClass.NestTest2));
 			Assert.AreEqual("NestedTest.MyNestedClass.NestTest2", name);
 
-			name = RexParser.GetNestedName(typeof(NestedTest.MyNestedClass));
+			name = Parser.GetNestedName(typeof(NestedTest.MyNestedClass));
 			Assert.AreEqual("NestedTest.MyNestedClass", name);
 
-			name = RexParser.GetNestedName(typeof(NestedTest));
+			name = Parser.GetNestedName(typeof(NestedTest));
 			Assert.AreEqual("NestedTest", name);
 		}
 
 		[Test]
 		public void SimpleMethodTest()
 		{
-			var helpInfo = RexParser.Intellisence("Math.PI.ToString()").Select(i => i.Details.ToString()); ;
+			var helpInfo = Parser.Intellisence("Math.PI.ToString()").Select(i => i.Details.ToString()); ;
 			Assert.IsEmpty(helpInfo);
 
-			helpInfo = RexParser.Intellisence("a = new Action(").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisence("a = new Action(").Select(i => i.Details.ToString());
 			CollectionAssert.Contains(helpInfo, "Action");
 			CollectionAssert.Contains(helpInfo, "Action<T>");
 			CollectionAssert.Contains(helpInfo, "Action<T1, T2>");
 
-			helpInfo = RexParser.Intellisence("Math.PI.GetHashCode().ToString(").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisence("Math.PI.GetHashCode().ToString(").Select(i => i.Details.ToString());
 			Assert.IsEmpty(helpInfo);
 		}
 
 		[Test]
 		public void SimpleAfterMethodTest()
 		{
-			var helpInfo = RexParser.Intellisence("Math.Abs(-2).MaxValue");
+			var helpInfo = Parser.Intellisence("Math.Abs(-2).MaxValue");
 			Assert.IsEmpty(helpInfo);
 
 			var match = RexParser.DotAfterMethodRegex.Match("Math.Abs(-2).MaxValue");
-			var possibleMethods = RexParser.PossibleMethods(match);
+			var possibleMethods = Parser.PossibleMethods(match);
 			Assert.AreEqual(7, possibleMethods.Count());
 
 
 			match = RexParser.DotAfterMethodRegex.Match("Math.ToString().Lenght");
-			possibleMethods = RexParser.PossibleMethods(match);
+			possibleMethods = Parser.PossibleMethods(match);
 			Assert.AreEqual(1, possibleMethods.Count());
 
-			var afterMethod = RexParser.Intellisence("Math.ToString().").ToList();
-			var SameType = RexParser.Intellisence("Math.PI.ToString().").ToList();
+			var afterMethod = Parser.Intellisence("Math.ToString().").ToList();
+			var SameType = Parser.Intellisence("Math.PI.ToString().").ToList();
 
 			Assert.AreEqual(SameType.Count, afterMethod.Count);
 			for (int i = 0; i < afterMethod.Count; i++)
@@ -119,18 +122,18 @@ namespace Rex.Utilities.Test
 			var x = new RecursiveTest(null);
 			SetVar("x", new RecursiveTest(x));
 
-			var helpInfo = RexParser.Intellisence("x.Recursion").Select(i => i.Details.ToString());
+			var helpInfo = Parser.Intellisence("x.Recursion").Select(i => i.Details.ToString());
 			Assert.AreEqual(2, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "RecursiveTest RecursionProp { get; set; }");
 			CollectionAssert.Contains(helpInfo, "readonly RecursiveTest RecursionField");
 
 
-			helpInfo = RexParser.Intellisence("x.RecursionProp.Recursion").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisence("x.RecursionProp.Recursion").Select(i => i.Details.ToString());
 			Assert.AreEqual(2, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "RecursiveTest RecursionProp { get; set; }");
 			CollectionAssert.Contains(helpInfo, "readonly RecursiveTest RecursionField");
 
-			helpInfo = RexParser.Intellisence("x.RecursionField.Recursion").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisence("x.RecursionField.Recursion").Select(i => i.Details.ToString());
 			Assert.AreEqual(2, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "RecursiveTest RecursionProp { get; set; }");
 			CollectionAssert.Contains(helpInfo, "readonly RecursiveTest RecursionField");
@@ -147,44 +150,44 @@ namespace Rex.Utilities.Test
 				}
 			});
 
-			var helpInfo = RexParser.Intellisence("TheA.TheIn").Select(i => i.Details.ToString());
+			var helpInfo = Parser.Intellisence("TheA.TheIn").Select(i => i.Details.ToString());
 			Assert.AreEqual(1, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "I_B TheInterface { get; set; }");
 
-			helpInfo = RexParser.Intellisence("TheA.TheInterface.").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisence("TheA.TheInterface.").Select(i => i.Details.ToString());
 			CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get; }");
 
-			helpInfo = RexParser.Intellisence("TheA.TheInterface.InnerB.").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisence("TheA.TheInterface.InnerB.").Select(i => i.Details.ToString());
 			CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get; }");
 		}
 
 		[Test]
 		public void KeywordToTypeTest()
 		{
-			var helpInfo1 = RexParser.Intellisence("Double.").Select(i => i.Details.ToString());
-			var helpInfo2 = RexParser.Intellisence("double.").Select(i => i.Details.ToString());
+			var helpInfo1 = Parser.Intellisence("Double.").Select(i => i.Details.ToString());
+			var helpInfo2 = Parser.Intellisence("double.").Select(i => i.Details.ToString());
 			Assert.AreEqual(helpInfo1, helpInfo2);
 
-			helpInfo1 = RexParser.Intellisence("Int32.").Select(i => i.Details.ToString());
-			helpInfo2 = RexParser.Intellisence("int.").Select(i => i.Details.ToString());
+			helpInfo1 = Parser.Intellisence("Int32.").Select(i => i.Details.ToString());
+			helpInfo2 = Parser.Intellisence("int.").Select(i => i.Details.ToString());
 			Assert.AreEqual(helpInfo1, helpInfo2);
 
-			helpInfo1 = RexParser.Intellisence("Boolean.").Select(i => i.Details.ToString());
-			helpInfo2 = RexParser.Intellisence("bool.").Select(i => i.Details.ToString());
+			helpInfo1 = Parser.Intellisence("Boolean.").Select(i => i.Details.ToString());
+			helpInfo2 = Parser.Intellisence("bool.").Select(i => i.Details.ToString());
 
-			helpInfo1 = RexParser.Intellisence("String.").Select(i => i.Details.ToString());
-			helpInfo2 = RexParser.Intellisence("string.").Select(i => i.Details.ToString());
+			helpInfo1 = Parser.Intellisence("String.").Select(i => i.Details.ToString());
+			helpInfo2 = Parser.Intellisence("string.").Select(i => i.Details.ToString());
 			Assert.AreEqual(helpInfo1, helpInfo2);
 		}
 
 		[Test]
 		public void DoNotShowStaticOnInstanceTest()
 		{
-			var helpInfo = RexParser.Intellisence("Math.PI.");
+			var helpInfo = Parser.Intellisence("Math.PI.");
 			Assert.IsNotEmpty(helpInfo);
 			Assert.False(helpInfo.Any(i => i.Details.Contains(Syntax.ConstKeyword) || i.Details.Contains(Syntax.StaticKeyword)));
 
-			helpInfo = RexParser.Intellisence("Math.PI.GetType().");
+			helpInfo = Parser.Intellisence("Math.PI.GetType().");
 			Assert.IsNotEmpty(helpInfo);
 		}
 
@@ -195,7 +198,7 @@ namespace Rex.Utilities.Test
 			SetVar("DoubleX", 1.0);
 			SetVar("DoubleY", 1.0);
 			SetVar("DoubleZ", 1.0);
-			var helpInfo = RexParser.Intellisence("Double");
+			var helpInfo = Parser.Intellisence("Double");
 			Assert.IsNotEmpty(helpInfo);
 			var names = helpInfo.Select(i => i.Details.Name.String);
 			foreach (var v in RexHelper.Variables)
@@ -210,7 +213,7 @@ namespace Rex.Utilities.Test
 			IntellisenseInvokeTest invoker;
 			invoker = SetVar("invoker", new IntellisenseInvokeTest());
 
-			var helpInfo = RexParser.Intellisence("invoker.Counter").Select(i => i.Details.ToString()).First();
+			var helpInfo = Parser.Intellisence("invoker.Counter").Select(i => i.Details.ToString()).First();
 			Assert.AreEqual("int Counter { get; }", helpInfo);
 			Assert.AreEqual(0, invoker.counter);
 		}
@@ -218,37 +221,37 @@ namespace Rex.Utilities.Test
 		[Test]
 		public void StaticInterfaceTest()
 		{
-			var helpInfo = RexParser.Intellisence("StaticA.TheIn").Select(i => i.Details.ToString());
+			var helpInfo = Parser.Intellisence("StaticA.TheIn").Select(i => i.Details.ToString());
 			Assert.AreEqual(1, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "static I_B TheInterface { get; set; }");
 
-			helpInfo = RexParser.Intellisence("StaticA.TheInterface.").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisence("StaticA.TheInterface.").Select(i => i.Details.ToString());
 			CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get; }");
 
-			helpInfo = RexParser.Intellisence("StaticA.TheInterface.InnerB.").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisence("StaticA.TheInterface.InnerB.").Select(i => i.Details.ToString());
 			CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get; }");
 		}
 
 		[Test]
 		public void OutRefParaTest()
 		{
-			var helpInfo = RexParser.Intellisence("Double.TryParse").First();
+			var helpInfo = Parser.Intellisence("Double.TryParse").First();
 			Assert.True(helpInfo.Details.Any(i => i.Type == SyntaxType.Keyword && i.String == "out"));
 
-			helpInfo = RexParser.Intellisence("OutRefTest.RefMethod").First();
+			helpInfo = Parser.Intellisence("OutRefTest.RefMethod").First();
 			Assert.True(helpInfo.Details.Any(i => i.Type == SyntaxType.Keyword && i.String == "ref"));
 
-			helpInfo = RexParser.Intellisence("OutRefTest.OutMethod").First();
+			helpInfo = Parser.Intellisence("OutRefTest.OutMethod").First();
 			Assert.True(helpInfo.Details.Any(i => i.Type == SyntaxType.Keyword && i.String == "out"));
 		}
 
 		[Test]
 		public void PerformanceTest()
 		{
-			SpeedTestAction(() => RexParser.Intellisence("Mat"), 100);
-			SpeedTestAction(() => RexParser.Intellisence("Math.PI."), 100);
-			SpeedTestAction(() => RexParser.Intellisence("Math.PI.ToString()."), 100);
-			SpeedTestAction(() => RexParser.Intellisence("Math.PI.ToString().Length.MaxValue"), 100);
+			SpeedTestAction(() => Parser.Intellisence("Mat"), 100);
+			SpeedTestAction(() => Parser.Intellisence("Math.PI."), 100);
+			SpeedTestAction(() => Parser.Intellisence("Math.PI.ToString()."), 100);
+			SpeedTestAction(() => Parser.Intellisence("Math.PI.ToString().Length.MaxValue"), 100);
 		}
 
 		[Test]
@@ -318,7 +321,7 @@ namespace Rex.Utilities.Test
 		[Test]
 		public void ColorizingPerformanceTest()
 		{
-			var mathPIHelp = RexParser.Intellisence("Math.PI.");
+			var mathPIHelp = Parser.Intellisence("Math.PI.");
 			SpeedTestAction(() =>
 			{
 				foreach (var help in mathPIHelp)
@@ -331,8 +334,8 @@ namespace Rex.Utilities.Test
 		[Test]
 		public void ShouldNotGetHelp()
 		{
-			Assert.IsEmpty(RexParser.Intellisence("Dictonary<int,int>"));
-			Assert.IsEmpty(RexParser.Intellisence("Func<int,int>(i => i."));
+			Assert.IsEmpty(Parser.Intellisence("Dictonary<int,int>"));
+			Assert.IsEmpty(Parser.Intellisence("Func<int,int>(i => i."));
 		}
 
 		[Test]
@@ -349,7 +352,7 @@ namespace Rex.Utilities.Test
 			SetVar("MyDoubleX", 1.0);
 			SetVar("MyDoubleY", 1.0);
 			SetVar("MyDoubleZ", 1.0);
-			var helpInfo = RexParser.Intellisence("MyDoubl");
+			var helpInfo = Parser.Intellisence("MyDoubl");
 			foreach (var item in helpInfo)
 			{
 				Assert.IsTrue(item.ReplaceString.Contains("MyDouble"));
@@ -357,7 +360,7 @@ namespace Rex.Utilities.Test
 				Assert.AreEqual(6, item.End);
 			}
 
-			helpInfo = RexParser.Intellisence("Math.PI.GetHashCode().ToStr");
+			helpInfo = Parser.Intellisence("Math.PI.GetHashCode().ToStr");
 			Assert.IsNotEmpty(helpInfo);
 			foreach (var item in helpInfo)
 			{
@@ -366,7 +369,7 @@ namespace Rex.Utilities.Test
 				Assert.AreEqual(26, item.End);
 			}
 
-			helpInfo = RexParser.Intellisence("x = Math.PI.ToStr");
+			helpInfo = Parser.Intellisence("x = Math.PI.ToStr");
 			foreach (var item in helpInfo)
 			{
 				Assert.IsTrue(item.ReplaceString.Contains("ToString"));
@@ -375,7 +378,7 @@ namespace Rex.Utilities.Test
 			}
 
 			//var x = Math.Tan()
-			helpInfo = RexParser.Intellisence("x = Math.Tan(Math.P");
+			helpInfo = Parser.Intellisence("x = Math.Tan(Math.P");
 			foreach (var item in helpInfo)
 			{
 				if (!item.IsMethodOverload)
@@ -386,7 +389,7 @@ namespace Rex.Utilities.Test
 			}
 
 			SetVar<string>("MyVar", null);
-			helpInfo = RexParser.Intellisence("x = MyVar");
+			helpInfo = Parser.Intellisence("x = MyVar");
 			foreach (var item in helpInfo)
 			{
 				if (!item.IsMethodOverload)

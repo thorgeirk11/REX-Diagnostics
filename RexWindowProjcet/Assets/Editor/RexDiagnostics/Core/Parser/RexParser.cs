@@ -3,12 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Rex.Utilities
 {
-	static class RexParser
+	public class RexParser : IRexIntellisenceProvider, IRexParser
 	{
 		public static readonly Regex Assignment = new Regex(@"^(?<type>\S*\s+)?(?<var>[^ .,=]+)\s*=(?<expr>[^=].*)$", RegexOptions.Compiled | RegexOptions.Singleline);
 		public static readonly Regex DotExpressionSearch = new Regex(@"^(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<search>\w*)$", RegexOptions.Compiled);
@@ -23,7 +22,7 @@ namespace Rex.Utilities
 		public const BindingFlags InstanceBindings = BindingFlags.Public | BindingFlags.Instance;
 		public const BindingFlags StaticBindings = BindingFlags.Public | BindingFlags.Static;
 
-		public static ParseResult ParseAssigment(string parsedCode)
+		public ParseResult ParseAssigment(string parsedCode)
 		{
 			var match = Assignment.Match(parsedCode);
 			if (match.Success)
@@ -78,23 +77,23 @@ namespace Rex.Utilities
 
 		////}
 
-		public static IEnumerable<CodeCompletion> Intellisence(string code)
+		public IEnumerable<CodeCompletion> Intellisence(string exprssion)
 		{
-			var parse = ParseAssigment(code);
+			var parse = ParseAssigment(exprssion);
 			var offset = parse.WholeCode.IndexOf(parse.ExpressionString);
 			if (DotExpressionSearch.IsMatch(parse.ExpressionString))
 				return DotExpression(DotExpressionSearch.Match(parse.ExpressionString), offset);
 
 			Type endType = null;
-			while (DotAfterMethodRegex.IsMatch(code))
+			while (DotAfterMethodRegex.IsMatch(exprssion))
 			{
-				var match = DotAfterMethodRegex.Match(code);
+				var match = DotAfterMethodRegex.Match(exprssion);
 				var possibleMethods = PossibleMethods(match);
 				if (possibleMethods.Count() == 1)
 				{
 					var method = possibleMethods.First();
 					endType = method.ReturnType;
-					code = code.Substring(match.Length);
+					exprssion = exprssion.Substring(match.Length);
 					offset += match.Length;
 				}
 				else
@@ -135,7 +134,7 @@ namespace Rex.Utilities
 
 			if (endType != null)
 			{
-				var methodSearch = DotExpressionSearch.Match(code);
+				var methodSearch = DotExpressionSearch.Match(exprssion);
 				if (methodSearch.Success)
 				{
 					var full = methodSearch.Groups["fullType"];
@@ -155,7 +154,7 @@ namespace Rex.Utilities
 			return Enumerable.Empty<CodeCompletion>();
 		}
 
-		private static IEnumerable<CodeCompletion> MethodsOverload(Match paramatch, Type endType)
+		private IEnumerable<CodeCompletion> MethodsOverload(Match paramatch, Type endType)
 		{
 			var methodInfo = Enumerable.Empty<CodeCompletion>();
 			if (endType == null)
@@ -176,7 +175,7 @@ namespace Rex.Utilities
 			}
 		}
 
-		public static IEnumerable<MethodInfo> PossibleMethods(Match match)
+		public IEnumerable<MethodInfo> PossibleMethods(Match match)
 		{
 			var fullType = match.Groups["fullType"];
 
@@ -218,7 +217,7 @@ namespace Rex.Utilities
 			return possibleMethods;
 		}
 
-		private static IEnumerable<CodeCompletion> DotExpression(Match match, int offset)
+		private IEnumerable<CodeCompletion> DotExpression(Match match, int offset)
 		{
 			var full = match.Groups["fullType"];
 			var first = match.Groups["firstType"];
@@ -252,7 +251,7 @@ namespace Rex.Utilities
 			}
 		}
 
-		private static bool TypeOfFirst(Group full, out Type theType, out string name)
+		private bool TypeOfFirst(Group full, out Type theType, out string name)
 		{
 			name = full.Value.Split('.').First();
 			var theName = name;
@@ -282,7 +281,7 @@ namespace Rex.Utilities
 			return theType != null;
 		}
 
-		private static IEnumerable<CodeCompletion> SearchWithoutType(Group search, int offset)
+		private IEnumerable<CodeCompletion> SearchWithoutType(Group search, int offset)
 		{
 			var lowerSearch = search.Value.ToLower();
 			var variables = from i in RexHelper.Variables
@@ -327,7 +326,7 @@ namespace Rex.Utilities
 				   };
 		}
 
-		public static string GetNestedName(Type type)
+		public string GetNestedName(Type type)
 		{
 			var name = type.Name;
 			if (name.IndexOf("`") > -1)
@@ -347,7 +346,7 @@ namespace Rex.Utilities
 		/// Finds the last index of a qurey.
 		/// <para>Example: x.MyProp.AnotherProp   This will navigate down to the AnotherProp</para> 
 		/// </summary>
-		private static Type GetLastIndexType(Group full, Type type, int skipCount = 1)
+		private Type GetLastIndexType(Group full, Type type, int skipCount = 1)
 		{
 			var fullPath = full.Value.Split('.').Skip(skipCount).ToList();
 			while (fullPath.Any() && type != null)
@@ -393,7 +392,7 @@ namespace Rex.Utilities
 			return type;
 		}
 
-		private static IEnumerable<CodeCompletion> ExtractMemberInfo(Group search, Type varType, BindingFlags bindings, int offset)
+		private IEnumerable<CodeCompletion> ExtractMemberInfo(Group search, Type varType, BindingFlags bindings, int offset)
 		{
 			var helpList = new Dictionary<string, List<MemberDetails>>();
 

@@ -3,13 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.CodeDom.Compiler;
 using System.Collections;
-using System.Reflection;
-using System.Text.RegularExpressions;
 using Rex.Utilities.Helpers;
-using System.Diagnostics;
-using System.Text;
-using System.Threading;
-using Rex.Utilities.Input;
 
 namespace Rex.Utilities
 {
