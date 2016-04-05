@@ -116,7 +116,6 @@ namespace Rex.Window
 
 		void OnEnable()
 		{
-			var sw = Stopwatch.StartNew();
 			hideFlags = HideFlags.HideAndDontSave;
 
 			if (_compileEngine == null)
@@ -135,8 +134,6 @@ namespace Rex.Window
 			autoRepaintOnSceneChange = true;
 			titleContent.text = "REX";
 			titleContent.tooltip = "Runtime Expressions";
-
-			UnityEngine.Debug.Log(sw.ElapsedMilliseconds);
 		}
 
 		/// <summary>

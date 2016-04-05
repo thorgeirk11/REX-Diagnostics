@@ -9,7 +9,6 @@ namespace Rex.Utilities.Helpers
 
 		public static List<string> LoadMacros()
 		{
-			var sw = Stopwatch.StartNew();
 			var macros = new List<string>();
 			var i = 1;
 			while (UnityEditor.EditorPrefs.HasKey(REX_MACRO_NAME + i))
@@ -19,7 +18,6 @@ namespace Rex.Utilities.Helpers
 				macros.Add(macro);
 				i++;
 			}
-			UnityEngine.Debug.Log("LoadMacros: " + sw.ElapsedMilliseconds);
 			return macros;
 		}
 		public static List<string> Save(string macro)
