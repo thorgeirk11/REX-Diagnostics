@@ -1,81 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Rex.Utilities.Helpers
 {
-    public static class RexMacroHandler
-    {
-        private static Dictionary<string, string> MacroDic;
-        public static IEnumerable<string> Macros { get { return MacroDic.Values; } }
+	public class RexMacroHandler
+	{
+		private const string REX_MACRO_NAME = "rex_macro_";
 
-        static RexMacroHandler()
-        { Loaded = false; }
-        public static bool Loaded { get; private set; }
+		public static List<string> LoadMacros()
+		{
+			var sw = Stopwatch.StartNew();
+			var macros = new List<string>();
+			var i = 1;
+			while (UnityEditor.EditorPrefs.HasKey(REX_MACRO_NAME + i))
+			{
+				var macro = UnityEditor.EditorPrefs.GetString(REX_MACRO_NAME + i, null);
+				if (macro == null) break;
+				macros.Add(macro);
+				i++;
+			}
+			UnityEngine.Debug.Log("LoadMacros: " + sw.ElapsedMilliseconds);
+			return macros;
+		}
+		public static List<string> Save(string macro)
+		{
+			var macros = LoadMacros();
+			if (!macros.Contains(macro))
+			{
+				macros.Add(macro);
+				SaveMacros(macros);
+			}
+			return macros;
+		}
+		public static List<string> Remove(string macro)
+		{
+			var macros = LoadMacros();
+			if (macros.Contains(macro))
+			{
+				macros.Remove(macro);
+				SaveMacros(macros);
+			}
+			return macros;
+		}
 
-        public static void LoadMacros()
-        {
-            MacroDic = new Dictionary<string, string>();
-            if (Directory.Exists(RexUtils.MacroDirectory))
-            {
-                try
-                {
-                    foreach (var macroFile in Directory.GetFiles(RexUtils.MacroDirectory))
-                    {
-                        try
-                        {
-                            MacroDic.Add(macroFile, File.ReadAllText(macroFile));
-                        }
-                        catch (Exception)
-                        { throw; }
-                    }
-                }
-                catch (Exception)
-                { throw; }
-            }
-            else
-            {
-                try
-                {
-                    Directory.CreateDirectory(RexUtils.MacroDirectory);
-                }
-                catch (Exception)
-                { throw; }
-            }
-            Loaded = true;
-        }
-        public static void Save(string mactro)
-        {
-            if (!Macros.Contains(mactro))
-            {
-                try
-                {
-                    if (Directory.Exists(RexUtils.MacroDirectory))
-                    {
-                        var filePath = RexUtils.MacroDirectory + Path.DirectorySeparatorChar + Guid.NewGuid();
-
-                        using (var file = File.Create(filePath))
-                        using (var stream = new StreamWriter(file))
-                        {
-                            stream.Write(mactro);
-                        }
-                        MacroDic.Add(filePath, mactro);
-                    }
-                }
-                catch
-                { throw; }
-            }
-        }
-        public static void Remove(string mactro)
-        {
-            if (MacroDic.ContainsValue(mactro))
-            {
-                var file = MacroDic.First(i => i.Value == mactro).Key;
-                MacroDic.Remove(file);
-                File.Delete(file);
-            }
-        }
-    }
+		private static void SaveMacros(IEnumerable<string> macros)
+		{
+			int i = 1;
+			foreach (var macro in macros)
+			{
+				UnityEditor.EditorPrefs.SetString(REX_MACRO_NAME + i, macro);
+				i++;
+			}
+			while (UnityEditor.EditorPrefs.HasKey(REX_MACRO_NAME + i))
+			{
+				UnityEditor.EditorPrefs.DeleteKey(REX_MACRO_NAME + i);
+				i++;
+			}
+		}
+	}
 }

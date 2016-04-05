@@ -10,43 +10,39 @@ namespace Rex.Utilities.Test
 	[TestFixture]
 	class UsingsAndMacroTests
 	{
-		[SetUp]
-		public void ClassSetup()
-		{
-			RexUtils.MacroDirectory = "TestMacros";
-			try
-			{
-				Directory.Delete(RexUtils.MacroDirectory, true);
-			}
-			catch (Exception)
-			{ }
-		}
-
 		[Test]
 		public void UsingsTest()
 		{
-			UsingsHandler.Save("Lol");
-			Assert.IsTrue(UsingsHandler.Usings.Contains("Lol"));
+			RexUsingsHandler.Save("Lol");
+			Assert.IsTrue(RexUsingsHandler.Usings.Contains("Lol"));
 
-			UsingsHandler.Remove("Lol");
-			Assert.IsEmpty(UsingsHandler.Usings);
+			RexUsingsHandler.Remove("Lol");
+			Assert.IsEmpty(RexUsingsHandler.Usings);
 		}
 
 		[Test]
 		public void MacroTest()
 		{
-			RexMacroHandler.LoadMacros();
-			Assert.IsEmpty(RexMacroHandler.Macros);
+			var before = RexMacroHandler.LoadMacros();
+			foreach (var item in before)
+			{
+				RexMacroHandler.Remove(item);
+			}
 
-			RexMacroHandler.Save("Lol");
-			Assert.IsTrue(RexMacroHandler.Macros.Contains("Lol"));
-			RexMacroHandler.Remove("Lol");
-			Assert.IsEmpty(RexMacroHandler.Macros);
+			Assert.IsEmpty(RexMacroHandler.LoadMacros());
+			Assert.AreEqual(new[] { "Lol" }, RexMacroHandler.Save("Lol"));
+			Assert.AreEqual(new[] { "Lol" }, RexMacroHandler.LoadMacros());
+			Assert.IsEmpty(RexMacroHandler.Remove("Lol"));
+			Assert.IsEmpty(RexMacroHandler.LoadMacros());
+			Assert.AreEqual(new[] { "Lol1" }, RexMacroHandler.Save("Lol1"));
+			Assert.AreEqual(new[] { "Lol1", "Lol2" }, RexMacroHandler.Save("Lol2"));
+			Assert.AreEqual(new[] { "Lol1", "Lol2", "Lol3" }, RexMacroHandler.Save("Lol3"));
+			Assert.AreEqual(new[] { "Lol1", "Lol2", "Lol3" }, RexMacroHandler.LoadMacros());
 
-			RexMacroHandler.Save("Lol1");
-			RexMacroHandler.Save("Lol2");
-			RexMacroHandler.Save("Lol3");
-			Assert.AreEqual(new[] { "Lol1", "Lol2", "Lol3" }, RexMacroHandler.Macros);
+			foreach (var item in before)
+			{
+				RexMacroHandler.Save(item);
+			}
 		}
 	}
 }

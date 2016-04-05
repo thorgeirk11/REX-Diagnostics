@@ -21,7 +21,6 @@ namespace Rex.Utilities
 		private static readonly LinkedList<AConsoleOutput> outputList = new LinkedList<AConsoleOutput>();
 		const int OUTPUT_LENGHT = 20;
 
-
 		public static readonly Dictionary<MsgType, List<string>> Messages = new Dictionary<MsgType, List<string>>
 		{
 			{ MsgType.None, new List<string>()},
@@ -235,12 +234,6 @@ namespace Rex.Utilities
 		public static void ClearOutput()
 		{
 			outputList.Clear();
-		}
-
-
-		public static void SetupHelper()
-		{
-			//RexUtils.LoadNamespaceInfos(includeIngoredUsings: false);
 		}
 
 		private class DummyOutput : AConsoleOutput

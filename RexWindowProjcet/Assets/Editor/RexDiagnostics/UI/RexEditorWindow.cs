@@ -57,20 +57,14 @@ namespace Rex.Window
 		[SerializeField]
 		private List<ExpressionHitoryItem> _expressionHistory = new List<ExpressionHitoryItem>();
 
+		[SerializeField]
+		private List<string> _macros;
+
 		[Serializable]
 		private class ExpressionHitoryItem
 		{
 			public string Code = string.Empty;
 			public bool IsExpanded;
-		}
-
-		static string MacroDirectorPath
-		{
-			get { return Application.persistentDataPath + Path.DirectorySeparatorChar + "REX_Macros"; }
-		}
-		static string UsingsFile
-		{
-			get { return Application.persistentDataPath + "REX_Usings.txt"; }
 		}
 
 		#region UI
@@ -122,28 +116,27 @@ namespace Rex.Window
 
 		void OnEnable()
 		{
+			var sw = Stopwatch.StartNew();
 			hideFlags = HideFlags.HideAndDontSave;
-			RexHelper.SetupHelper();
 
 			if (_compileEngine == null)
-				_compileEngine = new RexCompileEngine();
+				_compileEngine = CreateInstance<RexCompileEngine>();
+
+			if (_macros == null)
+				_macros = RexMacroHandler.LoadMacros();
 
 			RexISM.Repaint = Repaint;
 			RexISM.DebugLog = UnityEngine.Debug.Log;
 			RexISM.ExecuteCode = Execute;
 			RexISM.Enter_NoInput();
 
-			if (!RexMacroHandler.Loaded)
-			{
-				RexUtils.MacroDirectory = MacroDirectorPath;
-				RexMacroHandler.LoadMacros();
-			}
-
 			updateSkins = true;
 			minSize = new Vector2(450f, 350f);
 			autoRepaintOnSceneChange = true;
 			titleContent.text = "REX";
 			titleContent.tooltip = "Runtime Expressions";
+
+			UnityEngine.Debug.Log(sw.ElapsedMilliseconds);
 		}
 
 		/// <summary>
@@ -677,8 +670,8 @@ namespace Rex.Window
 
 								if (prev != n.Selected)
 								{
-									if (prev) { UsingsHandler.Remove(n.Name); }
-									else { UsingsHandler.Save(n.Name); }
+									if (prev) { RexUsingsHandler.Remove(n.Name); }
+									else { RexUsingsHandler.Save(n.Name); }
 								}
 
 								if (n.AtMaxIndent)
@@ -786,11 +779,17 @@ namespace Rex.Window
 			{
 				GUILayout.Space(10f);
 				if (GUILayout.Button(new GUIContent("Run", "Run Expression"), GUILayout.Height(16)))
+				{
 					Execute(code);
+				}
 				if (GUILayout.Button(new GUIContent("Macro", "Save as Macro"), GUILayout.Height(16)))
-					RexMacroHandler.Save(code);
+				{
+					_macros = RexMacroHandler.Save(code);
+				}
 				if (GUILayout.Button(new GUIContent("Delete", "Delete the history item"), GUILayout.Height(16)))
+				{
 					deleted = true;
+				}
 			}
 			GUILayout.EndHorizontal();
 		}
@@ -911,7 +910,7 @@ namespace Rex.Window
 					scroll4 = EditorGUILayout.BeginScrollView(scroll4);
 					{
 						string deleted = null;
-						foreach (var macro in RexMacroHandler.Macros)
+						foreach (var macro in _macros)
 						{
 							EditorGUILayout.BeginHorizontal();
 							{
@@ -937,7 +936,7 @@ namespace Rex.Window
 							EditorGUILayout.EndHorizontal();
 						}
 						if (deleted != null)
-							RexMacroHandler.Remove(deleted);
+							_macros = RexMacroHandler.Remove(deleted);
 					}
 					EditorGUILayout.EndScrollView();
 				}

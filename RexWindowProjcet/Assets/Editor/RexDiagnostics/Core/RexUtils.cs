@@ -14,20 +14,6 @@ namespace Rex.Utilities
 {
 	public static class RexUtils
 	{
-		private static string _macroDicrectory;
-		public static string MacroDirectory
-		{
-			get
-			{
-				if (_macroDicrectory == null)
-				{
-					_macroDicrectory = Application.persistentDataPath + @"_macros.txt";
-				}
-				return _macroDicrectory;
-			}
-			set { _macroDicrectory = value; }
-		}
-
 		public const BindingFlags InstanceBindings = BindingFlags.Public | BindingFlags.Instance;
 		public const BindingFlags StaticBindings = BindingFlags.Public | BindingFlags.Static;
 
@@ -117,7 +103,7 @@ namespace Rex.Utilities
 							Folded = false,
 							IndetLevel = 0,
 							Name = rootName,
-							Selected = UsingsHandler.Usings.Contains(rootName),
+							Selected = RexUsingsHandler.Usings.Contains(rootName),
 							AtMaxIndent = false,
 						});
 					}
@@ -127,7 +113,7 @@ namespace Rex.Utilities
 					Folded = false,
 					IndetLevel = indent,
 					Name = name.Key,
-					Selected = defaultUsings.Contains(name.Key) || UsingsHandler.Usings.Contains(name.Key),
+					Selected = defaultUsings.Contains(name.Key) || RexUsingsHandler.Usings.Contains(name.Key),
 					AtMaxIndent = namespaces.Count(j => j.Key.StartsWith(name.Key)) == 1
 				});
 			}

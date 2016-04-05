@@ -7,7 +7,7 @@ using UnityEditor;
 
 namespace Rex.Utilities.Helpers
 {
-	public static class UsingsHandler
+	public static class RexUsingsHandler
 	{
 		private const string REX_USINGS = "Rex_Usings";
 
