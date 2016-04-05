@@ -17,8 +17,24 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 {
 	public const float TIME_OUT_FOR_COMPILE_SEC = 2;
 
+	private static RexCompileEngine _instance = null;
+
+	public static RexCompileEngine Instance
+	{
+		get
+		{
+			if (_instance == null)
+			{
+				_instance = CreateInstance<RexCompileEngine>();
+			}
+			return _instance;
+		}
+	}
+
 	[SerializeField]
 	private volatile int _compileThreadID = -1;
+
+	public List<NameSpaceInfo> NamespaceInfos;
 
 	/// <summary>
 	/// The continues compiled result by the <see cref="_compileThread"/>.
@@ -35,9 +51,25 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 	{
 		hideFlags = HideFlags.HideAndDontSave;
 
-		var _compileThread = new Thread(CompilerMainThread);
+		if (_instance == null)
+		{
+			_instance = this;
+		}
+		else if (_instance != this)
+		{
+			Destroy(this);
+			return;
+		}
+
+		if (NamespaceInfos == null)
+			NamespaceInfos = RexUtils.LoadNamespaceInfos(false);
+
+		var _compileThread = new Thread(CompilerMainThread)
+		{
+			IsBackground = true,
+			Name = "REX Compiler thread"
+		};
 		_compileThread.Start();
-		_compileThread.Name = "REX Compiler thread";
 		_compileThreadID = _compileThread.ManagedThreadId;
 	}
 
@@ -67,7 +99,10 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 					lastThread.Abort();
 				}
 				lastJob = new CompileJob();
-				lastThread = new Thread(lastJob.CompileCode);
+				lastThread = new Thread(lastJob.CompileCode)
+				{
+					IsBackground = true
+				};
 				lastThread.Start(lastCode);
 				activeThreads.Add(lastThread);
 			}
@@ -114,6 +149,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 		public void CompileCode(object code)
 		{
 			var parseResult = parser.ParseAssigment((string)code);
+
 			var result = Compile(parseResult);
 			if (!_shouldStop)
 			{
@@ -192,7 +228,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 		var returnTypes = new[] { FuncType._object, FuncType._void };
 		foreach (var returnType in returnTypes)
 		{
-			var wrapper = MakeWrapper(RexUtils.NamespaceInfos.Where(ns => ns.Selected), parseResult, returnType);
+			var wrapper = MakeWrapper(Instance.NamespaceInfos.Where(ns => ns.Selected), parseResult, returnType);
 			var result = CompileCode(wrapper);
 			//Path.
 			if (result.Errors.Count == 1)
@@ -231,10 +267,10 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 						};
 					}
 					var name = canditateTypes.First().Namespace;
-					var info = RexUtils.NamespaceInfos.First(i => i.Name == name);
+					var info = Instance.NamespaceInfos.First(i => i.Name == name);
 					if (!info.Selected)
 					{
-						var usings = RexUtils.NamespaceInfos.Where(ns => ns.Selected || ns.Name == name);
+						var usings = Instance.NamespaceInfos.Where(ns => ns.Selected || ns.Name == name);
 						wrapper = MakeWrapper(usings, parseResult, returnType);
 						result = CompileCode(wrapper);
 					}

@@ -14,7 +14,6 @@ namespace Rex.Utilities
 {
 	public static class RexUtils
 	{
-		#region Constants
 		private static string _macroDicrectory;
 		public static string MacroDirectory
 		{
@@ -28,23 +27,6 @@ namespace Rex.Utilities
 			}
 			set { _macroDicrectory = value; }
 		}
-
-		private static string _usingsFileName;
-		public static string UsingsFileName
-		{
-			get
-			{
-				if (_usingsFileName == null)
-				{
-					_usingsFileName = Application.persistentDataPath + @"_macros.txt";
-				}
-				return _usingsFileName;
-			}
-			set { _usingsFileName = value; }
-		}
-
-		public static List<NameSpaceInfo> namespaceInfos;
-
 
 		public const BindingFlags InstanceBindings = BindingFlags.Public | BindingFlags.Instance;
 		public const BindingFlags StaticBindings = BindingFlags.Public | BindingFlags.Static;
@@ -72,21 +54,9 @@ namespace Rex.Utilities
 
 		public const string className = "__TempRexClass";
 		public const string FuncName = "Func";
-		#endregion
 
 		#region NameSpace related
 
-		public static IEnumerable<NameSpaceInfo> NamespaceInfos
-		{
-			get
-			{
-				if (namespaceInfos == null)
-				{
-					LoadNamespaceInfos(false);
-				}
-				return namespaceInfos;
-			}
-		}
 		public static string TopLevelNameSpace(string nameSpace)
 		{
 			var parts = nameSpace.Split('.');
@@ -112,7 +82,7 @@ namespace Rex.Utilities
 		/// <param name="includeIngoredUsings">Include namespaces form the ignore usings list.</param>
 		public static List<NameSpaceInfo> LoadNamespaceInfos(bool includeIngoredUsings)
 		{
-			namespaceInfos = new List<NameSpaceInfo>();
+			var namespaceInfos = new List<NameSpaceInfo>();
 
 			var namespaces = new Dictionary<string, Assembly>();
 			foreach (var ns in from type in AllVisibleTypes
@@ -129,8 +99,6 @@ namespace Rex.Utilities
 					namespaces.Add(ns.Namespace, ns.Assembly);
 				}
 			}
-
-			UsingsHandler.LoadUsings();
 
 			foreach (var name in namespaces)
 			{
@@ -150,7 +118,6 @@ namespace Rex.Utilities
 							IndetLevel = 0,
 							Name = rootName,
 							Selected = UsingsHandler.Usings.Contains(rootName),
-							Assembly = name.Value,
 							AtMaxIndent = false,
 						});
 					}
@@ -159,7 +126,6 @@ namespace Rex.Utilities
 				{
 					Folded = false,
 					IndetLevel = indent,
-					Assembly = name.Value,
 					Name = name.Key,
 					Selected = defaultUsings.Contains(name.Key) || UsingsHandler.Usings.Contains(name.Key),
 					AtMaxIndent = namespaces.Count(j => j.Key.StartsWith(name.Key)) == 1

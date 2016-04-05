@@ -136,7 +136,6 @@ namespace Rex.Window
 			if (!RexMacroHandler.Loaded)
 			{
 				RexUtils.MacroDirectory = MacroDirectorPath;
-				RexUtils.UsingsFileName = UsingsFile;
 				RexMacroHandler.LoadMacros();
 			}
 
@@ -664,7 +663,7 @@ namespace Rex.Window
 					usingScroll = EditorGUILayout.BeginScrollView(usingScroll, GUILayout.Height(1), GUILayout.MaxHeight(150));
 					{
 						var depth = 0;
-						foreach (var n in RexUtils.NamespaceInfos)
+						foreach (var n in RexCompileEngine.Instance.NamespaceInfos)
 						{
 							if (n.IndetLevel > depth) continue;
 							if (n.IndetLevel < depth) depth = n.IndetLevel;

@@ -303,7 +303,7 @@ namespace Rex.Utilities
 			var types = from type in RexUtils.AllVisibleTypes
 						let lowerItem = type.Name.ToLower()
 						where lowerItem.Contains(lowerSearch) && !RexReflectionUtils.IsCompilerGenerated(type)
-						let isInScope = RexUtils.NamespaceInfos.Any(i => i.Name == type.Namespace && i.Selected)
+						let isInScope = RexCompileEngine.Instance.NamespaceInfos.Any(i => i.Name == type.Namespace && i.Selected)
 						select new
 						{
 							SearchName = lowerItem,

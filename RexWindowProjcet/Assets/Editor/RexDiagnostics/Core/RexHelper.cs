@@ -4,6 +4,7 @@ using System.Linq;
 using System.CodeDom.Compiler;
 using System.Collections;
 using Rex.Utilities.Helpers;
+using System.Diagnostics;
 
 namespace Rex.Utilities
 {
@@ -239,7 +240,7 @@ namespace Rex.Utilities
 
 		public static void SetupHelper()
 		{
-			RexUtils.LoadNamespaceInfos(includeIngoredUsings: false);
+			//RexUtils.LoadNamespaceInfos(includeIngoredUsings: false);
 		}
 
 		private class DummyOutput : AConsoleOutput

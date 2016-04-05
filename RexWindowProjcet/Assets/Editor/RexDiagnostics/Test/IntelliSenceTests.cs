@@ -15,7 +15,6 @@ namespace Rex.Utilities.Test
 		[SetUp]
 		public void Setup()
 		{
-			RexUtils.UsingsFileName = "testUsings.txt";
 			RexUtils.MacroDirectory = "TestMacros";
 			RexUtils.LoadNamespaceInfos(true);
 			Parser = new RexParser();
