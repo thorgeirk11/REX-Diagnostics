@@ -14,7 +14,6 @@ namespace Rex.Utilities
 {
 	public static class RexUtils
 	{
-		#region Constants
 		private static string _macroDicrectory;
 		public static string MacroDirectory
 		{
@@ -29,27 +28,6 @@ namespace Rex.Utilities
 			set { _macroDicrectory = value; }
 		}
 
-		private static string _usingsFileName;
-		public static string UsingsFileName
-		{
-			get
-			{
-				if (_usingsFileName == null)
-				{
-					_usingsFileName = Application.persistentDataPath + @"_macros.txt";
-				}
-				return _usingsFileName;
-			}
-			set { _usingsFileName = value; }
-		}
-
-		public static List<NameSpaceInfo> namespaceInfos;
-
-		public static readonly Regex Assignment = new Regex(@"^(?<type>\S*\s+)?(?<var>[^ .,=]+)\s*=(?<expr>[^=].*)$", RegexOptions.Compiled | RegexOptions.Singleline);
-		public static readonly Regex DotExpressionSearch = new Regex(@"^(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<search>\w*)$", RegexOptions.Compiled);
-		public static readonly Regex ParameterRegex = new Regex(@"(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<search>\w*)(\((?<para>[^)]*))$", RegexOptions.Compiled);
-		public static readonly Regex DotAfterMethodRegex = new Regex(@"(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<method>\w*)[(](?<params>[^)]*)[)]\.", RegexOptions.Compiled);
-
 		public const BindingFlags InstanceBindings = BindingFlags.Public | BindingFlags.Instance;
 		public const BindingFlags StaticBindings = BindingFlags.Public | BindingFlags.Static;
 
@@ -62,8 +40,8 @@ namespace Rex.Utilities
 			"UnityEngine",
 		};
 		public static readonly string[] IgnoreUsings = new[] {
-            //"Rex",
-            "NUnit",
+			//"Rex",
+			"NUnit",
 			"antlr",
 			"CompilerGenerated",
 			"TreeEditor",
@@ -76,21 +54,9 @@ namespace Rex.Utilities
 
 		public const string className = "__TempRexClass";
 		public const string FuncName = "Func";
-		#endregion
 
 		#region NameSpace related
-		
-		public static IEnumerable<NameSpaceInfo> NamespaceInfos
-		{
-			get
-			{
-				if (namespaceInfos == null)
-				{
-					LoadNamespaceInfos(false);
-				}
-				return namespaceInfos;
-			}
-		}
+
 		public static string TopLevelNameSpace(string nameSpace)
 		{
 			var parts = nameSpace.Split('.');
@@ -116,7 +82,7 @@ namespace Rex.Utilities
 		/// <param name="includeIngoredUsings">Include namespaces form the ignore usings list.</param>
 		public static List<NameSpaceInfo> LoadNamespaceInfos(bool includeIngoredUsings)
 		{
-			namespaceInfos = new List<NameSpaceInfo>();
+			var namespaceInfos = new List<NameSpaceInfo>();
 
 			var namespaces = new Dictionary<string, Assembly>();
 			foreach (var ns in from type in AllVisibleTypes
@@ -133,8 +99,6 @@ namespace Rex.Utilities
 					namespaces.Add(ns.Namespace, ns.Assembly);
 				}
 			}
-
-			UsingsHandler.LoadUsings();
 
 			foreach (var name in namespaces)
 			{
@@ -154,7 +118,6 @@ namespace Rex.Utilities
 							IndetLevel = 0,
 							Name = rootName,
 							Selected = UsingsHandler.Usings.Contains(rootName),
-							Assembly = name.Value,
 							AtMaxIndent = false,
 						});
 					}
@@ -163,7 +126,6 @@ namespace Rex.Utilities
 				{
 					Folded = false,
 					IndetLevel = indent,
-					Assembly = name.Value,
 					Name = name.Key,
 					Selected = defaultUsings.Contains(name.Key) || UsingsHandler.Usings.Contains(name.Key),
 					AtMaxIndent = namespaces.Count(j => j.Key.StartsWith(name.Key)) == 1
@@ -215,7 +177,11 @@ namespace Rex.Utilities
 			return method.Invoke(Class, null) as T;
 		}
 
-		public static MemberDetails GetCSharpRepresentation(Type t, bool showFullName = false)
+		public static MemberDetails GetCSharpRepresentation(Type t)
+		{
+			return GetCSharpRepresentation(t, false);
+		}
+		public static MemberDetails GetCSharpRepresentation(Type t, bool showFullName)
 		{
 			if (t.IsGenericType)
 			{
@@ -230,6 +196,12 @@ namespace Rex.Utilities
 		private static MemberDetails DealWithRefParameters(Type t, bool showFullName)
 		{
 			var nested = NestedType(t, showFullName);
+
+			if (t.IsArray)
+			{
+				return new MemberDetails(nested);
+			}
+
 			if (!showFullName)
 			{
 				var typeName = t.Name.TrimEnd('&');
@@ -263,12 +235,14 @@ namespace Rex.Utilities
 		{
 			if (t.IsGenericType)
 			{
-				var nested = NestedType(t, showFullName);
+				var nested = NestedType(t, false);
 
+				bool isGeneric = false;
 				var name = t.Name;
 				if (name.IndexOf("`") > -1)
 				{
 					name = name.Substring(0, name.IndexOf("`"));
+					isGeneric = true;
 				}
 
 				var details = new List<Syntax>();
@@ -276,10 +250,19 @@ namespace Rex.Utilities
 
 				if (showFullName)
 				{
-					details.AddRange(new[] {
-						Syntax.NameSpaceForType(t.FullName.Substring(0, t.FullName.Length - t.Name.Length)),
-						Syntax.NewType(name)
-					});
+					string declaringNamespace;
+					if (isGeneric)
+					{
+						declaringNamespace = t.FullName.Substring(0, t.FullName.IndexOf("`") - name.Length);
+						declaringNamespace = declaringNamespace.Replace('+', '.');
+					}
+					else
+					{
+						declaringNamespace = t.FullName.Substring(0, t.FullName.Length - t.Name.Length);
+					}
+					declaringNamespace = declaringNamespace.Substring(0, declaringNamespace.Length - nested.Sum(i => i.String.Length));
+					details.Insert(0, Syntax.NameSpaceForType(declaringNamespace));
+					details.Add(Syntax.NewType(name));
 				}
 				else
 				{
@@ -305,7 +288,7 @@ namespace Rex.Utilities
 		{
 			if (t.IsArray)
 			{
-				return NestedType(t.GetElementType(), showFullName);
+				return GetCSharpRepresentation(t.GetElementType(), showFullName).Concat(new[] { Syntax.BracketOpen, Syntax.BracketClose });
 			}
 			if (!t.IsGenericParameter && t.DeclaringType != null)
 			{
@@ -354,60 +337,6 @@ namespace Rex.Utilities
 
 			return genericArguments;
 		}
-
-		public static CSharpCodeProvider Compiler
-		{
-			get
-			{
-				if (compiler == null)
-				{
-					var providerOptions = new Dictionary<string, string>();
-					providerOptions.Add("CompilerVersion", "v4.0");
-					compiler = new CSharpCodeProvider(providerOptions);
-				}
-				return compiler;
-			}
-		}
-
-		private static CSharpCodeProvider compiler;
-		private static string[] currentAssemblies;
-
-		public static CompilerResults CompileCode(string code)
-		{
-			var compilerOptions = new CompilerParameters(GetCurrentAssemblies())
-			{
-				GenerateExecutable = false,
-				GenerateInMemory = false
-			};
-
-			return Compiler.CompileAssemblyFromSource(compilerOptions, code);
-		}
-
-		static string[] GetCurrentAssemblies()
-		{
-			if (currentAssemblies != null)
-				return currentAssemblies;
-
-			var assemblies = new List<string>();
-			foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				try
-				{
-					var location = assembly.Location;
-					if (!string.IsNullOrEmpty(location))
-					{
-						assemblies.Add(location);
-					}
-				}
-				catch (NotSupportedException)
-				{
-					// this happens for dynamic assemblies, so just ignore it. 
-				}
-			}
-			currentAssemblies = assemblies.ToArray();
-			return currentAssemblies;
-		}
-
 
 		public static readonly Dictionary<SyntaxType, string> SyntaxHighlightColors = new Dictionary<SyntaxType, string>
 		{
