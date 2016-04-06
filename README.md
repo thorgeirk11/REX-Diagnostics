@@ -1,4 +1,4 @@
-# UnityRelpWindow
+# REX-Diagnostics
 
 REX allows expression evaluation at runtime to facilitate testing and debugging.
 
