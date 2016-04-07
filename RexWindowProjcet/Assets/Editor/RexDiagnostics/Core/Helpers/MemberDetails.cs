@@ -18,7 +18,7 @@ namespace Rex.Utilities.Helpers
 			{
 				return _details.LastOrDefault(i => i.Type == SyntaxType.Name) ??
 				  _details.FirstOrDefault(i => i.Type == SyntaxType.Type) ??
-				  _details.FirstOrDefault(i => i.Type == SyntaxType.Keyword && RexUtils.MapToKeyWords.Values.Contains(i.String));
+				  _details.FirstOrDefault(i => i.Type == SyntaxType.Keyword && RexUtils.MapToPrimitive(i.String) != null);
 			}
 		}
 

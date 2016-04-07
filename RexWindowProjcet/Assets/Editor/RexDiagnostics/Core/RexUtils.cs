@@ -17,31 +17,170 @@ namespace Rex.Utilities
 		public const BindingFlags InstanceBindings = BindingFlags.Public | BindingFlags.Instance;
 		public const BindingFlags StaticBindings = BindingFlags.Public | BindingFlags.Static;
 
-		public static readonly string[] defaultUsings = new[] {
-			"System",
-			"System.Collections.Generic",
-			"System.Collections",
-			"System.Linq",
-			"System.Text",
-			"UnityEngine",
-		};
-		public static readonly string[] IgnoreUsings = new[] {
-			//"Rex",
-			"NUnit",
-			"antlr",
-			"CompilerGenerated",
-			"TreeEditor",
-			"UnityEditorInternal",
-			"UnityEngineInternal",
-			"I18N",
-			"AOT",
-			"ICSharpCode",
-		};
+		private static string[] ignoreUsings;
+		private static string[] _defaultUsings;
+		private static List<MethodInfo> ExtentionMethods;
+		//------------------------------------------------------------------------------------
+		/// <summary>
+		/// TODO: THIS CAN BE Dic<string, List<Type>> for faster look up of names.
+		/// </summary>
+		//------------------------------------------------------------------------------------
+		private static List<Type> allVisibleTypes;
+
+
+		/// <summary>
+		/// The default using statments for REX. 
+		/// </summary>
+		public static IEnumerable<string> DefaultUsings
+		{
+			get
+			{
+				if (_defaultUsings == null)
+				{
+					_defaultUsings = new[] {
+						"System",
+						"System.Collections.Generic",
+						"System.Collections",
+						"System.Linq",
+						"System.Text",
+						"UnityEngine",
+					};
+				}
+				return _defaultUsings;
+			}
+		}
+		/// <summary>
+		/// These using statments should be ignored, (compiler generated/Unity internals).
+		/// </summary>
+		public static IEnumerable<string> IgnoreUsings
+		{
+			get
+			{
+				if (ignoreUsings == null)
+				{
+					ignoreUsings = new[] {
+						"NUnit",
+						"antlr",
+						"CompilerGenerated",
+						"TreeEditor",
+						"UnityEditorInternal",
+						"UnityEngineInternal",
+						"I18N",
+						"AOT",
+						"ICSharpCode",
+					};
+				}
+				return ignoreUsings;
+			}
+		}
 
 		public const string className = "__TempRexClass";
 		public const string FuncName = "Func";
 
-		#region NameSpace related
+		/// <summary>
+		/// Takes in a primitive type and returns it's name "System.Boolean" -> "bool"
+		/// </summary>
+		/// <param name="type">primitive type</param>
+		public static string MapToPrimitive(Type type)
+		{
+			if (type == null) return null;
+			if (type.Namespace != "System") return null;
+			switch (type.FullName.TrimEnd('&'))
+			{
+				case "System.Boolean": return "bool";
+				case "System.Byte": return "byte";
+				case "System.SByte": return "sbyte";
+				case "System.Char": return "char";
+				case "System.Decimal": return "decimal";
+				case "System.Double": return "double";
+				case "System.Single": return "float";
+				case "System.Int32": return "int";
+				case "System.UInt32": return "uint";
+				case "System.Int64": return "long";
+				case "System.UInt64": return "ulong";
+				case "System.Object": return "object";
+				case "System.Int16": return "short";
+				case "System.UInt16": return "ushort";
+				case "System.String": return "string";
+				case "System.Void": return "void";
+				default: return null;
+			}
+		}
+
+		/// <summary>
+		/// Normalizes the form of the name to the correct primitve name: "Boolean" -> "bool"
+		/// </summary>
+		/// <param name="typeName">primitive name</param>
+		public static string MapToPrimitive(string typeName)
+		{
+			switch (typeName)
+			{
+				case "Single": case "float": return "float";
+				case "Double": case "double": return "double";
+				case "Decimal": case "decimal": return "decimal";
+				case "Byte": case "byte": return "byte";
+				case "SByte": case "sbyte": return "sbyte";
+				case "Int16": case "short": return "short";
+				case "UInt16": case "ushort": return "ushort";
+				case "Int32": case "int": return "int";
+				case "UInt32": case "uint": return "uint";
+				case "Int64": case "long": return "long";
+				case "UInt64": case "ulong": return "ulong";
+				case "Boolean": case "bool": return "bool";
+				case "String": case "string": return "string";
+				case "Char": case "char": return "char";
+				case "Object": case "object": return "object";
+				case "Void": case "void": return "void";
+				default: return null;
+			}
+		}
+
+		/// <summary>
+		/// Takes in a primitive name and returns it's type.
+		/// </summary>
+		/// <param name="typeName">primitive name</param>
+		public static Type PrimitiveToType(string typeName)
+		{
+			switch (typeName)
+			{
+				case "float": return typeof(float);
+				case "double": return typeof(double);
+				case "decimal": return typeof(decimal);
+				case "byte": return typeof(byte);
+				case "sbyte": return typeof(sbyte);
+				case "short": return typeof(short);
+				case "ushort": return typeof(ushort);
+				case "int": return typeof(int);
+				case "uint": return typeof(uint);
+				case "long": return typeof(long);
+				case "ulong": return typeof(ulong);
+				case "bool": return typeof(bool);
+				case "string": return typeof(string);
+				case "char": return typeof(char);
+				case "object": return typeof(object);
+				case "void": return typeof(void);
+
+				default: return null;
+			}
+		}
+
+		public static readonly Dictionary<SyntaxType, string> SyntaxHighlightColors = new Dictionary<SyntaxType, string>
+		{
+			{ SyntaxType.Type,                  "#008000ff" },
+			{ SyntaxType.Keyword,               "#008080ff" },
+			{ SyntaxType.SingleQuotationMark,   "brown" },
+			{ SyntaxType.QuotationMark,         "brown" },
+			{ SyntaxType.ConstVal,              "brown" },
+		};
+		public static readonly Dictionary<SyntaxType, string> SyntaxHighlightProColors = new Dictionary<SyntaxType, string>
+		{
+			{ SyntaxType.Type,                  "#6f00ff" },
+			{ SyntaxType.Keyword,               "blue" },
+			{ SyntaxType.SingleQuotationMark,   "brown" },
+			{ SyntaxType.QuotationMark,         "brown" },
+			{ SyntaxType.ConstVal,              "brown" },
+		};
+
 
 		public static string TopLevelNameSpace(string nameSpace)
 		{
@@ -113,7 +252,7 @@ namespace Rex.Utilities
 					Folded = false,
 					IndetLevel = indent,
 					Name = name.Key,
-					Selected = defaultUsings.Contains(name.Key) || RexUsingsHandler.Usings.Contains(name.Key),
+					Selected = DefaultUsings.Contains(name.Key) || RexUsingsHandler.Usings.Contains(name.Key),
 					AtMaxIndent = namespaces.Count(j => j.Key.StartsWith(name.Key)) == 1
 				});
 			}
@@ -131,7 +270,6 @@ namespace Rex.Utilities
 			return method.DeclaringType != typeof(object);
 		}
 
-		private static List<Type> allVisibleTypes;
 		public static IEnumerable<Type> AllVisibleTypes
 		{
 			get
@@ -154,7 +292,7 @@ namespace Rex.Utilities
 				return allVisibleTypes;
 			}
 		}
-		#endregion
+
 
 		public static T ExecuteAssembly<T>(Assembly assembly) where T : class
 		{
@@ -190,14 +328,10 @@ namespace Rex.Utilities
 
 			if (!showFullName)
 			{
-				var typeName = t.Name.TrimEnd('&');
-				if (MapToKeyWords.ContainsKey(t))
+				var keyWord = MapToPrimitive(t);
+				if (keyWord != null)
 				{
-					return new MemberDetails(new[] { Syntax.Keyword(MapToKeyWords[t]) });
-				}
-				else if (MapToKeyWords.Any(i => i.Key.Name == typeName))
-				{
-					return new MemberDetails(new[] { Syntax.Keyword(MapToKeyWords.First(i => i.Key.Name == typeName).Value) });
+					return new MemberDetails(new[] { Syntax.Keyword(keyWord) });
 				}
 			}
 
@@ -284,30 +418,7 @@ namespace Rex.Utilities
 			return Enumerable.Empty<Syntax>();
 		}
 
-		/// <summary>
-		/// Map between types that have special names and there names.
-		/// </summary>
-		public readonly static Dictionary<Type, string> MapToKeyWords = new Dictionary<Type, string>
-		{
-			{ typeof(float),    "float" },
-			{ typeof(double),   "double" },
-			{ typeof(decimal),  "decimal" },
-			{ typeof(byte),     "byte" },
-			{ typeof(sbyte),    "sbyte" },
-			{ typeof(short),    "short" },
-			{ typeof(ushort),   "ushort" },
-			{ typeof(int),      "int" },
-			{ typeof(uint),     "uint" },
-			{ typeof(long),     "long" },
-			{ typeof(ulong),    "ulong" },
-			{ typeof(bool),     "bool" },
-			{ typeof(string),   "string" },
-			{ typeof(char),     "char" },
-			{ typeof(object),   "object" },
-			{ typeof(void),     "void" },
-		};
-
-		internal static List<Syntax> GenericArgumentsToSyntax(List<Type> availableArguments, bool showFullName)
+		public static List<Syntax> GenericArgumentsToSyntax(List<Type> availableArguments, bool showFullName)
 		{
 			var genericArguments = new List<Syntax>();
 			// Build the type arguments (if any)
@@ -323,23 +434,6 @@ namespace Rex.Utilities
 
 			return genericArguments;
 		}
-
-		public static readonly Dictionary<SyntaxType, string> SyntaxHighlightColors = new Dictionary<SyntaxType, string>
-		{
-			{ SyntaxType.Type,                  "#008000ff" },
-			{ SyntaxType.Keyword,               "#008080ff" },
-			{ SyntaxType.SingleQuotationMark,   "brown" },
-			{ SyntaxType.QuotationMark,         "brown" },
-			{ SyntaxType.ConstVal,              "brown" },
-		};
-		public static readonly Dictionary<SyntaxType, string> SyntaxHighlightProColors = new Dictionary<SyntaxType, string>
-		{
-			{ SyntaxType.Type,                  "#6f00ff" },
-			{ SyntaxType.Keyword,               "blue" },
-			{ SyntaxType.SingleQuotationMark,   "brown" },
-			{ SyntaxType.QuotationMark,         "brown" },
-			{ SyntaxType.ConstVal,              "brown" },
-		};
 
 		/// <summary>
 		/// Takes in a member detail and builds a formated rich text string.
@@ -394,17 +488,20 @@ namespace Rex.Utilities
 		/// <returns></returns>
 		internal static IEnumerable<MethodInfo> GetExtensionMethods(Type extendedType)
 		{
+			if (ExtentionMethods == null)
+			{
+				ExtentionMethods = (from type in AllVisibleTypes
+									where type.IsSealed && !type.IsGenericType && !type.IsNested
+									from method in type.GetMethods(BindingFlags.Static
+										 | BindingFlags.Public | BindingFlags.NonPublic)
+									where method.IsDefined(typeof(ExtensionAttribute), false)
+									select method).ToList();
+			}
+
 			return from method in ExtentionMethods
 				   where method.GetParameters()[0].ParameterType == extendedType
 				   select method;
 		}
-
-		static List<MethodInfo> ExtentionMethods = (from type in AllVisibleTypes
-													where type.IsSealed && !type.IsGenericType && !type.IsNested
-													from method in type.GetMethods(BindingFlags.Static
-														 | BindingFlags.Public | BindingFlags.NonPublic)
-													where method.IsDefined(typeof(ExtensionAttribute), false)
-													select method).ToList();
 
 		private static string ColoredString(string syntax, string color)
 		{

@@ -5,10 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using Rex.Utilities;
 using Rex.Utilities.Helpers;
-using System.IO;
 using Rex.Utilities.Input;
-using System.Threading;
-using System.Diagnostics;
 
 namespace Rex.Window
 {
@@ -119,7 +116,7 @@ namespace Rex.Window
 			hideFlags = HideFlags.HideAndDontSave;
 
 			if (_compileEngine == null)
-				_compileEngine = CreateInstance<RexCompileEngine>();
+				_compileEngine = RexCompileEngine.Instance;
 
 			if (_macros == null)
 				_macros = RexMacroHandler.LoadMacros();
