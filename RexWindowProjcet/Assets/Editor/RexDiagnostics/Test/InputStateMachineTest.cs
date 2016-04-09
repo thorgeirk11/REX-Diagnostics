@@ -119,7 +119,7 @@ namespace Rex.Utilities.Test
             TestIntelliSelect("Math.P",
                 new[] { "Math.PI", "Math.Pow" }, false);
             TestIntelliSelect("Math.E",
-                new[] { "Math.E", "Math.Exp", "Math.IEEERemainder" }, false);
+                new[] { "Math.E", "Math.Exp", "Math.Ceiling" }, false);
 
             TestIntelliSelect("Environme",
                 new[] { "Environment" }, false);

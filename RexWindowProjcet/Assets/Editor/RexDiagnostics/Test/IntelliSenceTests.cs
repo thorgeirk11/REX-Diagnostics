@@ -40,27 +40,33 @@ namespace Rex.Utilities.Test
 		[Test]
 		public void IntellisenseCaseInsensitveTest()
 		{
-			var CapitalCaseInfo = Parser.Intellisence("Math.A").Select(i => i.Details.ToString());
-			var lowerCaseInfo = Parser.Intellisence("Math.a").Select(i => i.Details.ToString());
-			CollectionAssert.AreEqual(CapitalCaseInfo, lowerCaseInfo);
-			CollectionAssert.IsNotEmpty(CapitalCaseInfo);
+			//Start of expression
+			EqualIntellisence("Mat", "mat");
+			EqualIntellisence("Direc", "direc");
+			EqualIntellisence("Stri", "stri");
 
+			//Inside static class:
+			EqualIntellisence("Math.A", "Math.a");
+			EqualIntellisence("Math.Ab", "Math.ab");
+			EqualIntellisence("Math.ABS", "Math.abs");
+			EqualIntellisence("Math.Abs", "Math.abs");
 
-			CapitalCaseInfo = Parser.Intellisence("Math.Ab").Select(i => i.Details.ToString());
-			lowerCaseInfo = Parser.Intellisence("Math.ab").Select(i => i.Details.ToString());
-			CollectionAssert.AreEqual(CapitalCaseInfo, lowerCaseInfo);
-			CollectionAssert.IsNotEmpty(CapitalCaseInfo);
+			// Fields:
+			EqualIntellisence("Math.P", "Math.p");
+			EqualIntellisence("Math.PI", "Math.pi");
 
+			// Variables:
 			SetVar("myVar", new DummyOutput());
-			CapitalCaseInfo = Parser.Intellisence("myVar.V").Select(i => i.Details.ToString());
-			lowerCaseInfo = Parser.Intellisence("myVar.v").Select(i => i.Details.ToString());
-			CollectionAssert.AreEqual(CapitalCaseInfo, lowerCaseInfo);
-			CollectionAssert.IsNotEmpty(CapitalCaseInfo);
+			EqualIntellisence("myVar.V", "myVar.V");
+			EqualIntellisence("myVar.Va", "myVar.Va");
+		}
 
-			CapitalCaseInfo = Parser.Intellisence("myVar.Va").Select(i => i.Details.ToString());
-			lowerCaseInfo = Parser.Intellisence("myVar.va").Select(i => i.Details.ToString());
-			CollectionAssert.AreEqual(CapitalCaseInfo, lowerCaseInfo);
-			CollectionAssert.IsNotEmpty(CapitalCaseInfo);
+		private void EqualIntellisence(string search1, string search2)
+		{
+			var help1 = Parser.Intellisence(search1).Select(i => i.Details.ToString());
+			var help2 = Parser.Intellisence(search2).Select(i => i.Details.ToString());
+			CollectionAssert.AreEqual(help1, help2);
+			CollectionAssert.IsNotEmpty(help1);
 		}
 
 		[Test]
@@ -191,17 +197,22 @@ namespace Rex.Utilities.Test
 			var helpInfo1 = Parser.Intellisence("Double.").Select(i => i.Details.ToString());
 			var helpInfo2 = Parser.Intellisence("double.").Select(i => i.Details.ToString());
 			Assert.AreEqual(helpInfo1, helpInfo2);
+			Assert.IsNotEmpty(helpInfo1);
 
 			helpInfo1 = Parser.Intellisence("Int32.").Select(i => i.Details.ToString());
 			helpInfo2 = Parser.Intellisence("int.").Select(i => i.Details.ToString());
 			Assert.AreEqual(helpInfo1, helpInfo2);
+			Assert.IsNotEmpty(helpInfo1);
 
 			helpInfo1 = Parser.Intellisence("Boolean.").Select(i => i.Details.ToString());
 			helpInfo2 = Parser.Intellisence("bool.").Select(i => i.Details.ToString());
+			Assert.AreEqual(helpInfo1, helpInfo2);
+			Assert.IsNotEmpty(helpInfo1);
 
 			helpInfo1 = Parser.Intellisence("String.").Select(i => i.Details.ToString());
 			helpInfo2 = Parser.Intellisence("string.").Select(i => i.Details.ToString());
 			Assert.AreEqual(helpInfo1, helpInfo2);
+			Assert.IsNotEmpty(helpInfo1);
 		}
 
 		[Test]
@@ -209,9 +220,16 @@ namespace Rex.Utilities.Test
 		{
 			var helpInfo = Parser.Intellisence("Math.PI.");
 			Assert.IsNotEmpty(helpInfo);
-			Assert.False(helpInfo.Any(i => i.Details.Contains(Syntax.ConstKeyword) || i.Details.Contains(Syntax.StaticKeyword)));
+			Assert.IsEmpty(from h in helpInfo
+						   where h.Details.Contains(Syntax.ConstKeyword) ||
+								 h.Details.Contains(Syntax.StaticKeyword)
+						   select h);
 
 			helpInfo = Parser.Intellisence("Math.PI.GetType().");
+			Assert.IsEmpty(from h in helpInfo
+						   where h.Details.Contains(Syntax.ConstKeyword) ||
+								 h.Details.Contains(Syntax.StaticKeyword)
+						   select h);
 			Assert.IsNotEmpty(helpInfo);
 		}
 

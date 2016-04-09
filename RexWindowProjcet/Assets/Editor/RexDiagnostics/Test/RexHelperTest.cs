@@ -90,6 +90,12 @@ namespace Rex.Utilities.Test
 			GetCSharpRepTest("System.Int32", typeof(int), true);
 			GetCSharpRepTest("int", typeof(int), false);
 
+			//Simple types arrays:
+			GetCSharpRepTest("System.String[]", typeof(string[]), true);
+			GetCSharpRepTest("System.Int32[]", typeof(int[]), true);
+			GetCSharpRepTest("string[]", typeof(string[]), false);
+			GetCSharpRepTest("int[]", typeof(int[]), false);
+
 			//Generic types:
 			GetCSharpRepTest("Action<bool, int, Action<IEnumerable<string>>>", typeof(Action<bool, int, Action<IEnumerable<string>>>), false);
 			GetCSharpRepTest(
