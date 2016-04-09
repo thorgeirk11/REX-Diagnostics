@@ -15,7 +15,7 @@ namespace Rex.Utilities
 		public const string DotAfterMethodRegex = @"(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<method>\w*)[(](?<params>[^)]*)[)]\.";
 
 		/// <summary>
-		/// Regex to reconize properties 
+		/// Regex to reconize properties.
 		/// </summary>
 		private const string propsRegex = "(.et|add|remove)_(?<Name>.*)";
 
@@ -397,6 +397,25 @@ namespace Rex.Utilities
 
 		private IEnumerable<CodeCompletion> ExtractMemberInfo(Group search, Type varType, BindingFlags bindings, int offset)
 		{
+			var lowerSearch = search.Value.ToLower();
+			return from help in GetAllMemberInfos(varType, bindings)
+				   let key = help.Key.ToLower()
+				   let searchIndex = key.IndexOf(lowerSearch)
+				   where searchIndex >= 0 || string.IsNullOrEmpty(lowerSearch)
+				   from val in help.Value
+				   orderby searchIndex, key
+				   select new CodeCompletion
+				   {
+					   Details = val,
+					   ReplaceString = val.Name.String,
+					   Start = offset + search.Index,
+					   End = offset + search.Index + search.Length - 1,
+					   Search = search.Value
+				   };
+		}
+
+		private static Dictionary<string, List<MemberDetails>> GetAllMemberInfos(Type varType, BindingFlags bindings)
+		{
 			var helpList = new Dictionary<string, List<MemberDetails>>();
 
 			// properties
@@ -413,7 +432,7 @@ namespace Rex.Utilities
 
 			// methods
 			foreach (var metod in from met in varType.GetMethods(bindings)
-								  where !Regex.IsMatch(met.Name, propsRegex) && met.Name.Contains(search.Value)
+								  where !Regex.IsMatch(met.Name, propsRegex)
 								  select met)
 			{
 				var infoStr = RexReflectionUtils.GetMemberDetails(metod);
@@ -439,20 +458,7 @@ namespace Rex.Utilities
 			//        helpList[metod.Name].Add(infoStr);
 			//}
 
-			var lowerSearch = search.Value.ToLower();
-			return from help in helpList
-				   from val in help.Value
-				   let lowerItem = help.Key.ToLower()
-				   where lowerItem.Contains(lowerSearch)
-				   orderby lowerItem.IndexOf(lowerSearch), lowerItem
-				   select new CodeCompletion
-				   {
-					   Details = val,
-					   ReplaceString = val.Name.String,
-					   Start = offset + search.Index,
-					   End = offset + search.Index + search.Length - 1,
-					   Search = search.Value
-				   };
+			return helpList;
 		}
 	}
 }
