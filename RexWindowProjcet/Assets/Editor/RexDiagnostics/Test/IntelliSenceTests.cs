@@ -38,6 +38,32 @@ namespace Rex.Utilities.Test
 		}
 
 		[Test]
+		public void IntellisenseCaseInsensitveTest()
+		{
+			var CapitalCaseInfo = Parser.Intellisence("Math.A").Select(i => i.Details.ToString());
+			var lowerCaseInfo = Parser.Intellisence("Math.a").Select(i => i.Details.ToString());
+			CollectionAssert.AreEqual(CapitalCaseInfo, lowerCaseInfo);
+			CollectionAssert.IsNotEmpty(CapitalCaseInfo);
+
+
+			CapitalCaseInfo = Parser.Intellisence("Math.Ab").Select(i => i.Details.ToString());
+			lowerCaseInfo = Parser.Intellisence("Math.ab").Select(i => i.Details.ToString());
+			CollectionAssert.AreEqual(CapitalCaseInfo, lowerCaseInfo);
+			CollectionAssert.IsNotEmpty(CapitalCaseInfo);
+
+			SetVar("myVar", new DummyOutput());
+			CapitalCaseInfo = Parser.Intellisence("myVar.V").Select(i => i.Details.ToString());
+			lowerCaseInfo = Parser.Intellisence("myVar.v").Select(i => i.Details.ToString());
+			CollectionAssert.AreEqual(CapitalCaseInfo, lowerCaseInfo);
+			CollectionAssert.IsNotEmpty(CapitalCaseInfo);
+
+			CapitalCaseInfo = Parser.Intellisence("myVar.Va").Select(i => i.Details.ToString());
+			lowerCaseInfo = Parser.Intellisence("myVar.va").Select(i => i.Details.ToString());
+			CollectionAssert.AreEqual(CapitalCaseInfo, lowerCaseInfo);
+			CollectionAssert.IsNotEmpty(CapitalCaseInfo);
+		}
+
+		[Test]
 		public void SimpleStaticIntellisensTest()
 		{
 			var helpInfo = Parser.Intellisence("Math.Ab").Select(i => i.Details.ToString());
