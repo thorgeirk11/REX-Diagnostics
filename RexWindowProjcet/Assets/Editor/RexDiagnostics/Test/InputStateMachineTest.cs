@@ -163,10 +163,6 @@ namespace Rex.Utilities.Test
         public void TestExecute(string code)
         {
             Console.WriteLine(code);
-            RexHelper.Messages[MsgType.None].Clear();
-            RexHelper.Messages[MsgType.Info].Clear();
-            RexHelper.Messages[MsgType.Warning].Clear();
-            RexHelper.Messages[MsgType.Error].Clear();
             RexHelperTest.CompileAndRun(code);
         }
         public static void PressKey(KeyCode key, int repeat = 1)

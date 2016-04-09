@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Text;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEditor;
 
 namespace Rex.Utilities
 {
@@ -20,13 +21,7 @@ namespace Rex.Utilities
 		private static string[] ignoreUsings;
 		private static string[] _defaultUsings;
 		private static List<MethodInfo> ExtentionMethods;
-		//------------------------------------------------------------------------------------
-		/// <summary>
-		/// TODO: THIS CAN BE Dic<string, List<Type>> for faster look up of names.
-		/// </summary>
-		//------------------------------------------------------------------------------------
 		private static List<Type> allVisibleTypes;
-
 
 		/// <summary>
 		/// The default using statments for REX. 
@@ -73,9 +68,6 @@ namespace Rex.Utilities
 				return ignoreUsings;
 			}
 		}
-
-		public const string className = "__TempRexClass";
-		public const string FuncName = "Func";
 
 		/// <summary>
 		/// Takes in a primitive type and returns it's name "System.Boolean" -> "bool"
@@ -180,7 +172,6 @@ namespace Rex.Utilities
 			{ SyntaxType.QuotationMark,         "brown" },
 			{ SyntaxType.ConstVal,              "brown" },
 		};
-
 
 		public static string TopLevelNameSpace(string nameSpace)
 		{
@@ -291,14 +282,6 @@ namespace Rex.Utilities
 				}
 				return allVisibleTypes;
 			}
-		}
-
-
-		public static T ExecuteAssembly<T>(Assembly assembly) where T : class
-		{
-			var Class = Activator.CreateInstance(assembly.GetType(className));
-			var method = Class.GetType().GetMethod(FuncName);
-			return method.Invoke(Class, null) as T;
 		}
 
 		public static MemberDetails GetCSharpRepresentation(Type t)
@@ -506,6 +489,18 @@ namespace Rex.Utilities
 		private static string ColoredString(string syntax, string color)
 		{
 			return string.Format(@"<color=""{0}"">{1}</color>", color, syntax);
+		}
+
+		public static void Add(this Dictionary<MessageType, List<string>> messages, MessageType key, params string[] value)
+		{
+			if (messages.ContainsKey(key))
+			{
+				messages[key].AddRange(value);
+			}
+			else
+			{
+				messages[key] = value.ToList();
+			}
 		}
 	}
 

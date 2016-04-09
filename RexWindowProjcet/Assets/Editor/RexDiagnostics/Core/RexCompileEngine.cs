@@ -10,11 +10,15 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using UnityEditor;
 using UnityEngine;
 
 [Serializable]
 public class RexCompileEngine : ScriptableObject, IDisposable
 {
+	public const string REX_CLASS_NAME = "__TempRexClass";
+	public const string REX_FUNC_NAME = "Func";
+
 	public const float TIME_OUT_FOR_COMPILE_SEC = 2;
 
 	private static RexCompileEngine _instance = null;
@@ -116,8 +120,9 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 		}
 	}
 
-	public CompiledExpression GetCompile(string code)
+	public CompiledExpression GetCompile(string code, out Dictionary<MessageType, List<string>> messages)
 	{
+		messages = new Dictionary<MessageType, List<string>>();
 		var startedWaiting = DateTime.Now;
 		while (true)
 		{
@@ -126,9 +131,9 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 				if (_currentCompiledExpression != null &&
 					_currentCompiledExpression.Parse.WholeCode == code)
 				{
-					if (_currentCompiledExpression.Errors.Count > 0)
+					if (_currentCompiledExpression.Errors.Any())
 					{
-						RexHelper.Messages[MsgType.Error].AddRange(_currentCompiledExpression.Errors);
+						messages.Add(MessageType.Error, _currentCompiledExpression.Errors.ToArray());
 						return null;
 					}
 
@@ -138,7 +143,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 			Thread.Sleep(10);
 			if (DateTime.Now - startedWaiting > TimeSpan.FromSeconds(TIME_OUT_FOR_COMPILE_SEC))
 			{
-				RexHelper.Messages[MsgType.Error].Add("Time out on compiling expression, " + code);
+				messages.Add(MessageType.Error, "Time out on compiling expression, " + code);
 				return null;
 			}
 		}
@@ -224,7 +229,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 
 	public static CompiledExpression Compile(ParseResult parseResult)
 	{
-		var Errors = new List<string>();
+		var errors = Enumerable.Empty<string>();
 		var returnTypes = new[] { FuncType._object, FuncType._void };
 		foreach (var returnType in returnTypes)
 		{
@@ -277,22 +282,22 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 				}
 			}
 
-			Errors = RexHelper.DealWithErrors(result);
-			if (Errors.Count == 0)
+			errors = RexHelper.DealWithErrors(result);
+			if (!errors.Any())
 			{
 				return new CompiledExpression
 				{
 					Assembly = result.CompiledAssembly,
 					Parse = parseResult,
 					FuncType = returnType,
-					Errors = Errors
+					Errors = errors
 				};
 			}
 		}
 		return new CompiledExpression
 		{
 			Parse = parseResult,
-			Errors = Errors
+			Errors = errors
 		};
 	}
 
@@ -309,7 +314,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 		var usings = usedNameSpace.Select(ns => string.Format("using {0};", ns.Name));
 		wrapper.AppendLine(string.Join(Environment.NewLine, usings.ToArray()));
 		wrapper.Append("class ");
-		wrapper.AppendLine(RexUtils.className);
+		wrapper.AppendLine(REX_CLASS_NAME);
 		wrapper.AppendLine("{");
 		wrapper.AppendLine(variables);
 		if (parseResult.IsDeclaring || returnType == FuncType._object)
@@ -330,7 +335,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 		public Action {0}() 
 		{{ 
 			return new Action(() => {1});
-		}}", RexUtils.FuncName, returnstring);
+		}}", REX_FUNC_NAME, returnstring);
 	}
 
 	private static string FuncBodyWrapper(string returnstring)
@@ -339,7 +344,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 		public Func<object> {0}() 
 		{{ 
 			return new Func<object>(() => {1});
-		}}", RexUtils.FuncName, returnstring);
+		}}", REX_FUNC_NAME, returnstring);
 	}
 
 	private static string GetVaribleWrapper()
