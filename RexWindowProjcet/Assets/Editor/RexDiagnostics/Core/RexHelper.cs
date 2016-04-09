@@ -5,6 +5,9 @@ using System.CodeDom.Compiler;
 using System.Collections;
 using Rex.Utilities.Helpers;
 using System.Diagnostics;
+using UnityEditor;
+using Rex.Window;
+using System.Reflection;
 
 namespace Rex.Utilities
 {
@@ -16,68 +19,41 @@ namespace Rex.Utilities
 			public Type VarType { get; set; }
 		}
 		public static readonly Dictionary<string, Varible> Variables = new Dictionary<string, Varible>();
-		public static IEnumerable<AConsoleOutput> Output { get { return outputList; } }
 
-		private static readonly LinkedList<AConsoleOutput> outputList = new LinkedList<AConsoleOutput>();
+		public static IEnumerable<OutputEntry> Output { get { return _outputList; } }
+
+		private static readonly LinkedList<OutputEntry> _outputList = new LinkedList<OutputEntry>();
+
 		const int OUTPUT_LENGHT = 20;
 
-		public static readonly Dictionary<MsgType, List<string>> Messages = new Dictionary<MsgType, List<string>>
+		/// <summary>
+		/// Executes the expression and retunrs a output entry with the results.
+		/// </summary>
+		/// <typeparam name="T">Type of <see cref="AOutputEntry"/></typeparam>
+		/// <param name="compileResult">compiled code to execute.</param>
+		/// <param name="messages">Any errors or warnings are added to this dic.</param>
+		public static T Execute<T>(CompiledExpression compileResult, out Dictionary<MessageType, List<string>> messages)
+			where T : AOutputEntry, new()
 		{
-			{ MsgType.None, new List<string>()},
-			{ MsgType.Info, new List<string>()},
-			{ MsgType.Warning, new List<string>()},
-			{ MsgType.Error, new List<string>()}
-		};
-
-		#region Execute
-		public static T Execute<T>(CompiledExpression compileResult, bool showMessages = true)
-			where T : AConsoleOutput, new()
-		{
+			messages = new Dictionary<MessageType, List<string>>();
 			try
 			{
-				var val = Invoke(compileResult);
+				var value = Invoke(compileResult);
 
 				// If this is a variable declaration
 				if (compileResult.Parse.IsDeclaring)
 				{
-					DeclaringVariable(compileResult.Parse.Variable, val, showMessages);
-				}
-
-				// If expression is void
-				if (compileResult.FuncType == FuncType._void)
-				{
-					var outp = new T();
-					outp.LoadInDetails(null, "Expression successfully executed.", Enumerable.Empty<MemberDetails>());
-					return outp;
-				}
-
-				// If expression is null
-				if (val == null)
-				{
-					var outp = new T();
-					outp.LoadInDetails(null, "null", Enumerable.Empty<MemberDetails>());
-					return outp;
-				}
-
-				// Get the type of the variable
-				var type = val.GetType();
-				var message = val.ToString();
-				if (!RexUtils.IsToStringOverride(type))
-				{
-					message = RexUtils.GetCSharpRepresentation(type, true).ToString();
+					DeclaringVariable(compileResult.Parse.Variable, value, messages);
 				}
 
 				var output = new T();
-				output.LoadInDetails(val, message, RexReflectionUtils.ExtractDetails(val));
-				if (!(val is string || val is Enum) && val is IEnumerable)
+				if (compileResult.FuncType == FuncType._void)
 				{
-					foreach (object o in (val as IEnumerable))
-					{
-						var member = new T();
-						var msg = o == null ? "null" : o.ToString();
-						member.LoadInDetails(o, msg, RexReflectionUtils.ExtractDetails(o));
-						output.Members.Add(member);
-					}
+					output.LoadVoid();
+				}
+				else
+				{
+					output.LoadObject(value);
 				}
 				return output;
 			}
@@ -89,49 +65,56 @@ namespace Rex.Utilities
 				{
 					var deletedVar = exception as AccessingDeletedVariableException;
 					var msg = "Variable " + deletedVar.VarName + " has been deleted, but is still being accessed";
-					if (showMessages) Messages[MsgType.Warning].Add(msg);
+
+					messages.Add(MessageType.Warning, msg);
 					return new T
 					{
-						Message = msg,
 						Exception = deletedVar
 					};
 				}
 
-				if (showMessages) Messages[MsgType.Error].Add(exception.ToString());
+				messages.Add(MessageType.Error, exception.ToString());
 				return new T { Exception = exception };
 			}
 		}
 
+		/// <summary>
+		/// Invoke the delegate containg the user defined code.
+		/// </summary>
+		/// <param name="compileResult">Compile result to invoke.</param>
 		private static object Invoke(CompiledExpression compileResult)
 		{
-			object val = null;
-			if (compileResult.HasInitialized)
+			if (compileResult.FuncType == FuncType._object)
 			{
-				if (compileResult.FuncType == FuncType._object)
+				if (!compileResult.HasInitialized)
 				{
-					val = compileResult.InitializedFunction();
+					compileResult.InitializedFunction = ExecuteAssembly<Func<object>>(compileResult.Assembly);
 				}
-				else
-				{
-					compileResult.InitializedAction();
-				}
+				return compileResult.InitializedFunction();
 			}
 			else
 			{
-				if (compileResult.FuncType == FuncType._object)
+				if (!compileResult.HasInitialized)
 				{
-					compileResult.InitializedFunction = RexUtils.ExecuteAssembly<Func<object>>(compileResult.Assembly);
-					val = compileResult.InitializedFunction();
+					compileResult.InitializedAction = ExecuteAssembly<Action>(compileResult.Assembly);
 				}
-				else
-				{
-					compileResult.InitializedAction = RexUtils.ExecuteAssembly<Action>(compileResult.Assembly);
-					compileResult.InitializedAction();
-				}
+				compileResult.InitializedAction();
+				return null;
 			}
-
-			return val;
 		}
+
+		/// <summary>
+		/// Invokes <see cref="RexCompileEngine.REX_FUNC_NAME"/> inside the compiled assembly. 
+		/// </summary>
+		/// <typeparam name="T">Return type of the function.</typeparam>
+		/// <param name="assembly">Assembly containing the commpiled code.</param>
+		private static T ExecuteAssembly<T>(Assembly assembly) where T : class
+		{
+			var Class = Activator.CreateInstance(assembly.GetType(RexCompileEngine.REX_CLASS_NAME));
+			var method = Class.GetType().GetMethod(RexCompileEngine.REX_FUNC_NAME);
+			return method.Invoke(Class, null) as T;
+		}
+
 
 		/// <summary>
 		/// Handles a variable declaration.
@@ -139,7 +122,8 @@ namespace Rex.Utilities
 		/// <param name="varName">Name of the variable</param>
 		/// <param name="val">Value of the variable</param>
 		/// <param name="showMessages">Should show an warning message or not</param>
-		private static void DeclaringVariable(string varName, object val, bool showMessages)
+		/// <param name="messages">Any errors or warnings are added to this dic.</param>
+		private static void DeclaringVariable(string varName, object val, Dictionary<MessageType, List<string>> messages)
 		{
 			var warning = string.Empty;
 			if (val != null)
@@ -174,79 +158,66 @@ namespace Rex.Utilities
 			{
 				warning = string.Format("Expression returned null. Could not declare variable '{0}'", varName);
 			}
-			if (showMessages) Messages[MsgType.Warning].Add(warning);
-
+			messages.Add(MessageType.Warning, warning);
 		}
 
 		/// <summary>
 		/// Outputs errors if there are any. returns true if there are none.
 		/// </summary>
 		/// <param name="result">todo: describe result parameter on DealWithErrors</param>
-		public static List<string> DealWithErrors(CompilerResults result)
+		public static IEnumerable<string> DealWithErrors(CompilerResults result)
 		{
 			var errorList = new List<string>();
 			foreach (CompilerError error in result.Errors)
 			{
-				if (!error.IsWarning)
+				if (error.IsWarning) continue;
+
+				// CS0266: Cannot implicitly convert type '' to ''.An explicit conversion exists (are you missing a cast?) 
+				// CS0246: The type or namespace name '' could not be found (are you missing a using directive or an assembly reference?)
+				// CS0201: Only assignment, call, increment, decrement, and new object expressions can be used as a statement
+				if (errorList.Count > 0 && (error.ErrorNumber == "CS0266" ||
+											error.ErrorNumber == "CS0246" ||
+											error.ErrorNumber == "CS0201"))
 				{
-					if (error.ErrorText.StartsWith("Cannot implicitly convert type"))
-						continue;
+					continue;
+				}
 
-					if (error.ErrorText.StartsWith("Only assignment, call, increment, decrement, and new object expressions") &&
-						Messages[MsgType.Error].Count > 0)
-						continue;
-
-					if (error.ErrorText.Trim().EndsWith("(Location of the symbol related to previous error)") &&
-						Messages[MsgType.Error].Count > 0)
-						continue;
-
-					if (!Messages[MsgType.Error].Contains(error.ErrorText))
-						errorList.Add(error.ErrorText);
+				if (!errorList.Contains(error.ErrorText))
+				{
+					errorList.Add(error.ErrorText);
 				}
 			}
 			return errorList;
 		}
-		#endregion
 
-		public static void RemoveOutput(AConsoleOutput deleted)
+		public static void RemoveOutput(OutputEntry deleted)
 		{
-			outputList.Remove(deleted);
+			_outputList.Remove(deleted);
 		}
 
-		public static void AddOutput(AConsoleOutput output)
+		public static void AddOutput(OutputEntry output)
 		{
 			if (output == null)
 				return;
-			foreach (var item in outputList)
+
+			foreach (var item in _outputList)
 			{
 				item.ShowDetails = false;
-				item.ShowMembers = false;
+				item.ShowEnumeration = false;
 			}
+
 			output.ShowDetails = true;
-			output.ShowMembers = true;
-			if (outputList.Count >= OUTPUT_LENGHT)
+			output.ShowEnumeration = true;
+			if (_outputList.Count >= OUTPUT_LENGHT)
 			{
-				outputList.RemoveLast();
+				_outputList.RemoveLast();
 			}
-			outputList.AddFirst(output);
+			_outputList.AddFirst(output);
 		}
 
 		public static void ClearOutput()
 		{
-			outputList.Clear();
-		}
-
-		private class DummyOutput : AConsoleOutput
-		{
-			public DummyOutput() : base() { }
-
-			public override void Display()
-			{
-				throw new NotImplementedException();
-			}
-
-			public override void LoadInDetails(object value, string message, IEnumerable<MemberDetails> details)
-			{ }
+			_outputList.Clear();
 		}
 	}
 }

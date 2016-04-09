@@ -95,12 +95,12 @@ namespace Rex.Utilities.Test
 			var helpInfo = Parser.Intellisence("Math.Abs(-2).MaxValue");
 			Assert.IsEmpty(helpInfo);
 
-			var match = RexParser.DotAfterMethodRegex.Match("Math.Abs(-2).MaxValue");
+			var match = Regex.Match("Math.Abs(-2).MaxValue", RexParser.DotAfterMethodRegex);
 			var possibleMethods = Parser.PossibleMethods(match);
 			Assert.AreEqual(7, possibleMethods.Count());
 
 
-			match = RexParser.DotAfterMethodRegex.Match("Math.ToString().Lenght");
+			match = Regex.Match("Math.ToString().Lenght", RexParser.DotAfterMethodRegex);
 			possibleMethods = Parser.PossibleMethods(match);
 			Assert.AreEqual(1, possibleMethods.Count());
 

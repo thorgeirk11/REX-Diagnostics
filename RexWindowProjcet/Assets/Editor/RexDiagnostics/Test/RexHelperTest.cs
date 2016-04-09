@@ -3,6 +3,9 @@ using System.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
 using Rex.Utilities.Helpers;
+using System.Collections;
+using Rex.Window;
+using UnityEditor;
 
 namespace Rex.Utilities.Test
 {
@@ -18,12 +21,11 @@ namespace Rex.Utilities.Test
 			var expression = "1+1";
 			var pResult = Parser.ParseAssigment(expression);
 			var cResult = RexCompileEngine.Compile(pResult);
-			var output = RexHelper.Execute<DummyOutput>(cResult);
+			var output = Execute(cResult);
 			Assert.AreEqual(2, output.Value);
 
 			RexHelper.Variables.Clear();
 			RexHelper.ClearOutput();
-			foreach (var o in RexHelper.Messages) o.Value.Clear();
 		}
 
 		RexParser Parser { get; set; }
@@ -47,7 +49,7 @@ namespace Rex.Utilities.Test
 
 			var cResult = RexCompileEngine.Compile(pResult);
 			Assert.IsNotEmpty(cResult.Errors);
-			Assert.Contains("Division by constant zero\r", cResult.Errors);
+			CollectionAssert.Contains(cResult.Errors, "Division by constant zero\r");
 		}
 
 		[Test]
@@ -186,7 +188,7 @@ namespace Rex.Utilities.Test
 			Assert.AreEqual(pResult, cResult.Parse);
 			Assert.IsNotNull(cResult.Assembly);
 
-			var output = RexHelper.Execute<DummyOutput>(cResult);
+			var output = Execute(cResult);
 			Assert.AreEqual(2, output.Value);
 
 
@@ -201,21 +203,21 @@ namespace Rex.Utilities.Test
 			var output = CompileAndRun("new [] { 1, 2, 3, 4, 5 }");
 			Assert.AreEqual(new[] { 1, 2, 3, 4, 5 }, output.Value);
 
-			Assert.AreEqual(5, output.Members.Count);
-			for (int i = 1; i <= output.Members.Count; i++)
+			Assert.AreEqual(5, output.EnumerationItems.Count);
+			for (int i = 1; i <= output.EnumerationItems.Count; i++)
 			{
-				Assert.AreEqual(i, (output.Members[i - 1] as DummyOutput).Value);
+				Assert.AreEqual(i, (output.EnumerationItems[i - 1] as DummyOutput).Value);
 			}
 
 			output = CompileAndRun("new [] { \"1\", \"2\", \"3\", null, \"5\" }");
 			Assert.AreEqual(new[] { "1", "2", "3", null, "5" }, output.Value);
-			Assert.AreEqual(5, output.Members.Count);
-			for (int i = 1; i <= output.Members.Count; i++)
+			Assert.AreEqual(5, output.EnumerationItems.Count);
+			for (int i = 1; i <= output.EnumerationItems.Count; i++)
 			{
 				if (i == 4)
-					Assert.IsNull((output.Members[i - 1] as DummyOutput).Value);
+					Assert.IsNull((output.EnumerationItems[i - 1] as DummyOutput).Value);
 				else
-					Assert.AreEqual(i.ToString(), (output.Members[i - 1] as DummyOutput).Value);
+					Assert.AreEqual(i.ToString(), (output.EnumerationItems[i - 1] as DummyOutput).Value);
 			}
 		}
 
@@ -245,7 +247,7 @@ namespace Rex.Utilities.Test
 			Assert.IsNotNull(cResult.Assembly);
 
 
-			var output = RexHelper.Execute<DummyOutput>(cResult);
+			var output = Execute(cResult);
 			Assert.AreEqual(2, output.Value);
 			Assert.AreEqual(2, RexHelper.Variables["x"].VarValue);
 		}
@@ -264,7 +266,7 @@ namespace Rex.Utilities.Test
 			Assert.AreEqual(pResult, cResult.Parse);
 			Assert.IsNotNull(cResult.Assembly);
 
-			var output = RexHelper.Execute<DummyOutput>(cResult);
+			var output = Execute(cResult);
 			Assert.IsInstanceOf<Func<int, bool>>(output.Value);
 			var func = RexHelper.Variables["x"].VarValue as Func<int, bool>;
 			Assert.IsTrue(func(1));
@@ -284,7 +286,7 @@ namespace Rex.Utilities.Test
 			Assert.AreEqual(pResult, cResult.Parse);
 			Assert.IsNotNull(cResult.Assembly);
 
-			var output = RexHelper.Execute<DummyOutput>(cResult);
+			var output = Execute(cResult);
 			Assert.IsInstanceOf<IEnumerable<int>>(output.Value);
 			var list = RexHelper.Variables["x"].VarValue as IEnumerable<int>;
 			Assert.AreEqual(new[] { 1, 2, 3 }, list);
@@ -308,33 +310,59 @@ namespace Rex.Utilities.Test
 			CompileAndRun("x = new [] {1,2,3,4,5}.Select(i => i * 2)");
 		}
 
+		public static DummyOutput Execute(CompiledExpression compiledExpression)
+		{
+			Dictionary<MessageType, List<string>> tmp;
+			return RexHelper.Execute<DummyOutput>(compiledExpression, out tmp);
+		}
 		public static DummyOutput CompileAndRun(string code)
+		{
+			Dictionary<MessageType, List<string>> tmp;
+			return CompileAndRun(code, out tmp);
+		}
+		public static DummyOutput CompileAndRun(string code, out Dictionary<MessageType, List<string>> messages)
 		{
 			var pResult = new RexParser().ParseAssigment(code);
 			var cResult = RexCompileEngine.Compile(pResult);
-			return RexHelper.Execute<DummyOutput>(cResult);
+			return RexHelper.Execute<DummyOutput>(cResult, out messages);
 		}
 	}
 
-	public class DummyOutput : AConsoleOutput
+	public class DummyOutput : OutputEntry
 	{
-		public override void Display()
+		public override void DrawOutputUI()
 		{
 			throw new NotImplementedException();
 		}
 
 		public Func<string> toString;
 
-		public override void LoadInDetails(object value, string message, IEnumerable<MemberDetails> details)
+		protected override void LoadEnumeration(IEnumerable values)
+		{
+			base.LoadSingleObject(values);
+			Value = values;
+			foreach (object o in values)
+			{
+				var member = new DummyOutput();
+				member.LoadSingleObject(o);
+				EnumerationItems.Add(member);
+			}
+		}
+
+		protected override void LoadSingleObject(object value)
 		{
 			Value = value;
-			Message = message;
+			base.LoadSingleObject(value);
 		}
 		public object Value { get; set; }
 
 		public override string ToString()
 		{
-			return toString();
+			var handler = toString;
+			if (handler != null)
+				return handler();
+
+			return base.ToString();
 		}
 	}
 }

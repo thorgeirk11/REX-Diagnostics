@@ -2,38 +2,40 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEditor;
 using UnityEngine;
 using Rex.Utilities.Helpers;
+using System.Collections;
 
 namespace Rex.Window
 {
-
-	public class ConsoleOutput : AConsoleOutput
+	public class OutputEntry : AOutputEntry
 	{
 		/// <summary>
 		/// Action Dictionary for displaying the details.
 		/// </summary>
-		public Dictionary<Action, GUIContent> Details { get; set; }
+		public Dictionary<Action, GUIContent> Details { get; private set; }
+
+		/// <summary>
+		/// Action Dictionary for displaying the details.
+		/// </summary>
+		public List<OutputEntry> EnumerationItems { get; private set; }
+
 		/// <summary>
 		/// Action for displaying the message.
 		/// </summary>
 		public Action DisplayMessage { get; private set; }
 
 		/// <summary>
-		/// Style used for the details section
+		/// Shoud the <see cref="Details"/> be displayed in UI.
 		/// </summary>
-		static readonly GUIStyle _detailsStyle = new GUIStyle
-		{
-			alignment = TextAnchor.MiddleLeft,
-			margin = new RectOffset(10, 10, 0, 0),
-			wordWrap = true,
-			richText = true
-		};
+		public bool ShowDetails { get; set; }
+		/// <summary>
+		/// Should the <see cref="EnumerationItems" /> be displayed in UI. 
+		/// </summary>
+		public bool ShowEnumeration { get; set; }
 
 		private MemberDetails _exceptionDetails;
-
 		public override Exception Exception
 		{
 			get { return base.Exception; }
@@ -47,10 +49,74 @@ namespace Rex.Window
 			}
 		}
 
-		public ConsoleOutput()
+		static GUIStyle _detailsStyle;
+		/// <summary>
+		/// Style used for the details section
+		/// </summary>
+		public static GUIStyle DetailsStyle
 		{
-			DisplayMessage = DisplayFieldFor(null, "null");
-			Details = new Dictionary<Action, GUIContent>();
+			get
+			{
+				if (_detailsStyle == null)
+				{
+					_detailsStyle = new GUIStyle
+					{
+						alignment = TextAnchor.MiddleLeft,
+						margin = new RectOffset(10, 10, 0, 0),
+						wordWrap = true,
+						richText = true
+					};
+				}
+				return _detailsStyle;
+			}
+		}
+
+		private static Dictionary<Type, Action<object>> _fieldForType;
+		private static Dictionary<Type, Action<object>> FieldForType
+		{
+			get
+			{
+				if (_fieldForType == null)
+				{
+					_fieldForType = new Dictionary<Type, Action<object>>
+					{
+						{ typeof(Vector2),          value => EditorGUILayout.Vector2Field("", (Vector2)value) },
+						{ typeof(Vector3),          value => EditorGUILayout.Vector3Field("", (Vector3)value) },
+						{ typeof(Vector4),          value => EditorGUILayout.Vector4Field("", (Vector4)value) },
+						{ typeof(Color),            value => EditorGUILayout.ColorField((Color)value) },
+						{ typeof(Rect),             value => EditorGUILayout.RectField((Rect)value) },
+						{ typeof(AnimationCurve),   value => EditorGUILayout.CurveField((AnimationCurve)value) },
+						{ typeof(Bounds),           value => EditorGUILayout.BoundsField((Bounds)value) },
+						{ typeof(bool),             value => EditorGUILayout.ToggleLeft(value.ToString(), (bool)value, GUI.skin.textField) },
+					};
+				}
+				return _fieldForType;
+			}
+		}
+
+		public OutputEntry() : base()
+		{
+			EnumerationItems = new List<OutputEntry>();
+		}
+
+		protected override void LoadSingleObject(object value)
+		{
+			base.LoadSingleObject(value);
+			if (value == null) return;
+
+			LoadInDetails(value, RexReflectionUtils.ExtractDetails(value));
+		}
+
+		protected override void LoadEnumeration(IEnumerable values)
+		{
+			LoadSingleObject(values);
+
+			foreach (object o in values)
+			{
+				var member = new OutputEntry();
+				member.LoadSingleObject(o);
+				EnumerationItems.Add(member);
+			}
 		}
 
 		/// <summary>
@@ -59,13 +125,12 @@ namespace Rex.Window
 		/// <param name="value">Ouput Value of the Expression</param>
 		/// <param name="message">Message from the Expression execute</param>
 		/// <param name="memberDetails"></param>
-		public override void LoadInDetails(object value, string message, IEnumerable<MemberDetails> memberDetails)
+		private void LoadInDetails(object value, IEnumerable<MemberDetails> memberDetails)
 		{
-			Message = message;
-			var messageField = DisplayFieldFor(message, message);
-			if (NeedsSpecialField(value))
+			var messageField = DisplayFieldFor(Text, Text);
+			if (NeedsSpecialField(value.GetType()))
 			{
-				var valueField = DisplayFieldFor(value, message);
+				var valueField = DisplayFieldFor(value, Text);
 				DisplayMessage = () =>
 				{
 					messageField();
@@ -88,14 +153,14 @@ namespace Rex.Window
 
 		private void DisplayExcetion()
 		{
-			if (!string.IsNullOrEmpty(Message))
-				EditorGUILayout.HelpBox(Message, MessageType.Warning);
+			if (!string.IsNullOrEmpty(Text))
+				EditorGUILayout.HelpBox(Text, MessageType.Warning);
 
 			EditorGUILayout.BeginVertical();
 			{
 				EditorGUILayout.BeginHorizontal();
 				{
-					EditorGUILayout.TextArea(_exceptionDetails.Name.String, _detailsStyle);
+					EditorGUILayout.TextArea(_exceptionDetails.Name.String, DetailsStyle);
 					EditorGUILayout.TextArea(Exception.Message, GUI.skin.textArea);
 				}
 				EditorGUILayout.EndHorizontal();
@@ -109,8 +174,10 @@ namespace Rex.Window
 			EditorGUILayout.EndVertical();
 		}
 
-
-		public override void Display()
+		/// <summary>
+		/// Draws the output entry inside the UI.
+		/// </summary>
+		public override void DrawOutputUI()
 		{
 			if (Exception != null)
 			{
@@ -132,7 +199,7 @@ namespace Rex.Window
 						{
 							EditorGUILayout.BeginHorizontal();
 							{
-								EditorGUILayout.LabelField(detail.Value, _detailsStyle, GUILayout.Width(150));
+								EditorGUILayout.LabelField(detail.Value, DetailsStyle, GUILayout.Width(150));
 								detail.Key();
 							}
 							EditorGUILayout.EndHorizontal();
@@ -140,13 +207,13 @@ namespace Rex.Window
 					}
 				}
 
-				if (Members.Count > 0)
+				if (EnumerationItems.Count > 0)
 				{
-					if (ShowMembers = EditorGUILayout.Foldout(ShowMembers, "Members"))
+					if (ShowEnumeration = EditorGUILayout.Foldout(ShowEnumeration, "Members"))
 					{
 						EditorGUI.indentLevel++;
-						foreach (var m in Members)
-							m.Display();
+						foreach (var m in EnumerationItems)
+							m.DrawOutputUI();
 						EditorGUI.indentLevel--;
 					}
 				}
@@ -185,26 +252,9 @@ namespace Rex.Window
 			}
 		}
 
-		private static bool NeedsSpecialField(object value)
+		private static bool NeedsSpecialField(Type type)
 		{
-			if (value == null)
-			{
-				return false;
-			}
-
-			var type = value.GetType();
-			return FieldForType.ContainsKey(type) || value is UnityEngine.Object;
+			return FieldForType.ContainsKey(type) || type == typeof(UnityEngine.Object);
 		}
-		private readonly static Dictionary<Type, Action<object>> FieldForType = new Dictionary<Type, Action<object>>
-		{
-			{ typeof(Vector2),          value => EditorGUILayout.Vector2Field("", (Vector2)value) },
-			{ typeof(Vector3),          value => EditorGUILayout.Vector3Field("", (Vector3)value) },
-			{ typeof(Vector4),          value => EditorGUILayout.Vector4Field("", (Vector4)value) },
-			{ typeof(Color),            value => EditorGUILayout.ColorField((Color)value) },
-			{ typeof(Rect),             value => EditorGUILayout.RectField((Rect)value) },
-			{ typeof(AnimationCurve),   value => EditorGUILayout.CurveField((AnimationCurve)value) },
-			{ typeof(Bounds),           value => EditorGUILayout.BoundsField((Bounds)value) },
-			{ typeof(bool),             value => EditorGUILayout.ToggleLeft(value.ToString(), (bool)value, GUI.skin.textField) },
-		};
 	}
 }

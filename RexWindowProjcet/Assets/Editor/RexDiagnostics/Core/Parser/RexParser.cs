@@ -9,22 +9,22 @@ namespace Rex.Utilities
 {
 	public class RexParser : IRexIntellisenceProvider, IRexParser
 	{
-		public static readonly Regex Assignment = new Regex(@"^(?<type>\S*\s+)?(?<var>[^ .,=]+)\s*=(?<expr>[^=].*)$", RegexOptions.Compiled | RegexOptions.Singleline);
-		public static readonly Regex DotExpressionSearch = new Regex(@"^(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<search>\w*)$", RegexOptions.Compiled);
-		public static readonly Regex ParameterRegex = new Regex(@"(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<search>\w*)(\((?<para>[^)]*))$", RegexOptions.Compiled);
-		public static readonly Regex DotAfterMethodRegex = new Regex(@"(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<method>\w*)[(](?<params>[^)]*)[)]\.", RegexOptions.Compiled);
+		public const string AssignmentRegex = @"^(?<type>\S*\s+)?(?<var>[^ .,=]+)\s*=(?<expr>[^=].*)$";
+		public const string DotExpressionSearch = @"^(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<search>\w*)$";
+		public const string ParameterRegex = @"(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<search>\w*)(\((?<para>[^)]*))$";
+		public const string DotAfterMethodRegex = @"(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<method>\w*)[(](?<params>[^)]*)[)]\.";
 
 		/// <summary>
 		/// Regex to reconize properties 
 		/// </summary>
-		private static readonly Regex propsRegex = new Regex("(.et|add|remove)_(?<Name>.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+		private const string propsRegex = "(.et|add|remove)_(?<Name>.*)";
 
 		public const BindingFlags InstanceBindings = BindingFlags.Public | BindingFlags.Instance;
 		public const BindingFlags StaticBindings = BindingFlags.Public | BindingFlags.Static;
 
 		public ParseResult ParseAssigment(string parsedCode)
 		{
-			var match = Assignment.Match(parsedCode);
+			var match = Regex.Match(parsedCode, AssignmentRegex, RegexOptions.Singleline);
 			if (match.Success)
 			{
 				var type = match.Groups["type"].Value.Trim();
@@ -81,36 +81,38 @@ namespace Rex.Utilities
 		{
 			var parse = ParseAssigment(exprssion);
 			var offset = parse.WholeCode.IndexOf(parse.ExpressionString);
-			if (DotExpressionSearch.IsMatch(parse.ExpressionString))
-				return DotExpression(DotExpressionSearch.Match(parse.ExpressionString), offset);
+
+			var dotExpressionMatch = Regex.Match(parse.ExpressionString, DotExpressionSearch);
+			if (dotExpressionMatch.Success)
+				return DotExpression(dotExpressionMatch, offset);
 
 			Type endType = null;
-			while (DotAfterMethodRegex.IsMatch(exprssion))
+			var afterMethodMatch = Regex.Match(exprssion, DotAfterMethodRegex);
+			while (afterMethodMatch.Success)
 			{
-				var match = DotAfterMethodRegex.Match(exprssion);
-				var possibleMethods = PossibleMethods(match);
+				var possibleMethods = PossibleMethods(afterMethodMatch);
 				if (possibleMethods.Count() == 1)
 				{
 					var method = possibleMethods.First();
 					endType = method.ReturnType;
-					exprssion = exprssion.Substring(match.Length);
-					offset += match.Length;
+					exprssion = exprssion.Substring(afterMethodMatch.Length);
+					offset += afterMethodMatch.Length;
 				}
 				else
 				{
 					return Enumerable.Empty<CodeCompletion>();
 				}
+				afterMethodMatch = Regex.Match(exprssion, DotAfterMethodRegex);
 			}
-
 
 			//Math.PI.ToString().Trim(',', String.Empty.Length.To)
 
-			var paramatch = ParameterRegex.Match(parse.ExpressionString);
-			if (paramatch.Success)
+			var parameterMatch = Regex.Match(parse.ExpressionString, ParameterRegex);
+			if (parameterMatch.Success)
 			{
-				var methodInfo = MethodsOverload(paramatch, endType);
+				var methodInfo = MethodsOverload(parameterMatch, endType);
 
-				var para = paramatch.Groups["para"];
+				var para = parameterMatch.Groups["para"];
 				offset += para.Index;
 
 				var cutIndex = Math.Max(para.Value.LastIndexOf(','), para.Value.LastIndexOf('('));
@@ -125,16 +127,16 @@ namespace Rex.Utilities
 				paraVal = paraVal.TrimStart();
 				offset += prevLength - paraVal.Length;
 
-				var match = DotExpressionSearch.Match(paraVal);
-				if (match.Success)
-					return methodInfo.Concat(DotExpression(match, offset));
+				dotExpressionMatch = Regex.Match(paraVal, DotExpressionSearch);
+				if (dotExpressionMatch.Success)
+					return methodInfo.Concat(DotExpression(dotExpressionMatch, offset));
 				else
 					return methodInfo;
 			}
 
 			if (endType != null)
 			{
-				var methodSearch = DotExpressionSearch.Match(exprssion);
+				var methodSearch = Regex.Match(exprssion, DotExpressionSearch);
 				if (methodSearch.Success)
 				{
 					var full = methodSearch.Groups["fullType"];
@@ -254,11 +256,13 @@ namespace Rex.Utilities
 		private bool TypeOfFirst(Group full, out Type theType, out string name)
 		{
 			name = full.Value.Split('.').First();
-			var theName = name;
+
 			//Map to primative if needed
-			if (RexUtils.MapToKeyWords.Values.Contains(name))
+			var primitive = RexUtils.MapToPrimitive(name);
+			if (primitive != null)
 			{
-				name = RexUtils.MapToKeyWords.First(i => i.Value == theName).Key.Name;
+				theType = RexUtils.PrimitiveToType(primitive);
+				return true;
 			}
 
 			if (RexHelper.Variables.ContainsKey(name))
@@ -274,10 +278,9 @@ namespace Rex.Utilities
 					return false;
 				}
 			}
-			theName = name;
-			theType = (from t in RexUtils.AllVisibleTypes
-					   where t.Name == theName
-					   select t).FirstOrDefault();
+
+			var tmpName = name;
+			theType = RexUtils.AllVisibleTypes.FirstOrDefault(t => t.Name == tmpName);
 			return theType != null;
 		}
 
@@ -410,7 +413,7 @@ namespace Rex.Utilities
 
 			// methods
 			foreach (var metod in from met in varType.GetMethods(bindings)
-								  where !propsRegex.IsMatch(met.Name) && met.Name.Contains(search.Value)
+								  where !Regex.IsMatch(met.Name, propsRegex) && met.Name.Contains(search.Value)
 								  select met)
 			{
 				var infoStr = RexReflectionUtils.GetMemberDetails(metod);

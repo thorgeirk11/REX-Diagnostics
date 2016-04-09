@@ -5,10 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using Rex.Utilities;
 using Rex.Utilities.Helpers;
-using System.IO;
 using Rex.Utilities.Input;
-using System.Threading;
-using System.Diagnostics;
 
 namespace Rex.Window
 {
@@ -55,22 +52,34 @@ namespace Rex.Window
 		/// History of all the expressions executed in this editor session.
 		/// </summary>
 		[SerializeField]
-		private List<ExpressionHitoryItem> _expressionHistory = new List<ExpressionHitoryItem>();
+		private List<RexHitoryItem> _expressionHistory = new List<RexHitoryItem>();
 
 		[SerializeField]
 		private List<string> _macros;
 
+		private static Dictionary<MessageType, List<string>> Messages = new Dictionary<MessageType, List<string>>();
+
+		/// <summary>
+		/// Expression history item.
+		/// </summary>
 		[Serializable]
-		private class ExpressionHitoryItem
+		private class RexHitoryItem
 		{
+			/// <summary>
+			/// The code entered by user.
+			/// </summary>
 			public string Code = string.Empty;
+			/// <summary>
+			/// If the history item is expanded in UI.
+			/// </summary>
 			public bool IsExpanded;
 		}
 
 		#region UI
 		const double stopwatchTime = 0.5;
+
 		bool updateSkins = true;
-		TextEditor inp;
+		TextEditor _inputField;
 
 		private DateTime lastExecute;
 		private bool lastRunSuccesfull;
@@ -83,9 +92,13 @@ namespace Rex.Window
 		private Vector2 intelliScroll;
 		private Vector2 intelliOverLoadScroll;
 
+		[SerializeField]
 		bool showHistory = true;
+		[SerializeField]
 		bool showVariables = true;
+		[SerializeField]
 		bool showMacros = true;
+		[SerializeField]
 		bool showUsings = false;
 
 		bool refocus = false;
@@ -119,13 +132,13 @@ namespace Rex.Window
 			hideFlags = HideFlags.HideAndDontSave;
 
 			if (_compileEngine == null)
-				_compileEngine = CreateInstance<RexCompileEngine>();
+				_compileEngine = RexCompileEngine.Instance;
 
 			if (_macros == null)
 				_macros = RexMacroHandler.LoadMacros();
 
 			RexISM.Repaint = Repaint;
-			RexISM.DebugLog = UnityEngine.Debug.Log;
+			RexISM.DebugLog = Debug.Log;
 			RexISM.ExecuteCode = Execute;
 			RexISM.Enter_NoInput();
 
@@ -141,10 +154,6 @@ namespace Rex.Window
 		/// </summary>
 		private void Execute(string code)
 		{
-			RexHelper.Messages[MsgType.None].Clear();
-			RexHelper.Messages[MsgType.Info].Clear();
-			RexHelper.Messages[MsgType.Warning].Clear();
-			RexHelper.Messages[MsgType.Error].Clear();
 			lastRunSuccesfull = true;
 
 			code = code.Trim().Trim(';');
@@ -152,19 +161,19 @@ namespace Rex.Window
 				return;
 
 			RexISM.Code = code;
-			var compile = _compileEngine.GetCompile(code);
+			var compile = _compileEngine.GetCompile(code, out Messages);
 			if (compile != null)
 			{
 				if (_expressionHistory.Count == 0 ||
 					_expressionHistory[0].Code != code)
 				{
-					_expressionHistory.Insert(0, new ExpressionHitoryItem
+					_expressionHistory.Insert(0, new RexHitoryItem
 					{
 						Code = code
 					});
 				}
 
-				var output = RexHelper.Execute<ConsoleOutput>(compile);
+				var output = RexHelper.Execute<OutputEntry>(compile, out Messages);
 				if (output != null)
 					RexHelper.AddOutput(output);
 
@@ -200,10 +209,10 @@ namespace Rex.Window
 			{
 				refocus = false;
 				GUI.FocusControl(NAME_OF_INPUT_FIELD);
-				inp = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
-				if (inp != null)
+				_inputField = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
+				if (_inputField != null)
 				{
-					inp.MoveLineEnd();
+					_inputField.MoveLineEnd();
 				}
 			}
 			var hasFocus = GUI.GetNameOfFocusedControl() == NAME_OF_INPUT_FIELD;
@@ -298,25 +307,23 @@ namespace Rex.Window
 		private static Rect DisplayMessages(Rect layoutRect)
 		{
 			var helpboxStyle = GUI.skin.FindStyle("HelpBox");
-			var areAnyErrors = false;
-			foreach (var infoType in MessageInfos)
+			foreach (var msg in Messages)
 			{
-				foreach (var msg in RexHelper.Messages[infoType])
+				foreach (var val in msg.Value)
 				{
-					EditorGUI.HelpBox(layoutRect, msg, (MessageType)infoType);
-					var rect = helpboxStyle.CalcSize(new GUIContent(msg));
+					EditorGUI.HelpBox(layoutRect, val, msg.Key);
+					var rect = helpboxStyle.CalcSize(new GUIContent(val));
 					layoutRect.yMin += rect.y * 2;
-					areAnyErrors = true;
 				}
 			}
-			if (areAnyErrors)
+			if (Messages.Count > 0)
 			{
 				var errorRect = new Rect(layoutRect)
 				{
 					height = 20
 				};
 				if (GUI.Button(errorRect, "Clear Messages"))
-					RexHelper.Messages.Values.ToList().ForEach(i => i.Clear());
+					Messages.Values.ToList().ForEach(i => i.Clear());
 				layoutRect.yMin += errorRect.height;
 			}
 			return layoutRect;
@@ -398,7 +405,7 @@ namespace Rex.Window
 			}
 			else
 			{
-				inp.MoveLineEnd();
+				_inputField.MoveLineEnd();
 			}
 
 			if (RexISM.ShouldReplaceCode)
@@ -410,10 +417,10 @@ namespace Rex.Window
 				// This doesnt seem to work in with EditorGUI TextField
 
 				GUI.FocusControl(NAME_OF_INPUT_FIELD);
-				if (inp != null)
+				if (_inputField != null)
 				{
-					inp.text = RexISM.Code;
-					inp.MoveLineEnd();
+					_inputField.text = RexISM.Code;
+					_inputField.MoveLineEnd();
 				}
 			}
 		}
@@ -470,22 +477,22 @@ namespace Rex.Window
 		{
 			if (hasFocus)
 			{
-				inp = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
+				_inputField = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
 				if (Event.current.isKey && Event.current.control)
 				{
 					if (Event.current.keyCode == KeyCode.C)
 					{
-						inp.Copy();
+						_inputField.Copy();
 					}
 					if (Event.current.keyCode == KeyCode.V)
 					{
-						inp.Paste();
-						RexISM.Code = inp.text;
+						_inputField.Paste();
+						RexISM.Code = _inputField.text;
 						Repaint();
 					}
 					if (Event.current.keyCode == KeyCode.A)
 					{
-						inp.SelectAll();
+						_inputField.SelectAll();
 						Repaint();
 					}
 					if (Event.current.keyCode == KeyCode.Z && _inputHistroy.Count > 1)
@@ -557,9 +564,6 @@ namespace Rex.Window
 		}
 
 		#region GUI Layout functions
-
-		private static readonly MsgType[] MessageInfos = new MsgType[] { MsgType.Error, MsgType.Warning, MsgType.Info, MsgType.None };
-
 		private void DrawMainLayout(Rect layout)
 		{
 			ratio = (showHistory || showMacros || showVariables || showUsings) ? 0.6f : 0.9f;
@@ -609,11 +613,11 @@ namespace Rex.Window
 			EditorGUILayout.BeginVertical(slimBox);
 			scroll3 = EditorGUILayout.BeginScrollView(scroll3);
 			{
-				AConsoleOutput deleted = null;
+				OutputEntry deleted = null;
 				foreach (var o in RexHelper.Output)
 				{
 					EditorGUILayout.BeginVertical(GUILayout.ExpandWidth(true));
-					o.Display();
+					o.DrawOutputUI();
 					DisplayLine();
 					EditorGUILayout.EndVertical();
 				}
@@ -880,8 +884,8 @@ namespace Rex.Window
 			if (GUILayout.Button(new GUIContent(highlightedString, "Click to inspect <b>" + VarName + "</b>"), varLabelStyle, GUILayout.ExpandWidth(true)))
 			{
 				// Construct a new output entry...
-				var ouput = new ConsoleOutput();
-				ouput.LoadInDetails(var.VarValue, defaultMsg, Utilities.Helpers.RexReflectionUtils.ExtractDetails(var.VarValue));
+				var ouput = new OutputEntry();
+				ouput.LoadObject(var.VarValue);
 				RexHelper.AddOutput(ouput);
 			}
 

@@ -13,13 +13,11 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile>
-    </CompilerResponseFile>
+    <CompilerResponseFile></CompilerResponseFile>
     <UnityProjectType>Editor:5</UnityProjectType>
     <UnityBuildTarget>WebPlayer:6</UnityBuildTarget>
     <UnityVersion>5.3.4p1</UnityVersion>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -112,6 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\AConsoleOutput.cs" />
+    <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\AOutputEntry.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\AccessingDeletedVariableException.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\CodeCompletion.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\CompiledExpression.cs" />
@@ -120,24 +119,23 @@
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\MemberDetails.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\MemberType.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\NameSpaceInfo.cs" />
-    <Compile Include="Assets\Editor\RexDiagnostics\Core\RexReflectionHelper.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\UsingsHandler.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Input\InputStateMachine.cs" />
+    <Compile Include="Assets\Editor\RexDiagnostics\Core\Parser\IRexIntellisenceProvider.cs" />
+    <Compile Include="Assets\Editor\RexDiagnostics\Core\Parser\IRexParser.cs" />
+    <Compile Include="Assets\Editor\RexDiagnostics\Core\Parser\RexParser.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\RexCompileEngine.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\RexHelper.cs" />
-    <Compile Include="Assets\Editor\RexDiagnostics\Core\RexParser.cs" />
+    <Compile Include="Assets\Editor\RexDiagnostics\Core\RexReflectionHelper.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\RexUtils.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Test\InputStateMachineTest.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Test\IntelliSenceTests.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Test\RexHelperTest.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Test\UsingsAndMacroTests.cs" />
-    <Compile Include="Assets\Editor\RexDiagnostics\UI\ConsoleOutput.cs" />
+    <Compile Include="Assets\Editor\RexDiagnostics\UI\OutputEntry.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\UI\RexEditorWindow.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\UI\RexUIUtils.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\UI\UStrap.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>
