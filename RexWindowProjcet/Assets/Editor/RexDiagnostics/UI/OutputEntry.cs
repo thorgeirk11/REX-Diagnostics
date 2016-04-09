@@ -128,7 +128,7 @@ namespace Rex.Window
 		private void LoadInDetails(object value, IEnumerable<MemberDetails> memberDetails)
 		{
 			var messageField = DisplayFieldFor(Text, Text);
-			if (NeedsSpecialField(value))
+			if (NeedsSpecialField(value.GetType()))
 			{
 				var valueField = DisplayFieldFor(value, Text);
 				DisplayMessage = () =>
@@ -173,7 +173,6 @@ namespace Rex.Window
 			}
 			EditorGUILayout.EndVertical();
 		}
-
 
 		/// <summary>
 		/// Draws the output entry inside the UI.
@@ -253,15 +252,9 @@ namespace Rex.Window
 			}
 		}
 
-		private static bool NeedsSpecialField(object value)
+		private static bool NeedsSpecialField(Type type)
 		{
-			if (value == null)
-			{
-				return false;
-			}
-
-			var type = value.GetType();
-			return FieldForType.ContainsKey(type) || value is UnityEngine.Object;
+			return FieldForType.ContainsKey(type) || type == typeof(UnityEngine.Object);
 		}
 	}
 }
