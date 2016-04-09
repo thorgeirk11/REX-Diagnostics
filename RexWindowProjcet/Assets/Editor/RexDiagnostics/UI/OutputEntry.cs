@@ -190,9 +190,9 @@ namespace Rex.Window
 				EditorGUILayout.BeginHorizontal();
 				DisplayMessage();
 				EditorGUILayout.EndHorizontal();
-				if (Details.Any())
+				if (Details.Count > 0)
 				{
-					ShowDetails = EditorGUILayout.Foldout(ShowDetails, "Details");
+					ShowDetails = EditorGUILayout.Foldout(ShowDetails, RexStaticTextCollection.Instance["foldout_output_details"]);
 					if (ShowDetails)
 					{
 						foreach (var detail in Details)
@@ -209,7 +209,7 @@ namespace Rex.Window
 
 				if (EnumerationItems.Count > 0)
 				{
-					if (ShowEnumeration = EditorGUILayout.Foldout(ShowEnumeration, "Members"))
+					if (ShowEnumeration = EditorGUILayout.Foldout(ShowEnumeration, RexStaticTextCollection.Instance["foldout_output_members"]))
 					{
 						EditorGUI.indentLevel++;
 						foreach (var m in EnumerationItems)

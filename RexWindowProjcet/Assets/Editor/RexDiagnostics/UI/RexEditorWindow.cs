@@ -57,6 +57,9 @@ namespace Rex.Window
 		[SerializeField]
 		private List<string> _macros;
 
+		[SerializeField]
+		private RexStaticTextCollection _texts;
+
 		private static Dictionary<MessageType, List<string>> Messages = new Dictionary<MessageType, List<string>>();
 
 		/// <summary>
@@ -133,6 +136,9 @@ namespace Rex.Window
 
 			if (_compileEngine == null)
 				_compileEngine = RexCompileEngine.Instance;
+
+			if (_texts == null)
+				_texts = RexStaticTextCollection.Instance;
 
 			if (_macros == null)
 				_macros = RexMacroHandler.LoadMacros();
@@ -219,26 +225,26 @@ namespace Rex.Window
 
 			HandleInputShortcuts(hasFocus);
 			HandleInputHistory(hasFocus);
-			var prevRect = intelliRect;
-			intelliRect = DisplayIntellisense(intelliRect, hasFocus, true);
+			var prevRect = new Rect(intelliRect);
+			DisplayIntellisense(ref intelliRect, hasFocus, true);
 
-			layoutRect = DisplayMessages(layoutRect);
+			DisplayMessages(ref layoutRect);
 
 			#region MainLayout
-			GUILayout.BeginArea(layoutRect, "", new GUIStyle { richText = true });
+			GUILayout.BeginArea(layoutRect);
 			{
-				DrawMainLayout(layoutRect);
+				DrawMainLayout(ref layoutRect);
 			}
 			GUILayout.EndArea();
 			#endregion
 
-			DisplayIntellisense(prevRect, hasFocus, true);
+			DisplayIntellisense(ref prevRect, hasFocus, true);
 			DisplayTooltip();
 		}
 
 		private void DisplayInputField(ref Rect inpLabelRect, ref Rect inpStringRect, ref Rect inpButRect)
 		{
-			GUI.Label(inpLabelRect, new GUIContent("Expression:"));
+			GUI.Label(inpLabelRect, _texts["label_expression"]);
 			var oldColor = ColorInput();
 			GUI.SetNextControlName(NAME_OF_INPUT_FIELD);
 			RexISM.Code = GUI.TextField(inpStringRect, RexISM.Code);
@@ -246,10 +252,9 @@ namespace Rex.Window
 			//To have the cursor change to the 'I' on hover:
 			GUI.color = Color.clear;
 			EditorGUI.TextField(inpStringRect, "");
-
 			GUI.color = oldColor;
 
-			if (GUI.Button(inpButRect, new GUIContent("Evaluate", "Evaluates the expression")))
+			if (GUI.Button(inpButRect, _texts["button_evaluate"]))
 			{
 				GUI.FocusControl(NAME_OF_INPUT_FIELD);
 				RexISM.PressKey(KeyCode.Return);
@@ -304,29 +309,32 @@ namespace Rex.Window
 			}
 		}
 
-		private static Rect DisplayMessages(Rect layoutRect)
+		private static void DisplayMessages(ref Rect layoutRect)
 		{
-			var helpboxStyle = GUI.skin.FindStyle("HelpBox");
-			foreach (var msg in Messages)
-			{
-				foreach (var val in msg.Value)
-				{
-					EditorGUI.HelpBox(layoutRect, val, msg.Key);
-					var rect = helpboxStyle.CalcSize(new GUIContent(val));
-					layoutRect.yMin += rect.y * 2;
-				}
-			}
 			if (Messages.Count > 0)
 			{
+				var helpboxStyle = GUI.skin.FindStyle("HelpBox");
+
+				foreach (var msg in Messages)
+				{
+					foreach (var val in msg.Value)
+					{
+						EditorGUI.HelpBox(layoutRect, val, msg.Key);
+						var rect = helpboxStyle.CalcSize(new GUIContent(val));
+						layoutRect.yMin += rect.y * 2;
+					}
+				}
 				var errorRect = new Rect(layoutRect)
 				{
 					height = 20
 				};
 				if (GUI.Button(errorRect, "Clear Messages"))
+				{
 					Messages.Values.ToList().ForEach(i => i.Clear());
+					Messages.Clear();
+				}
 				layoutRect.yMin += errorRect.height;
 			}
-			return layoutRect;
 		}
 
 		private void HandleInputHistory(bool hasFocus)
@@ -425,23 +433,22 @@ namespace Rex.Window
 			}
 		}
 
-		private Rect DisplayIntellisense(Rect intelliRect, bool hasFocus, bool canSelect)
+		private void DisplayIntellisense(ref Rect intelliRect, bool hasFocus, bool canSelect)
 		{
-			if (RexISM.DisplayHelp && RexISM.IntelliSenceHelp.Any() && hasFocus)
+			if (RexISM.DisplayHelp && RexISM.IntelliSenceHelp.Count > 0 && hasFocus)
 			{
 				var help = RexISM.IntelliSenceHelp.Where(i => !i.IsMethodOverload).ToList();
-				intelliRect = DisplayHelp(intelliRect, help, canSelect, ref intelliScroll);
+				DisplayHelp(ref intelliRect, help, canSelect, ref intelliScroll);
 
 				// Deal with Overloads
 				var overloads = RexISM.IntelliSenceHelp.Where(i => i.IsMethodOverload);
 				intelliRect.y += intelliRect.height;
 				if (overloads.Any())
-					intelliRect = DisplayHelp(intelliRect, overloads.ToList(), false, ref intelliOverLoadScroll);
+					DisplayHelp(ref intelliRect, overloads.ToList(), false, ref intelliOverLoadScroll);
 			}
-			return intelliRect;
 		}
 
-		private static Rect DisplayHelp(Rect intelliRect, List<CodeCompletion> help, bool IsSelectable, ref Vector2 scroll)
+		private static void DisplayHelp(ref Rect intelliRect, List<CodeCompletion> help, bool IsSelectable, ref Vector2 scroll)
 		{
 			const float lineHeigth = 18.5f;
 			intelliRect.height = Mathf.Min(lineHeigth * help.Count, 150);
@@ -470,7 +477,6 @@ namespace Rex.Window
 			style.richText = false;
 
 			GUI.EndScrollView();
-			return intelliRect;
 		}
 
 		private void HandleInputShortcuts(bool hasFocus)
@@ -564,13 +570,14 @@ namespace Rex.Window
 		}
 
 		#region GUI Layout functions
-		private void DrawMainLayout(Rect layout)
+		private void DrawMainLayout(ref Rect layout)
 		{
 			ratio = (showHistory || showMacros || showVariables || showUsings) ? 0.6f : 0.9f;
 
 			var inner = box.border.Remove(box.padding.Remove(layout));
 			var outputWidth = layout.width * ratio;
 			var sideBar = layout.width - outputWidth;
+
 			// Ugly hack to fix the text overflow problem.
 			if (sideBar < 130)
 			{
@@ -603,9 +610,9 @@ namespace Rex.Window
 		{
 			GUILayout.BeginHorizontal();
 			{
-				GUILayout.Label("Output");
+				GUILayout.Label(_texts["label_output_header"]);
 
-				if (RexHelper.Output.Any() && GUILayout.Button(new GUIContent("Clear", "Clear the Output pannel"), GUILayout.Width(43f)))
+				if (RexHelper.Output.Any() && GUILayout.Button(_texts["button_output_clear"], GUILayout.Width(43f)))
 					RexHelper.ClearOutput();
 			}
 			GUILayout.EndHorizontal();
@@ -641,7 +648,7 @@ namespace Rex.Window
 		/// </summary>
 		private void DisplayScope(GUIStyle box, float width)
 		{
-			showUsings = RexUIUtils.Toggle(showUsings, new GUIContent("Scope", "Namespace selection"));
+			showUsings = RexUIUtils.Toggle(showUsings, _texts["toggle_scope_header"]);
 
 			if (showUsings)
 			{
@@ -650,8 +657,8 @@ namespace Rex.Window
 
 					var useWidth = 25;
 					EditorGUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
-					EditorGUILayout.LabelField("Use", GUILayout.Width(useWidth));
-					EditorGUILayout.LabelField("Namespace", GUILayout.ExpandWidth(false));
+					EditorGUILayout.LabelField(_texts["label_scope_use"], GUILayout.Width(useWidth));
+					EditorGUILayout.LabelField(_texts["label_scope_namespace"], GUILayout.ExpandWidth(false));
 					EditorGUILayout.EndHorizontal();
 
 					usingScroll = EditorGUILayout.BeginScrollView(usingScroll, GUILayout.Height(1), GUILayout.MaxHeight(150));
