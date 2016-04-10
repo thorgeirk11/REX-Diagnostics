@@ -230,21 +230,21 @@ namespace Rex.Utilities
 					{
 						namespaceInfos.Add(new NameSpaceInfo
 						{
-							Folded = false,
-							IndetLevel = 0,
+							DisplaySubNamespaces = false,
+							Depth = 0,
 							Name = rootName,
 							Selected = RexUsingsHandler.Usings.Contains(rootName),
-							AtMaxIndent = false,
+							HasSubNamespaces = false,
 						});
 					}
 				}
 				namespaceInfos.Add(new NameSpaceInfo
 				{
-					Folded = false,
-					IndetLevel = indent,
+					DisplaySubNamespaces = false,
+					Depth = indent,
 					Name = name.Key,
 					Selected = DefaultUsings.Contains(name.Key) || RexUsingsHandler.Usings.Contains(name.Key),
-					AtMaxIndent = namespaces.Count(j => j.Key.StartsWith(name.Key)) == 1
+					HasSubNamespaces = namespaces.Count(j => j.Key.StartsWith(name.Key)) == 1
 				});
 			}
 			namespaceInfos.Sort();
@@ -318,7 +318,7 @@ namespace Rex.Utilities
 				}
 			}
 
-			if (nested.IsEmpty())
+			if (!nested.Any())
 			{
 				if (showFullName && t.FullName != null)
 				{

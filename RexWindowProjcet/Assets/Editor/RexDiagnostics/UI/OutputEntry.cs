@@ -102,8 +102,6 @@ namespace Rex.Window
 		protected override void LoadSingleObject(object value)
 		{
 			base.LoadSingleObject(value);
-			if (value == null) return;
-
 			LoadInDetails(value, RexReflectionUtils.ExtractDetails(value));
 		}
 
@@ -127,23 +125,7 @@ namespace Rex.Window
 		/// <param name="memberDetails"></param>
 		private void LoadInDetails(object value, IEnumerable<MemberDetails> memberDetails)
 		{
-			var messageField = DisplayFieldFor(Text, Text);
-			if (NeedsSpecialField(value.GetType()))
-			{
-				var valueField = DisplayFieldFor(value, Text);
-				DisplayMessage = () =>
-				{
-					messageField();
-					valueField();
-				};
-			}
-			else
-			{
-				DisplayMessage = () =>
-				{
-					messageField();
-				};
-			}
+			DisplayMessage = DisplayFieldFor(value, Text);
 			Details = (from detail in memberDetails
 					   let tooltip = RexUIUtils.SyntaxHighlingting(detail.TakeWhile(i => i.Type != SyntaxType.EqualsOp))
 					   let content = new GUIContent(detail.Name.String, tooltip)
@@ -190,9 +172,9 @@ namespace Rex.Window
 				EditorGUILayout.BeginHorizontal();
 				DisplayMessage();
 				EditorGUILayout.EndHorizontal();
-				if (Details.Any())
+				if (Details.Count > 0)
 				{
-					ShowDetails = EditorGUILayout.Foldout(ShowDetails, "Details");
+					ShowDetails = EditorGUILayout.Foldout(ShowDetails, RexStaticTextCollection.Instance["foldout_output_details"]);
 					if (ShowDetails)
 					{
 						foreach (var detail in Details)
@@ -209,7 +191,7 @@ namespace Rex.Window
 
 				if (EnumerationItems.Count > 0)
 				{
-					if (ShowEnumeration = EditorGUILayout.Foldout(ShowEnumeration, "Members"))
+					if (ShowEnumeration = EditorGUILayout.Foldout(ShowEnumeration, RexStaticTextCollection.Instance["foldout_output_members"]))
 					{
 						EditorGUI.indentLevel++;
 						foreach (var m in EnumerationItems)

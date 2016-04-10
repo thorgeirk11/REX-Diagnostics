@@ -5,6 +5,13 @@ using System.Linq;
 
 namespace Rex.Utilities.Helpers
 {
+	public enum MemberType
+	{
+		Field,
+		Property,
+		Method,
+		ExtentionMethod,
+	}
 	public class MemberDetails : IEnumerable<Syntax>, IComparable<MemberDetails>
 	{
 		private readonly IEnumerable<Syntax> _details;
