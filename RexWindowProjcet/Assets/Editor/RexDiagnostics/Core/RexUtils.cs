@@ -318,7 +318,7 @@ namespace Rex.Utilities
 				}
 			}
 
-			if (nested.IsEmpty())
+			if (!nested.Any())
 			{
 				if (showFullName && t.FullName != null)
 				{

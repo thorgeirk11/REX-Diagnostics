@@ -115,7 +115,6 @@
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\AccessingDeletedVariableException.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\CodeCompletion.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\CompiledExpression.cs" />
-    <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\ExtentionMethods.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\MacroHandler.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\MemberDetails.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\MemberType.cs" />
