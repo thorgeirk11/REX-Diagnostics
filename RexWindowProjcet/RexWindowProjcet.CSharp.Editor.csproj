@@ -111,7 +111,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\AConsoleOutput.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\AOutputEntry.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\AccessingDeletedVariableException.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\CodeCompletion.cs" />
