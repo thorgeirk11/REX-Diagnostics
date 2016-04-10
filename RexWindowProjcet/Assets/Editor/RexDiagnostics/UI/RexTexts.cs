@@ -37,12 +37,38 @@ public class RexStaticTextCollection : ScriptableObject
 	{
 		get
 		{
-			if (_cache.ContainsKey(key))
-				return _cache[key];
+			GUIContent cached;
+			if (_cache.TryGetValue(key, out cached))
+			{
+				return cached;
+			}
 
 			var text = AllTexts.First(i => i.Name == key);
 			return _cache[key] = new GUIContent(text.Text, text.Tooltip);
 		}
+	}
+	public GUIContent GetText(string key, string textFormat = null, string tooltipFormat = null)
+	{
+		var cachekey = textFormat + tooltipFormat + key;
+		GUIContent cached;
+		if (_cache.TryGetValue(cachekey, out cached))
+		{
+			return cached;
+		}
+
+		var textEntry = AllTexts.First(i => i.Name == key);
+
+		var text = textEntry.Text;
+		var tooltip = textEntry.Tooltip;
+		if (textFormat != null)
+		{
+			text = string.Format(text, textFormat);
+		}
+		if (tooltipFormat != null)
+		{
+			tooltip = string.Format(tooltip, tooltipFormat);
+		}
+		return _cache[cachekey] = new GUIContent(text, tooltip);
 	}
 
 	void OnEnable()
@@ -71,23 +97,23 @@ public class RexStaticTextCollection : ScriptableObject
 		{
 			new TextEntry
 			{
-				Name = "label_expression",
+				Name = "expression_header",
 				Text = "Expression:",
 			},
 			new TextEntry
 			{
-				Name = "button_evaluate",
+				Name = "evaluate_button",
 				Text = "Evaluate",
 				Tooltip =  "Evaluates the expression"
 			},
 			new TextEntry
 			{
-				Name = "label_output_header",
+				Name = "output_header",
 				Text = "Output"
 			},
 			new TextEntry
 			{
-				Name = "button_output_clear",
+				Name = "output_clear",
 				Text = "Clear",
 				Tooltip = "Clear the Output pannel"
 			},
@@ -103,20 +129,104 @@ public class RexStaticTextCollection : ScriptableObject
 			},
 			new TextEntry
 			{
-				Name = "toggle_scope_header",
+				Name = "scope_header",
 				Text = "Scope",
 				Tooltip = "Namespace selection"
 			},
 			new TextEntry
 			{
-				Name = "label_scope_use",
+				Name = "scope_use",
 				Text = "Use",
 				Tooltip = "Include in usings?"
 			},
 			new TextEntry
 			{
-				Name = "label_scope_namespace",
+				Name = "scope_namespace",
 				Text = "Namespace"
+			},
+			new TextEntry
+			{
+				Name = "variables_header",
+				Text = "Variables",
+				Tooltip = "Declared variables"
+			},
+			new TextEntry
+			{
+				Name = "remove_variable",
+				Text = "X",
+				Tooltip = "Remove <b>{0}</b>"
+			},
+			new TextEntry
+			{
+				Name = "inspect_variable",
+				Text = "{0}",
+				Tooltip = "Click to inspect <b>{0}</b>"
+			},
+			new TextEntry
+			{
+				Name = "macros_header",
+				Text = "Macros",
+				Tooltip = "Saved expressions"
+			},
+			new TextEntry
+			{
+				Name = "macro_go",
+				Text = "Go",
+				Tooltip = "Evaluate: <b>{0}</b>"
+			},
+			new TextEntry
+			{
+				Name = "macro_remove",
+				Text = "X",
+				Tooltip = "Remove macro"
+			},
+			new TextEntry
+			{
+				Name = "select_macro",
+				Text = "{0}",
+				Tooltip = "Select macro: <b>{0}</b>"
+			},
+			new TextEntry
+			{
+				Name = "history_header",
+				Text = "History",
+				Tooltip = "Succesfully evaluated expressions"
+			},
+			new TextEntry
+			{
+				Name = "history_clear",
+				Text = "Clear",
+				Tooltip = "Clear History"
+			},
+			new TextEntry
+			{
+				Name = "history_item_show",
+				Text = "{0}",
+				Tooltip = "Show options"
+			},
+			new TextEntry
+			{
+				Name = "history_item_hide",
+				Text = "{0}",
+				Tooltip = "Hide options"
+			},
+			new TextEntry
+			{
+				Name = "history_item_run",
+				Text = "Run",
+				Tooltip = "Run Expression"
+			},
+			new TextEntry
+			{
+				Name = "history_item_macro",
+				Text = "Macro",
+				Tooltip = "Save as Macro"
+			},
+			new TextEntry
+			{
+				Name = "history_item_delete",
+				Text = "Delete",
+				Tooltip = "Delete the history item"
 			},
 		};
 	}

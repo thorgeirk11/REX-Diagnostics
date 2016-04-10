@@ -73,7 +73,7 @@ namespace Rex.Window
 			/// </summary>
 			public string Code = string.Empty;
 			/// <summary>
-			/// If the history item is expanded in UI.
+			/// Is the history item expanded in UI.
 			/// </summary>
 			public bool IsExpanded;
 		}
@@ -244,7 +244,7 @@ namespace Rex.Window
 
 		private void DisplayInputField(ref Rect inpLabelRect, ref Rect inpStringRect, ref Rect inpButRect)
 		{
-			GUI.Label(inpLabelRect, _texts["label_expression"]);
+			GUI.Label(inpLabelRect, _texts["expression_header"]);
 			var oldColor = ColorInput();
 			GUI.SetNextControlName(NAME_OF_INPUT_FIELD);
 			RexISM.Code = GUI.TextField(inpStringRect, RexISM.Code);
@@ -254,7 +254,7 @@ namespace Rex.Window
 			EditorGUI.TextField(inpStringRect, "");
 			GUI.color = oldColor;
 
-			if (GUI.Button(inpButRect, _texts["button_evaluate"]))
+			if (GUI.Button(inpButRect, _texts["evaluate_button"]))
 			{
 				GUI.FocusControl(NAME_OF_INPUT_FIELD);
 				RexISM.PressKey(KeyCode.Return);
@@ -595,10 +595,10 @@ namespace Rex.Window
 
 				EditorGUILayout.BeginVertical(box, GUILayout.Width(sideBar), GUILayout.MaxWidth(sideBar));
 				{
-					DisplayScope(box, sideBar);
-					DisplayHistory(box, sideBar);
-					DisplayVariables(box, sideBar);
-					DisplayMacros(box, sideBar);
+					DisplayScope();
+					DisplayHistory();
+					DisplayVariables();
+					DisplayMacros();
 				}
 				EditorGUILayout.EndVertical();
 			}
@@ -610,9 +610,9 @@ namespace Rex.Window
 		{
 			GUILayout.BeginHorizontal();
 			{
-				GUILayout.Label(_texts["label_output_header"]);
+				GUILayout.Label(_texts["output_header"]);
 
-				if (RexHelper.Output.Any() && GUILayout.Button(_texts["button_output_clear"], GUILayout.Width(43f)))
+				if (RexHelper.Output.Any() && GUILayout.Button(_texts["output_clear"], GUILayout.Width(43f)))
 					RexHelper.ClearOutput();
 			}
 			GUILayout.EndHorizontal();
@@ -646,9 +646,9 @@ namespace Rex.Window
 		/// <summary>
 		/// Displays the selection screen for Namespaces.
 		/// </summary>
-		private void DisplayScope(GUIStyle box, float width)
+		private void DisplayScope()
 		{
-			showUsings = RexUIUtils.Toggle(showUsings, _texts["toggle_scope_header"]);
+			showUsings = RexUIUtils.Toggle(showUsings, _texts["scope_header"]);
 
 			if (showUsings)
 			{
@@ -657,8 +657,8 @@ namespace Rex.Window
 
 					var useWidth = 25;
 					EditorGUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
-					EditorGUILayout.LabelField(_texts["label_scope_use"], GUILayout.Width(useWidth));
-					EditorGUILayout.LabelField(_texts["label_scope_namespace"], GUILayout.ExpandWidth(false));
+					EditorGUILayout.LabelField(_texts["scope_use"], GUILayout.Width(useWidth));
+					EditorGUILayout.LabelField(_texts["scope_namespace"], GUILayout.ExpandWidth(false));
 					EditorGUILayout.EndHorizontal();
 
 					usingScroll = EditorGUILayout.BeginScrollView(usingScroll, GUILayout.Height(1), GUILayout.MaxHeight(150));
@@ -666,12 +666,12 @@ namespace Rex.Window
 						var depth = 0;
 						foreach (var n in RexCompileEngine.Instance.NamespaceInfos)
 						{
-							if (n.IndetLevel > depth) continue;
-							if (n.IndetLevel < depth) depth = n.IndetLevel;
+							if (n.Depth > depth) continue;
+							if (n.Depth < depth) depth = n.Depth;
 
 							EditorGUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
 							{
-								for (int i = 0; i < n.IndetLevel; i++) GUILayout.Space(25f);
+								for (int i = 0; i < n.Depth; i++) GUILayout.Space(25f);
 
 								var prev = n.Selected;
 								n.Selected = GUILayout.Toggle(n.Selected, "", GUILayout.Width(useWidth));
@@ -682,13 +682,13 @@ namespace Rex.Window
 									else { RexUsingsHandler.Save(n.Name); }
 								}
 
-								if (n.AtMaxIndent)
+								if (n.HasSubNamespaces)
 								{
 									EditorGUILayout.LabelField(n.Name);
 								}
-								else if (n.Folded = EditorGUILayout.Foldout(n.Folded, n.Name))
+								else if (n.DisplaySubNamespaces = EditorGUILayout.Foldout(n.DisplaySubNamespaces, n.Name))
 								{
-									depth = n.IndetLevel + 1;
+									depth = n.Depth + 1;
 								}
 								//EditorGUILayout.LabelField(n.Assembly.Location);
 							}
@@ -705,19 +705,17 @@ namespace Rex.Window
 		/// <summary>
 		/// Displays the <see cref="_expressionHistory"/> at the given width with the given style
 		/// </summary>
-		/// <param name="box"></param>
-		/// <param name="width"></param>
-		private void DisplayHistory(GUIStyle box, float width)
+		private void DisplayHistory()
 		{
 			// Draw the foldout and the clear history button.
 			GUILayout.BeginHorizontal();
 			{
-				showHistory = RexUIUtils.Toggle(showHistory, new GUIContent("History", "Succesfully complied expressions"));
+				showHistory = RexUIUtils.Toggle(showHistory, _texts["history_header"]);
 
 				if (showHistory)
 				{
 					if (_expressionHistory.Count > 0 &&
-						GUILayout.Button(new GUIContent("Clear", "Clear History"), GUILayout.Width(50)))
+						GUILayout.Button(_texts["history_clear"], GUILayout.Width(50)))
 					{
 						_expressionHistory.Clear();
 					}
@@ -741,7 +739,7 @@ namespace Rex.Window
 						GUILayout.BeginHorizontal();
 						{
 							GUILayout.Space(10f);
-							var toolTip = new GUIContent(expr.Code, (expr.IsExpanded ? "Hide" : "Show") + " options");
+							var toolTip = _texts.GetText("history_item_" + (expr.IsExpanded ? "hide" : "show"), expr.Code);
 							var isExpaned = GUILayout.Toggle(expr.IsExpanded, toolTip, EditorStyles.foldout, GUILayout.Width(20));
 
 							if (isExpaned != expr.IsExpanded)
@@ -776,7 +774,7 @@ namespace Rex.Window
 		}
 
 		/// <summary>
-		/// Draws the selection dropdown for the given <see cref="history"/> 
+		/// Draws the selection dropdown for the given <see cref="HistoryItem"/> 
 		/// </summary>
 		/// <param name="code"></param>
 		/// <param name="deleted"></param>
@@ -786,15 +784,15 @@ namespace Rex.Window
 			GUILayout.BeginHorizontal();
 			{
 				GUILayout.Space(10f);
-				if (GUILayout.Button(new GUIContent("Run", "Run Expression"), GUILayout.Height(16)))
+				if (GUILayout.Button(_texts["history_item_run"], GUILayout.Height(16)))
 				{
 					Execute(code);
 				}
-				if (GUILayout.Button(new GUIContent("Macro", "Save as Macro"), GUILayout.Height(16)))
+				if (GUILayout.Button(_texts["history_item_macro"], GUILayout.Height(16)))
 				{
 					_macros = RexMacroHandler.Save(code);
 				}
-				if (GUILayout.Button(new GUIContent("Delete", "Delete the history item"), GUILayout.Height(16)))
+				if (GUILayout.Button(_texts["history_item_delete"], GUILayout.Height(16)))
 				{
 					deleted = true;
 				}
@@ -805,13 +803,11 @@ namespace Rex.Window
 
 		#region Variables
 		/// <summary>
-		/// Displays the <see cref="Variables"/> box at the given width using the given style
+		/// Displays the <see cref="RexHelper.Variables"/>
 		/// </summary>
-		/// <param name="box"></param>
-		/// <param name="width"></param>
-		private void DisplayVariables(GUIStyle box, float width)
+		private void DisplayVariables()
 		{
-			showVariables = RexUIUtils.Toggle(showVariables, new GUIContent("Variables", "User declared variables"));
+			showVariables = RexUIUtils.Toggle(showVariables, _texts["variables_header"]);
 
 			if (showVariables)
 			{
@@ -821,26 +817,20 @@ namespace Rex.Window
 					// Scroll begins
 					scroll2 = EditorGUILayout.BeginScrollView(scroll2);
 					{
-						// inner box begins
-						EditorGUILayout.BeginVertical(GUILayout.ExpandHeight(false), GUILayout.Width(width - 20));
+						string deleted = null;
+						foreach (var var in RexHelper.Variables)
 						{
-							// Used to pick up which variables were delete in the gui run
-							string deleted = null;
-							foreach (var var in RexHelper.Variables)
+							EditorGUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
 							{
-								EditorGUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
-								{
-									var shouldDelete = DisplayVariable(var.Key, var.Value);
-									if (shouldDelete)
-										deleted = var.Key;
-								}
-								EditorGUILayout.EndHorizontal();
+								var shouldDelete = DisplayVariable(var.Key, var.Value);
+								if (shouldDelete)
+									deleted = var.Key;
 							}
-							if (deleted != null)
-								RexHelper.Variables.Remove(deleted);
+							EditorGUILayout.EndHorizontal();
 						}
-						EditorGUILayout.EndVertical();
-						// inner box ends
+						if (deleted != null)
+							RexHelper.Variables.Remove(deleted);
+
 					}
 					EditorGUILayout.EndScrollView();
 					// Scroll ends
@@ -854,7 +844,7 @@ namespace Rex.Window
 		/// Displays a single variable, returns true if the varible was deleted else false.
 		/// </summary>
 		/// <param name="VarName">Name of the var. (key of the <see cref="RexHelper.Variables"/>)</param>
-		/// <param name="var">Varible it self. (Value of the <see cref="RexHelper.Variables"/>)</param>
+		/// <param name="var">The varible to display. (Value of the <see cref="RexHelper.Variables"/>)</param>
 		private bool DisplayVariable(string VarName, RexHelper.Varible var)
 		{
 			string highlightedString;
@@ -882,15 +872,12 @@ namespace Rex.Window
 				defaultMsg = var.VarValue.ToString();
 			}
 
-			var shouldDelete = false;
-			// Draw the delete button.
-			if (GUILayout.Button(new GUIContent("X", "Remove <b>" + VarName + "</b>"), GUILayout.Width(20)))
-				shouldDelete = true;
+			var shouldDelete = GUILayout.Button(_texts.GetText("remove_variable", tooltipFormat: VarName), GUILayout.Width(20));
 
 			// Draw the button as a label.
-			if (GUILayout.Button(new GUIContent(highlightedString, "Click to inspect <b>" + VarName + "</b>"), varLabelStyle, GUILayout.ExpandWidth(true)))
+			if (GUILayout.Button(_texts.GetText("inspect_variable", highlightedString, VarName), varLabelStyle, GUILayout.ExpandWidth(true)))
 			{
-				// Construct a new output entry...
+
 				var ouput = new OutputEntry();
 				ouput.LoadObject(var.VarValue);
 				RexHelper.AddOutput(ouput);
@@ -903,11 +890,9 @@ namespace Rex.Window
 		/// <summary>
 		/// Display the <see cref="Macros"/> window at the given width using the given style.
 		/// </summary>
-		/// <param name="box"></param>
-		/// <param name="width"></param>
-		private void DisplayMacros(GUIStyle box, float width)
+		private void DisplayMacros()
 		{
-			showMacros = RexUIUtils.Toggle(showMacros, new GUIContent("Macros", "Saved expressions"));
+			showMacros = RexUIUtils.Toggle(showMacros, _texts["macros_header"]);
 
 			if (showMacros)
 			{
@@ -923,19 +908,19 @@ namespace Rex.Window
 							EditorGUILayout.BeginHorizontal();
 							{
 								// Draw the RUN button
-								if (GUILayout.Button(new GUIContent("Go", "Evaluate: <b>" + macro + "</b>"), GUILayout.Width(30)))
+								if (GUILayout.Button(_texts.GetText("macro_go", tooltipFormat: macro), GUILayout.Width(30)))
 								{
 									// parse, compile & execute
 									Execute(macro);
 								}
 
 								// Remove the macro if the X button is pressed
-								if (GUILayout.Button(new GUIContent("X", "Remove macro"), GUILayout.Width(20)))
+								if (GUILayout.Button(_texts["macro_remove"], GUILayout.Width(20)))
 									deleted = macro;
 
 								// if the label is pressed... then run this code..?
 								// TODO: Highlight this...
-								if (GUILayout.Button(new GUIContent(macro, "Select macro: <b>" + macro + "</b>"), GUI.skin.label))
+								if (GUILayout.Button(_texts.GetText("select_macro", macro, macro), GUI.skin.label))
 								{
 									RexISM.Code = macro;
 									RexISM.DisplayHelp = false;
