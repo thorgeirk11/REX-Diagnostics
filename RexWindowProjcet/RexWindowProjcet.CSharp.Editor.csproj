@@ -136,7 +136,7 @@
     <Compile Include="Assets\Editor\RexDiagnostics\Test\UsingsAndMacroTests.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\UI\OutputEntry.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\UI\RexEditorWindow.cs" />
-    <Compile Include="Assets\Editor\RexDiagnostics\UI\RexTexts.cs" />
+    <Compile Include="Assets\Editor\RexDiagnostics\UI\RexStaticTextCollection.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\UI\RexUIUtils.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\UI\UStrap.cs" />
   </ItemGroup>
