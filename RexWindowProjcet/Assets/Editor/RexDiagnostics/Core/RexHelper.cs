@@ -36,6 +36,8 @@ namespace Rex.Utilities
 			messages = new Dictionary<MessageType, List<string>>();
 			try
 			{
+
+
 				var value = Invoke(compileResult);
 
 				// If this is a variable declaration

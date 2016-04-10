@@ -830,29 +830,12 @@ namespace Rex.Window
 		private bool DisplayVariable(string VarName, RexHelper.Varible var)
 		{
 			string highlightedString;
-			string defaultMsg;
 
 			var type = RexUtils.GetCSharpRepresentation(var.VarType);
-			if (var.VarValue == null)
-			{
-				highlightedString = RexUIUtils.SyntaxHighlingting(type.Concat(new[] {
-											Syntax.Name(VarName),
-											Syntax.Space, Syntax.EqualsOp,
-											Syntax.Space, Syntax.Keyword("null")
-										}));
-				defaultMsg = "null";
-			}
-			else
-			{
-				// Format the code for syntax highlighting using richtext.
-				highlightedString = RexUIUtils.SyntaxHighlingting(type.Concat(new[] {
-											Syntax.Space, Syntax.Name(VarName),
-											Syntax.Space, Syntax.EqualsOp,
-											Syntax.Space
-										}).Concat(RexReflectionUtils.GetSyntaxForValue(var.VarValue))
-									);
-				defaultMsg = var.VarValue.ToString();
-			}
+			// Format the code for syntax highlighting using richtext.
+			highlightedString = RexUIUtils.SyntaxHighlingting(type.Concat(new[] {
+				Syntax.Space, Syntax.Name(VarName), Syntax.Space, Syntax.EqualsOp, Syntax.Space
+			}).Concat(RexReflectionUtils.GetSyntaxForValue(var.VarValue)));
 
 			var shouldDelete = GUILayout.Button(_texts.GetText("remove_variable", tooltipFormat: VarName), GUILayout.Width(20));
 

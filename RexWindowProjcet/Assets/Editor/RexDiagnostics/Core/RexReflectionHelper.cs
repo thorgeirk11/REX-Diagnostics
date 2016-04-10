@@ -234,7 +234,6 @@ namespace Rex.Utilities.Helpers
 				};
 			}
 
-			var constVal = value.ToString();
 			var enumerableItems = "";
 			if (!IsOverridingToStirng(type) &&
 				value is IEnumerable &&

@@ -308,7 +308,7 @@ namespace Rex.Utilities.Test
 			var expression = "x = " + expr;
 			var output = CompileAndRun(expression);
 			Assert.IsEmpty(RexHelper.Variables);
-			//Assert.AreEqual("Expression returned an compiler generated class, cannot declare variable 'x'", RexHelper.Messages[MsgType.Warning].Single());
+			Assert.IsNotNull(output.Value);
 		}
 		[Test]
 		public void AssigmentPerformaceTest()
