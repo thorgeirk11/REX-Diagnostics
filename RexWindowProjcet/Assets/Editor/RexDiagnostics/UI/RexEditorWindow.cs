@@ -636,7 +636,6 @@ namespace Rex.Window
 			GUILayout.Box("", new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(1) });
 			//EditorGUILayout.Separator();
 		}
-
 		#endregion
 
 		/// <summary>

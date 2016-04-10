@@ -115,11 +115,10 @@
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\AccessingDeletedVariableException.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\CodeCompletion.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\CompiledExpression.cs" />
-    <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\MacroHandler.cs" />
+    <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\RexMacroHandler.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\MemberDetails.cs" />
-    <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\MemberType.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\NameSpaceInfo.cs" />
-    <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\UsingsHandler.cs" />
+    <Compile Include="Assets\Editor\RexDiagnostics\Core\Helpers\RexUsingsHandler.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Input\InputStateMachine.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Parser\IRexIntellisenceProvider.cs" />
     <Compile Include="Assets\Editor\RexDiagnostics\Core\Parser\IRexParser.cs" />
