@@ -102,8 +102,6 @@ namespace Rex.Window
 		protected override void LoadSingleObject(object value)
 		{
 			base.LoadSingleObject(value);
-			if (value == null) return;
-
 			LoadInDetails(value, RexReflectionUtils.ExtractDetails(value));
 		}
 
@@ -127,23 +125,7 @@ namespace Rex.Window
 		/// <param name="memberDetails"></param>
 		private void LoadInDetails(object value, IEnumerable<MemberDetails> memberDetails)
 		{
-			var messageField = DisplayFieldFor(Text, Text);
-			if (NeedsSpecialField(value.GetType()))
-			{
-				var valueField = DisplayFieldFor(value, Text);
-				DisplayMessage = () =>
-				{
-					messageField();
-					valueField();
-				};
-			}
-			else
-			{
-				DisplayMessage = () =>
-				{
-					messageField();
-				};
-			}
+			DisplayMessage = DisplayFieldFor(value, Text);
 			Details = (from detail in memberDetails
 					   let tooltip = RexUIUtils.SyntaxHighlingting(detail.TakeWhile(i => i.Type != SyntaxType.EqualsOp))
 					   let content = new GUIContent(detail.Name.String, tooltip)
