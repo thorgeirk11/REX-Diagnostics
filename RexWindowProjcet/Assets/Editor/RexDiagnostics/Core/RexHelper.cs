@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.CodeDom.Compiler;
-using System.Collections;
 using Rex.Utilities.Helpers;
-using System.Diagnostics;
 using UnityEditor;
 using Rex.Window;
 using System.Reflection;

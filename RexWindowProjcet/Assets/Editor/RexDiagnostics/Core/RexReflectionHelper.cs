@@ -236,9 +236,9 @@ namespace Rex.Utilities.Helpers
 
 			var constVal = value.ToString();
 			var enumerableItems = "";
-			if (!RexReflectionUtils.IsOverridingToStirng(type) &&
+			if (!IsOverridingToStirng(type) &&
 				value is IEnumerable &&
-				RexReflectionUtils.ExtractValue(value, out enumerableItems))
+				ExtractValue(value, out enumerableItems))
 			{
 				return RexUtils.GetCSharpRepresentation(type).Concat(new[]
 				{
