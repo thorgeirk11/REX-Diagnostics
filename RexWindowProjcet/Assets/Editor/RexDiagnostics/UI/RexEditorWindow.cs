@@ -191,9 +191,6 @@ namespace Rex.Window
 			lastExecute = DateTime.Now;
 		}
 
-		/// <summary>
-		/// GUI Loop
-		/// </summary>
 		void OnGUI()
 		{
 			if (!EditorApplication.isPlaying)
@@ -642,7 +639,6 @@ namespace Rex.Window
 
 		#endregion
 
-
 		/// <summary>
 		/// Displays the selection screen for Namespaces.
 		/// </summary>
@@ -739,8 +735,8 @@ namespace Rex.Window
 						GUILayout.BeginHorizontal();
 						{
 							GUILayout.Space(10f);
-							var toolTip = _texts.GetText("history_item_" + (expr.IsExpanded ? "hide" : "show"), expr.Code);
-							var isExpaned = GUILayout.Toggle(expr.IsExpanded, toolTip, EditorStyles.foldout, GUILayout.Width(20));
+							var content = _texts.GetText("history_item_" + (expr.IsExpanded ? "hide" : "show"), expr.Code);
+							var isExpaned = GUILayout.Toggle(expr.IsExpanded, content, EditorStyles.foldout);
 
 							if (isExpaned != expr.IsExpanded)
 							{
