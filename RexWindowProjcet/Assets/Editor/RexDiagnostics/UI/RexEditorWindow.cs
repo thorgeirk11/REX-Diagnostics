@@ -730,35 +730,22 @@ namespace Rex.Window
 				for (int i = 0; i < _expressionHistory.Count; i++)
 				{
 					var expr = _expressionHistory[i];
-					EditorGUILayout.BeginVertical();
+					var content = _texts.GetText("history_item_" + (expr.IsExpanded ? "hide" : "show"), expr.Code);
+					var isExpaned = GUILayout.Toggle(expr.IsExpanded, content, EditorStyles.foldout);
+
+					if (isExpaned != expr.IsExpanded)
 					{
-						GUILayout.BeginHorizontal();
-						{
-							GUILayout.Space(10f);
-							var content = _texts.GetText("history_item_" + (expr.IsExpanded ? "hide" : "show"), expr.Code);
-							var isExpaned = GUILayout.Toggle(expr.IsExpanded, content, EditorStyles.foldout);
-
-							if (isExpaned != expr.IsExpanded)
-							{
-								_expressionHistory.ForEach(e => e.IsExpanded = false);
-								expr.IsExpanded = isExpaned;
-							}
-						}
-						GUILayout.EndHorizontal();
-
-						if (expr.IsExpanded)
-						{
-							// Draw dropdown
-							EditorGUILayout.BeginVertical();
-							{
-								var IsDeleted = false;
-								DisplayHistorySelectionToggle(expr.Code, out IsDeleted);
-								if (IsDeleted) deleteIndex = i;
-							}
-							EditorGUILayout.EndVertical();
-						}
+						_expressionHistory.ForEach(e => e.IsExpanded = false);
+						expr.IsExpanded = isExpaned;
 					}
-					EditorGUILayout.EndVertical();
+
+					if (expr.IsExpanded)
+					{
+						// Draw dropdown
+						var IsDeleted = false;
+						DisplayHistorySelectionToggle(expr.Code, out IsDeleted);
+						if (IsDeleted) deleteIndex = i;
+					}
 					GUILayout.Box("", GUILayout.Height(1f), GUILayout.ExpandWidth(true));
 
 				}
