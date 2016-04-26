@@ -19,8 +19,8 @@ namespace Rex.Utilities
 		/// </summary>
 		private const string propsRegex = "(.et|add|remove)_(?<Name>.*)";
 
-		public const BindingFlags InstanceBindings = BindingFlags.Public | BindingFlags.Instance;
-		public const BindingFlags StaticBindings = BindingFlags.Public | BindingFlags.Static;
+		public const BindingFlags InstanceBindings = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+		public const BindingFlags StaticBindings = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
 
 		public ParseResult ParseAssigment(string parsedCode)
 		{
@@ -419,7 +419,7 @@ namespace Rex.Utilities
 			var helpList = new Dictionary<string, List<MemberDetails>>();
 
 			// properties
-			foreach (var prop in varType.GetProperties(bindings))
+			foreach (var prop in GetProperties(varType, bindings))
 			{
 				helpList.Add(prop.Name, new List<MemberDetails> { RexReflectionUtils.GetMemberDetails(prop) });
 			}
@@ -459,6 +459,41 @@ namespace Rex.Utilities
 			//}
 
 			return helpList;
+		}
+
+		public static IEnumerable<PropertyInfo> GetProperties(Type type, BindingFlags bindings)
+		{
+			if (type.IsInterface)
+			{
+				var propertyInfos = new List<PropertyInfo>();
+
+				var considered = new List<Type>();
+				var queue = new Queue<Type>();
+				considered.Add(type);
+				queue.Enqueue(type);
+				while (queue.Count > 0)
+				{
+					var subType = queue.Dequeue();
+					foreach (var subInterface in subType.GetInterfaces())
+					{
+						if (considered.Contains(subInterface)) continue;
+
+						considered.Add(subInterface);
+						queue.Enqueue(subInterface);
+					}
+
+					var typeProperties = subType.GetProperties(bindings);
+
+					var newPropertyInfos = typeProperties
+						.Where(x => !propertyInfos.Contains(x));
+
+					propertyInfos.InsertRange(0, newPropertyInfos);
+				}
+
+				return propertyInfos;
+			}
+
+			return type.GetProperties(bindings);
 		}
 	}
 }
