@@ -68,13 +68,13 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 		if (NamespaceInfos == null)
 			NamespaceInfos = RexUtils.LoadNamespaceInfos(false);
 
-		var _compileThread = new Thread(CompilerMainThread)
-		{
-			IsBackground = true,
-			Name = "REX Compiler thread"
-		};
-		_compileThread.Start();
-		_compileThreadID = _compileThread.ManagedThreadId;
+		//var _compileThread = new Thread(CompilerMainThread)
+		//{
+		//	IsBackground = true,
+		//	Name = "REX Compiler thread"
+		//};
+		//_compileThread.Start();
+		//_compileThreadID = _compileThread.ManagedThreadId;
 	}
 
 	public void Dispose()
@@ -120,7 +120,13 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 		}
 	}
 
-	public CompiledExpression GetCompile(string code, out Dictionary<MessageType, List<string>> messages)
+	public CompiledExpression GetCompile(string code)
+	{
+		var parseResult = parser.ParseAssigment(code);
+		return Compile(parseResult);
+	}
+
+	public CompiledExpression GetCompileAsync(string code, out Dictionary<MessageType, List<string>> messages)
 	{
 		messages = new Dictionary<MessageType, List<string>>();
 		var startedWaiting = DateTime.Now;
@@ -191,7 +197,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 	private static CSharpCodeProvider compiler;
 	private static string[] currentAssemblies;
 
-	public static CompilerResults CompileCode(string code)
+	private static CompilerResults CompileCode(string code)
 	{
 		var compilerOptions = new CompilerParameters(GetCurrentAssemblies())
 		{
@@ -202,7 +208,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 		return Compiler.CompileAssemblyFromSource(compilerOptions, code);
 	}
 
-	static string[] GetCurrentAssemblies()
+	private static string[] GetCurrentAssemblies()
 	{
 		if (currentAssemblies != null)
 			return currentAssemblies;
