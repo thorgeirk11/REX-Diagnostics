@@ -99,6 +99,13 @@ namespace Rex.Window
 			EnumerationItems = new List<OutputEntry>();
 		}
 
+		public override void LoadVoid()
+		{
+			base.LoadVoid();
+			DisplayMessage = DisplayFieldFor(null, Text);
+			Details = new Dictionary<Action, GUIContent>();
+		}
+
 		protected override void LoadSingleObject(object value)
 		{
 			base.LoadSingleObject(value);
@@ -170,7 +177,9 @@ namespace Rex.Window
 			EditorGUILayout.BeginVertical();
 			{
 				EditorGUILayout.BeginHorizontal();
-				DisplayMessage();
+				var handler = DisplayMessage;
+				if (handler != null)
+					handler();
 				EditorGUILayout.EndHorizontal();
 				if (Details.Count > 0)
 				{
