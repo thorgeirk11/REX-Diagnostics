@@ -36,15 +36,15 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 	}
 
 	[SerializeField]
-	private volatile int _compileThreadID = -1;
+	private long _compileThreadID = -1;
 
 	public List<NameSpaceInfo> NamespaceInfos;
 
 	/// <summary>
 	/// The continues compiled result by the <see cref="_compileThread"/>.
 	/// </summary>
-	private static volatile CompiledExpression _currentCompiledExpression;
-	public static readonly object CompilerLockObject = new object();
+	private static CompiledExpression _currentCompiledExpression;
+	public static string CurrentCodeToCompile = string.Empty;
 
 	private static Dictionary<string, RexHelper.Varible> _currentWrapperVaribles = new Dictionary<string, RexHelper.Varible>();
 
@@ -79,35 +79,28 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 
 	public void Dispose()
 	{
-		_compileThreadID = -1;
+		Interlocked.Exchange(ref _compileThreadID, -1);
 		DestroyImmediate(this);
 	}
 
 	private void CompilerMainThread()
 	{
-		var lastCode = "";
-		CompileJob lastJob = null;
-		Thread lastThread = null;
 		var activeThreads = new List<Thread>();
-		while (_compileThreadID == Thread.CurrentThread.ManagedThreadId)
+		Thread lastThread = null;
+		while (Interlocked.Read(ref _compileThreadID) == Thread.CurrentThread.ManagedThreadId)
 		{
-			activeThreads.RemoveAll(i => (i.ThreadState & ThreadState.Stopped) != 0);
 			Thread.Sleep(1);
-			if (!string.IsNullOrEmpty(RexISM.Code) &&
-				lastCode != RexISM.Code)
+			var code = RexISM.Code;
+			if (!string.IsNullOrEmpty(code) &&
+				CurrentCodeToCompile != code)
 			{
-				lastCode = RexISM.Code;
-				if (lastJob != null)
-				{
-					lastJob.RequestStop();
-					lastThread.Abort();
-				}
-				lastJob = new CompileJob();
-				lastThread = new Thread(lastJob.CompileCode)
+				Interlocked.Exchange(ref CurrentCodeToCompile, code);
+				lastThread = new Thread(CompileCodeInThread)
 				{
 					IsBackground = true
 				};
-				lastThread.Start(lastCode);
+				lastThread.Start(code);
+
 				activeThreads.Add(lastThread);
 			}
 		}
@@ -119,26 +112,35 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 			}
 		}
 	}
+	private static void CompileCodeInThread(object code)
+	{
+		var c = (string)code;
+		var parseResult = parser.ParseAssigment(c);
+		if (CurrentCodeToCompile != c) return;
 
-	public CompiledExpression GetCompile(string code, out Dictionary<MessageType, List<string>> messages)
+		var result = Compile(parseResult);
+		if (CurrentCodeToCompile != c) return;
+
+		Interlocked.Exchange(ref _currentCompiledExpression, result);
+	}
+
+	public CompiledExpression GetCompileAsync(string code, out Dictionary<MessageType, List<string>> messages)
 	{
 		messages = new Dictionary<MessageType, List<string>>();
 		var startedWaiting = DateTime.Now;
 		while (true)
 		{
-			lock (CompilerLockObject)
+			var expression = _currentCompiledExpression;
+			if (expression != null &&
+				expression.Parse.WholeCode == code)
 			{
-				if (_currentCompiledExpression != null &&
-					_currentCompiledExpression.Parse.WholeCode == code)
+				if (expression.Errors.Any())
 				{
-					if (_currentCompiledExpression.Errors.Any())
-					{
-						messages.Add(MessageType.Error, _currentCompiledExpression.Errors.ToArray());
-						return null;
-					}
-
-					return _currentCompiledExpression;
+					messages.Add(MessageType.Error, expression.Errors.ToArray());
+					return null;
 				}
+
+				return expression;
 			}
 			Thread.Sleep(10);
 			if (DateTime.Now - startedWaiting > TimeSpan.FromSeconds(TIME_OUT_FOR_COMPILE_SEC))
@@ -149,29 +151,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 		}
 	}
 
-	private class CompileJob
-	{
-		public void CompileCode(object code)
-		{
-			var parseResult = parser.ParseAssigment((string)code);
 
-			var result = Compile(parseResult);
-			if (!_shouldStop)
-			{
-				lock (CompilerLockObject)
-				{
-					_currentCompiledExpression = result;
-				}
-			}
-		}
-
-		public void RequestStop()
-		{
-			_shouldStop = true;
-		}
-
-		private volatile bool _shouldStop;
-	}
 
 	#region Compile
 	public static CSharpCodeProvider Compiler
@@ -191,7 +171,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 	private static CSharpCodeProvider compiler;
 	private static string[] currentAssemblies;
 
-	public static CompilerResults CompileCode(string code)
+	private static CompilerResults CompileCode(string code)
 	{
 		var compilerOptions = new CompilerParameters(GetCurrentAssemblies())
 		{
@@ -202,7 +182,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 		return Compiler.CompileAssemblyFromSource(compilerOptions, code);
 	}
 
-	static string[] GetCurrentAssemblies()
+	private static string[] GetCurrentAssemblies()
 	{
 		if (currentAssemblies != null)
 			return currentAssemblies;

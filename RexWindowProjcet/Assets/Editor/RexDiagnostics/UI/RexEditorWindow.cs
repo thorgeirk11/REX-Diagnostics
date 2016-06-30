@@ -167,7 +167,7 @@ namespace Rex.Window
 				return;
 
 			RexISM.Code = code;
-			var compile = _compileEngine.GetCompile(code, out Messages);
+			var compile = _compileEngine.GetCompileAsync(code, out Messages);
 			if (compile != null)
 			{
 				if (_expressionHistory.Count == 0 ||
