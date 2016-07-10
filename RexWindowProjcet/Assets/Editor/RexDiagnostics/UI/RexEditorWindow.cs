@@ -454,24 +454,25 @@ namespace Rex.Window
 
 			GUI.Box(new Rect(0, -15, intelliRect.width, help.Count * lineHeigth + 15), "", GUI.skin.window);
 
-			var style = new GUIStyle(GUI.skin.label)
-			{
-				richText = true
-			};
+			GUI.skin.label.richText = true;
 			for (int i = 0; i < help.Count; i++)
 			{
-				var helpstr = RexUIUtils.SyntaxHighlingting(help[i].Details, help[i].Search);
+				var codeCompletion = help[i];
+				if (codeCompletion.SyntaxHighlightedDetails == null)
+				{
+					codeCompletion.SyntaxHighlightedDetails = RexUIUtils.SyntaxHighlingting(codeCompletion.Details, codeCompletion.Search);
+				}
 				var rect = new Rect(1, i * lineHeigth, intelliRect.width, intelliRect.height);
 
 				if (IsSelectable && i == RexISM.SelectedHelp)
 				{
-					GUI.Label(rect, "<b>" + helpstr + "</b>", style);
+					GUI.Label(rect, string.Format("<b>{0}</b>", codeCompletion.SyntaxHighlightedDetails), GUI.skin.label);
 					GUI.ScrollTo(rect);
 				}
 				else
-					GUI.Label(rect, helpstr, style);
+					GUI.Label(rect, codeCompletion.SyntaxHighlightedDetails, GUI.skin.label);
 			}
-			style.richText = false;
+			GUI.skin.label.richText = false;
 
 			GUI.EndScrollView();
 		}

@@ -2,6 +2,7 @@
 {
 	public class CodeCompletion
 	{
+		public string SyntaxHighlightedDetails { get; set; }
 		public MemberDetails Details { get; set; }
 		public int Start { get; set; }
 		public int End { get; set; }
