@@ -18,6 +18,7 @@ namespace Rex.Utilities.Test
 			if (Parser == null)
 				Parser = new RexParser();
 
+			RexHelper.Variables.Clear();
 			var expression = "1+1";
 			var pResult = Parser.ParseAssigment(expression);
 			var cResult = RexCompileEngine.Compile(pResult);
