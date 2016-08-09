@@ -196,6 +196,13 @@ namespace Rex.Utilities.Helpers
 
 				syntax.AddRange(RexUtils.GetCSharpRepresentation(paras[i].ParameterType));
 				syntax.AddRange(new[] { Syntax.Space, Syntax.ParaName(paras[i].Name) });
+
+				if (paras[i].IsOptional)
+				{
+					syntax.AddRange(new[] { Syntax.Space, Syntax.EqualsOp, Syntax.Space });
+					syntax.AddRange(GetSyntaxForValue(paras[i].RawDefaultValue));
+				}
+
 				if (i + 1 != paras.Length)
 					syntax.AddRange(new[] { Syntax.Comma, Syntax.Space });
 			}

@@ -77,7 +77,7 @@ namespace Rex.Utilities.Test
 			var without = results[1].ToString();
 
 			Assert.AreEqual("void WithDefaultArg(int myInt = 42)", with);
-			Assert.AreEqual("void WithoutDefaultArg(int myInt)", with);
+			Assert.AreEqual("void WithoutDefaultArg(int myInt)", without);
 		}
 
 		private void EqualIntellisence(string search1, string search2)
