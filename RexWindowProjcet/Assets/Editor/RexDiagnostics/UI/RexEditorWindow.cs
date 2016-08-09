@@ -158,6 +158,7 @@ namespace Rex.Window
 		/// <summary>
 		/// Executes the expression once.
 		/// </summary>
+		/// <param name="code">Code to execute</param>
 		private void Execute(string code)
 		{
 			lastRunSuccesfull = true;
@@ -725,7 +726,7 @@ namespace Rex.Window
 			EditorGUILayout.BeginVertical(slimBox);
 			{
 				scroll = EditorGUILayout.BeginScrollView(scroll);
-				int deleteIndex = -1;
+				var deleteIndex = -1;
 
 				for (int i = 0; i < _expressionHistory.Count; i++)
 				{

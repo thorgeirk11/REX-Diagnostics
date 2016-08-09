@@ -57,8 +57,27 @@ namespace Rex.Utilities.Test
 
 			// Variables:
 			SetVar("myVar", new DummyOutput());
-			EqualIntellisence("myVar.V", "myVar.V");
-			EqualIntellisence("myVar.Va", "myVar.Va");
+			EqualIntellisence("myVar.V", "myVar.v");
+			EqualIntellisence("myVar.Va", "myVar.va");
+		}
+
+		struct ArgsTester
+		{
+			public void WithDefaultArg(int myInt = 42) { }
+			public void WithoutDefaultArg(int myInt) { }
+		}
+
+		[Test]
+		public void DefaultArgs()
+		{
+			// Variables:
+			SetVar("myVar", new ArgsTester());
+			var results = Parser.Intellisence("myVar.With").ToArray();
+			var with = results[0].ToString();
+			var without = results[1].ToString();
+
+			Assert.AreEqual("void WithDefaultArg(int myInt = 42)", with);
+			Assert.AreEqual("void WithoutDefaultArg(int myInt)", with);
 		}
 
 		private void EqualIntellisence(string search1, string search2)

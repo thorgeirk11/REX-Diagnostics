@@ -417,6 +417,16 @@ namespace Rex.Utilities
 		private static Dictionary<string, List<MemberDetails>> GetAllMemberInfos(Type varType, BindingFlags bindings)
 		{
 			var helpList = new Dictionary<string, List<MemberDetails>>();
+			
+			// If it is enum only display it's fields.
+			if (varType.IsEnum)
+			{
+				foreach (var field in varType.GetFields(bindings))
+				{
+					helpList.Add(field.Name, new List<MemberDetails> { RexReflectionUtils.GetMemberDetails(field) });
+				}
+				return helpList;
+			}
 
 			// properties
 			foreach (var prop in GetProperties(varType, bindings))

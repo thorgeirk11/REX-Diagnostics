@@ -36,7 +36,7 @@ namespace Rex.Utilities.Test
 		{
 			Assert.AreEqual("System", RexUtils.TopLevelNameSpace("System.Linq"));
 
-			Assert.AreEqual("System", RexUtils.TopLevelNameSpace("System.Linq"));
+			Assert.AreEqual("System", RexUtils.TopLevelNameSpace("System.Collections.Generic"));
 		}
 
 		[Test]
@@ -341,6 +341,9 @@ namespace Rex.Utilities.Test
 		{
 			throw new NotImplementedException();
 		}
+
+		public void WithDefaultArg(int myInt = 42) { }
+		public void WithoutDefaultArg(int myInt) { }
 
 		public Func<string> toString;
 
