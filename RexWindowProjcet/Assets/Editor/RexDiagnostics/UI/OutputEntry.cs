@@ -80,6 +80,7 @@ namespace Rex.Window
 				{
 					_fieldForType = new Dictionary<Type, Action<object>>
 					{
+						{ typeof(string),           value => EditorGUILayout.TextArea(value.ToString()) },
 						{ typeof(Vector2),          value => EditorGUILayout.Vector2Field("", (Vector2)value) },
 						{ typeof(Vector3),          value => EditorGUILayout.Vector3Field("", (Vector3)value) },
 						{ typeof(Vector4),          value => EditorGUILayout.Vector4Field("", (Vector4)value) },
