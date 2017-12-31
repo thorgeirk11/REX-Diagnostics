@@ -166,7 +166,7 @@ namespace Rex.Window
 			code = code.Trim().Trim(';');
 			if (string.IsNullOrEmpty(code))
 				return;
-
+            
 			RexISM.Code = code;
 			var compile = _compileEngine.GetCompileAsync(code, out Messages);
 			if (compile != null)
@@ -372,18 +372,18 @@ namespace Rex.Window
 				var eventType = Event.current.type;
 				if (RexISM.InputBuffer.ContainsKey(keyCode))
 				{
-					if (eventType == EventType.keyUp)
+					if (eventType == EventType.KeyUp)
 					{
 						RexISM.InputBuffer.Remove(keyCode);
 					}
-					else if (eventType == EventType.keyDown &&
+					else if (eventType == EventType.KeyDown &&
 						DateTime.Now >= RexISM.InputBuffer[keyCode].LastPressed + RexISM.KeyInput.DelayAmount)
 					{
 						RexISM.InputBuffer[keyCode].LastPressed = DateTime.Now;
 						RexISM.InputBuffer[keyCode].IsHandled = false;
 					}
 				}
-				else if (eventType == EventType.keyDown)
+				else if (eventType == EventType.KeyDown)
 				{
 					foreach (var item in RexISM.InputBuffer.ToArray())
 					{

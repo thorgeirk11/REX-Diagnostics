@@ -20,157 +20,159 @@ namespace Rex.Utilities.Input
 		Execute = 4
 	};
 
-	/// <summary>
-	/// Input State Machine.
-	/// </summary>
-	public static class RexISM
-	{
-		public static List<CodeCompletion> IntelliSenceHelp { get; set; }
-		/// <summary>
-		/// Should the <see cref="IntelliSenceHelp"/> be displayed
-		/// </summary>
-		public static bool DisplayHelp { get; set; }
-		/// <summary>
-		/// Which index of the <see cref="IntelliSenceHelp"/> is currently selected.
-		/// </summary>
-		public static int SelectedHelp { get; set; }
-		/// <summary>
-		/// If the current <see cref="Code"/> should be replaced by <see cref="ReplacementCode"/>
-		/// </summary>
-		public static bool ShouldReplaceCode { get; set; }
-		/// <summary>
-		/// Code that will replace the current <see cref="ReplacementCode"/>
-		/// </summary>
-		public static string ReplacementCode { get; set; }
+    /// <summary>
+    /// Input State Machine.
+    /// </summary>
+    public static class RexISM
+    {
+        public static List<CodeCompletion> IntelliSenceHelp { get; set; }
+        /// <summary>
+        /// Should the <see cref="IntelliSenceHelp"/> be displayed
+        /// </summary>
+        public static bool DisplayHelp { get; set; }
+        /// <summary>
+        /// Which index of the <see cref="IntelliSenceHelp"/> is currently selected.
+        /// </summary>
+        public static int SelectedHelp { get; set; }
+        /// <summary>
+        /// If the current <see cref="Code"/> should be replaced by <see cref="ReplacementCode"/>
+        /// </summary>
+        public static bool ShouldReplaceCode { get; set; }
+        /// <summary>
+        /// Code that will replace the current <see cref="ReplacementCode"/>
+        /// </summary>
+        public static string ReplacementCode { get; set; }
 
-		/// <summary>
-		/// Code string from the user. 
-		/// </summary>
-		public static string Code { get; set; }
-		/// <summary>
-		/// Action for loging debug messages.
-		/// </summary>
-		public static Action<string> DebugLog { get; set; }
+        /// <summary>
+        /// Code string from the user. 
+        /// </summary>
+        public static string Code { get; set; }
+        /// <summary>
+        /// Action for loging debug messages.
+        /// </summary>
+        public static Action<string> DebugLog { get; set; }
 
-		/// <summary>
-		/// Action for repainting the window.
-		/// </summary>
-		public static Action Repaint { get; set; }
-		/// <summary>
-		/// Action which will execute the <see cref="Code"/> in the input.
-		/// </summary>
-		public static Action<string> ExecuteCode { get; set; }
+        /// <summary>
+        /// Action for repainting the window.
+        /// </summary>
+        public static Action Repaint { get; set; }
+        /// <summary>
+        /// Action which will execute the <see cref="Code"/> in the input.
+        /// </summary>
+        public static Action<string> ExecuteCode { get; set; }
 
-		static RexInputState currState = RexInputState.NoInput;
-		public static string IntelliSenceLastCode = string.Empty;
-		static IRexParser Parser { get; set; }
-		static IRexIntellisenceProvider IntellisenseProvider { get; set; }
+        static RexInputState currState = RexInputState.NoInput;
+        public static string IntelliSenceLastCode = string.Empty;
+        static IRexParser Parser { get; set; }
+        static IRexIntellisenceProvider IntellisenseProvider { get; set; }
 
-		static RexISM()
-		{
-			Code = string.Empty;
-			ShouldReplaceCode = false;
-			IntelliSenceHelp = new List<CodeCompletion>();
-			InputBuffer = new Dictionary<KeyCode, KeyInput>();
-			IntellisenseProvider = (RexParser)(Parser = new RexParser());
-		}
+        static RexISM()
+        {
+            Code = string.Empty;
+            ShouldReplaceCode = false;
+            IntelliSenceHelp = new List<CodeCompletion>();
+            InputBuffer = new Dictionary<KeyCode, KeyInput>();
+            var parser = new RexParser();
+            Parser = parser;
+            IntellisenseProvider = parser;
+        }
 
-		/// <summary>
-		/// The current <see cref="RexInputState"/> of the state machine.
-		/// </summary>
-		public static RexInputState State
-		{
-			get { return currState; }
-			private set
-			{
-				//DebugLog(currState + " -> " + value);
-				currState = value;
-			}
-		}
+        /// <summary>
+        /// The current <see cref="RexInputState"/> of the state machine.
+        /// </summary>
+        public static RexInputState State
+        {
+            get { return currState; }
+            private set
+            {
+                //DebugLog(currState + " -> " + value);
+                currState = value;
+            }
+        }
 
-		/// <summary>
-		/// Updates the <see cref="State"/> of the machine
-		/// </summary>
-		public static void Update()
-		{
-			switch (State)
-			{
-				case RexInputState.NoInput:
-					{
-						Update_NoInput();
-						return;
-					}
-				case RexInputState.Typing:
-					{
-						Update_Typing();
-						return;
-					}
-				case RexInputState.IntelliSelect:
-					{
-						Update_IntelliSelect();
-						return;
-					}
-				default:
-					Enter_NoInput();
-					return;
-			}
-		}
+        /// <summary>
+        /// Updates the <see cref="State"/> of the machine
+        /// </summary>
+        public static void Update()
+        {
+            switch (State)
+            {
+                case RexInputState.NoInput:
+                    {
+                        Update_NoInput();
+                        return;
+                    }
+                case RexInputState.Typing:
+                    {
+                        Update_Typing();
+                        return;
+                    }
+                case RexInputState.IntelliSelect:
+                    {
+                        Update_IntelliSelect();
+                        return;
+                    }
+                default:
+                    Enter_NoInput();
+                    return;
+            }
+        }
 
-		#region NoInput
-		/// <summary>
-		/// Clears the codestring and sets the state to NoInput
-		/// </summary>
-		public static void Enter_NoInput()
-		{
-			State = RexInputState.NoInput;
-			DisplayHelp = false;
-		}
+        #region NoInput
+        /// <summary>
+        /// Clears the codestring and sets the state to NoInput
+        /// </summary>
+        public static void Enter_NoInput()
+        {
+            State = RexInputState.NoInput;
+            DisplayHelp = false;
+        }
 
-		/// <summary>
-		/// Moves to Typing when any key is pressed.
-		/// </summary>
-		public static void Update_NoInput()
-		{
-			// Clear code on state change
-			//if (IsKeyDown(KeyCode.UpArrow))
-			//{
-			//    Enter_HistorySelection();
-			//}
-			if (AnyKeyDown(KeyCode.LeftArrow, KeyCode.RightArrow, KeyCode.UpArrow, KeyCode.DownArrow))
-			{
-				Enter_Typing();
-			}
-		}
-		#endregion
+        /// <summary>
+        /// Moves to Typing when any key is pressed.
+        /// </summary>
+        public static void Update_NoInput()
+        {
+            // Clear code on state change
+            //if (IsKeyDown(KeyCode.UpArrow))
+            //{
+            //    Enter_HistorySelection();
+            //}
+            if (AnyKeyDown(KeyCode.LeftArrow, KeyCode.RightArrow, KeyCode.UpArrow, KeyCode.DownArrow))
+            {
+                Enter_Typing();
+            }
+        }
+        #endregion
 
-		#region Typing
-		/// <summary>
-		/// Enters typing mode
-		/// Intellisence is started and displayed.
-		/// </summary>
-		public static void Enter_Typing()
-		{
-			State = RexInputState.Typing;
-			DisplayHelp = true;
-			SelectedHelp = -1;
-		}
-		/// <summary>
-		/// if downkey is pressed and intellisence is being displayed: enters intelliselect
-		/// otherwise executes if Return is pressed.
-		/// </summary>
-		public static void Update_Typing()
-		{
-			if (IsKeyDown(KeyCode.DownArrow) && IntelliSenceHelp.Any())
-			{
-				Enter_IntelliSelect();
-			}
-			else if (IsKeyDown(KeyCode.Tab) && IntelliSenceHelp.Count > 0)
-			{
-				SelectedHelp = 0;
-				UseIntelliSelection();
-				return;
-			}
-			else if (IsKeyDown(KeyCode.Return))
+        #region Typing
+        /// <summary>
+        /// Enters typing mode
+        /// Intellisence is started and displayed.
+        /// </summary>
+        public static void Enter_Typing()
+        {
+            State = RexInputState.Typing;
+            DisplayHelp = true;
+            SelectedHelp = -1;
+        }
+        /// <summary>
+        /// if downkey is pressed and intellisence is being displayed: enters intelliselect
+        /// otherwise executes if Return is pressed.
+        /// </summary>
+        public static void Update_Typing()
+        {
+            if (IsKeyDown(KeyCode.DownArrow) && IntelliSenceHelp.Any())
+            {
+                Enter_IntelliSelect();
+            }
+            else if (IsKeyDown(KeyCode.Tab) && IntelliSenceHelp.Count > 0)
+            {
+                SelectedHelp = 0;
+                UseIntelliSelection();
+                return;
+            }
+            else if (IsKeyDown(KeyCode.Return) || IsKeyDown(KeyCode.KeypadEnter))
 			{
 				// Replace code with selected history element.
 				Exit_Typing();
