@@ -17,7 +17,7 @@ using UnityEngine;
 public class RexCompileEngine : ScriptableObject, IDisposable
 {
 	public const string REX_CLASS_NAME = "__TempRexClass";
-	public const string REX_FUNC_NAME = "Func";
+	public const string REX_FUNC_NAME = "__REX_Func";
 
 	public const float TIME_OUT_FOR_COMPILE_SEC = 2;
 
@@ -89,7 +89,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 		Thread lastThread = null;
 		while (Interlocked.Read(ref _compileThreadID) == Thread.CurrentThread.ManagedThreadId)
 		{
-			Thread.Sleep(1);
+			Thread.Sleep(500);
 			var code = RexISM.Code;
 			if (!string.IsNullOrEmpty(code) &&
 				CurrentCodeToCompile != code)
@@ -101,9 +101,13 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 				};
 				lastThread.Start(code);
 
-				activeThreads.Add(lastThread);
+                foreach (var thread in activeThreads)
+                {
+                    thread.Abort();
+                }
+                activeThreads.Add(lastThread);
 			}
-		}
+        }
 		if (activeThreads.Count > 0)
 		{
 			foreach (var thread in activeThreads)

@@ -73,6 +73,8 @@ namespace Rex.Utilities
 		{
 			if (type == null) return null;
 			if (type.Namespace != "System") return null;
+            if (string.IsNullOrEmpty(type.FullName)) return null;
+
 			switch (type.FullName.TrimEnd('&'))
 			{
 				case "System.Boolean": return "bool";
