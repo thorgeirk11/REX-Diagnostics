@@ -6,8 +6,8 @@ using System.Text;
 
 namespace Rex.Utilities
 {
-	interface IRexIntellisenceProvider
+	interface IRexIntellisenseProvider
 	{
-		IEnumerable<CodeCompletion> Intellisence(string exprssion);
+		IEnumerable<CodeCompletion> Intellisense(string expression);
 	}
 }

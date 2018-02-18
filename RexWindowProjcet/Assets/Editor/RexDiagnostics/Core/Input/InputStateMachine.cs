@@ -64,7 +64,7 @@ namespace Rex.Utilities.Input
         static RexInputState currState = RexInputState.NoInput;
         public static string IntelliSenceLastCode = string.Empty;
         static IRexParser Parser { get; set; }
-        static IRexIntellisenceProvider IntellisenseProvider { get; set; }
+        static IRexIntellisenseProvider IntellisenseProvider { get; set; }
 
         static RexISM()
         {
@@ -184,12 +184,12 @@ namespace Rex.Utilities.Input
 				DisplayHelp = false;
 			}
 
-			var parseResult = Parser.ParseAssigment(Code);
+			var parseResult = Parser.ParseAssignment(Code);
 			if (IntelliSenceLastCode != parseResult.ExpressionString)
 			{
 				DisplayHelp = true;
 				IntelliSenceLastCode = parseResult.ExpressionString;
-				IntelliSenceHelp = IntellisenseProvider.Intellisence(Code).ToList();
+				IntelliSenceHelp = IntellisenseProvider.Intellisense(Code).ToList();
 				SelectedHelp = -1;
 				Repaint();
 			}

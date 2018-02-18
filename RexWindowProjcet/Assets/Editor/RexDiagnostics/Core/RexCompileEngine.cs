@@ -46,7 +46,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 	private static CompiledExpression _currentCompiledExpression;
 	public static string CurrentCodeToCompile = string.Empty;
 
-	private static Dictionary<string, RexHelper.Varible> _currentWrapperVaribles = new Dictionary<string, RexHelper.Varible>();
+	private static Dictionary<string, RexHelper.Variable> _currentWrapperVaribles = new Dictionary<string, RexHelper.Variable>();
 
 	private static string _wrapperVariables = string.Empty;
 	private static IRexParser parser = new RexParser();
@@ -119,7 +119,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 	private static void CompileCodeInThread(object code)
 	{
 		var c = (string)code;
-		var parseResult = parser.ParseAssigment(c);
+		var parseResult = parser.ParseAssignment(c);
 		if (CurrentCodeToCompile != c) return;
 
 		var result = Compile(parseResult);

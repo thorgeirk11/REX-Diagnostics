@@ -4,6 +4,6 @@ namespace Rex.Utilities
 {
 	interface IRexParser
 	{
-		ParseResult ParseAssigment(string code);
+		ParseResult ParseAssignment(string code);
 	}
 }

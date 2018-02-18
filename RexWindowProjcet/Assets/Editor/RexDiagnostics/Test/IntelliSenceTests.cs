@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 namespace Rex.Utilities.Test
 {
 	[TestFixture]
-	class IntelliSenceTests
+	class IntelliSenseTests
 	{
 		[SetUp]
 		public void Setup()
@@ -26,12 +26,12 @@ namespace Rex.Utilities.Test
 		{
 			SetVar("x", new DummyOutput());
 
-			var helpInfo = Parser.Intellisence("x.").Select(i => i.Details.ToString());
+			var helpInfo = Parser.Intellisense("x.").Select(i => i.Details.ToString());
 			CollectionAssert.Contains(helpInfo, "object Value { get; set; }");
 			CollectionAssert.Contains(helpInfo, "string ToString()");
 			CollectionAssert.Contains(helpInfo, "Func<string> toString");
 
-			helpInfo = Parser.Intellisence("x.ToStrin").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisense("x.ToStrin").Select(i => i.Details.ToString());
 			Assert.AreEqual(2, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "string ToString()");
 			CollectionAssert.Contains(helpInfo, "Func<string> toString"); ;
@@ -41,24 +41,24 @@ namespace Rex.Utilities.Test
 		public void IntellisenseCaseInsensitveTest()
 		{
 			//Start of expression
-			EqualIntellisence("Mat", "mat");
-			EqualIntellisence("Direc", "direc");
-			EqualIntellisence("Stri", "stri");
+			EqualIntellisense("Mat", "mat");
+			EqualIntellisense("Direc", "direc");
+			EqualIntellisense("Stri", "stri");
 
 			//Inside static class:
-			EqualIntellisence("Math.A", "Math.a");
-			EqualIntellisence("Math.Ab", "Math.ab");
-			EqualIntellisence("Math.ABS", "Math.abs");
-			EqualIntellisence("Math.Abs", "Math.abs");
+			EqualIntellisense("Math.A", "Math.a");
+			EqualIntellisense("Math.Ab", "Math.ab");
+			EqualIntellisense("Math.ABS", "Math.abs");
+			EqualIntellisense("Math.Abs", "Math.abs");
 
 			// Fields:
-			EqualIntellisence("Math.P", "Math.p");
-			EqualIntellisence("Math.PI", "Math.pi");
+			EqualIntellisense("Math.P", "Math.p");
+			EqualIntellisense("Math.PI", "Math.pi");
 
 			// Variables:
 			SetVar("myVar", new DummyOutput());
-			EqualIntellisence("myVar.V", "myVar.v");
-			EqualIntellisence("myVar.Va", "myVar.va");
+			EqualIntellisense("myVar.V", "myVar.v");
+			EqualIntellisense("myVar.Va", "myVar.va");
 		}
 
 		struct ArgsTester
@@ -72,7 +72,7 @@ namespace Rex.Utilities.Test
 		{
 			// Variables:
 			SetVar("myVar", new ArgsTester());
-			var results = Parser.Intellisence("myVar.With").ToArray();
+			var results = Parser.Intellisense("myVar.With").ToArray();
 			var with = results[0].ToString();
 			var without = results[1].ToString();
 
@@ -80,10 +80,10 @@ namespace Rex.Utilities.Test
 			Assert.AreEqual("void WithoutDefaultArg(int myInt)", without);
 		}
 
-		private void EqualIntellisence(string search1, string search2)
+		private void EqualIntellisense(string search1, string search2)
 		{
-			var help1 = Parser.Intellisence(search1).Select(i => i.Details.ToString());
-			var help2 = Parser.Intellisence(search2).Select(i => i.Details.ToString());
+			var help1 = Parser.Intellisense(search1).Select(i => i.Details.ToString());
+			var help2 = Parser.Intellisense(search2).Select(i => i.Details.ToString());
 			CollectionAssert.AreEqual(help1, help2);
 			CollectionAssert.IsNotEmpty(help1);
 		}
@@ -91,14 +91,14 @@ namespace Rex.Utilities.Test
 		[Test]
 		public void SimpleStaticIntellisensTest()
 		{
-			var helpInfo = Parser.Intellisence("Math.Ab").Select(i => i.Details.ToString());
+			var helpInfo = Parser.Intellisense("Math.Ab").Select(i => i.Details.ToString());
 			Assert.AreEqual(7, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "sbyte Abs(sbyte value)");
 
-			helpInfo = Parser.Intellisence("Math.Abs.").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisense("Math.Abs.").Select(i => i.Details.ToString());
 			Assert.IsEmpty(helpInfo);
 
-			helpInfo = Parser.Intellisence("Math.Abs(").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisense("Math.Abs(").Select(i => i.Details.ToString());
 			Assert.AreEqual(7, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "sbyte Abs(sbyte value)");
 		}
@@ -106,9 +106,9 @@ namespace Rex.Utilities.Test
 		[Test]
 		public void TypeNotFoundTest()
 		{
-			var helpInfo = Parser.Intellisence("ASDASDASDASDASDASD");
+			var helpInfo = Parser.Intellisense("ASDASDASDASDASDASD");
 			Assert.IsEmpty(helpInfo);
-			helpInfo = Parser.Intellisence("Math.PI.ToString().g");
+			helpInfo = Parser.Intellisense("Math.PI.ToString().g");
 			Assert.IsNotEmpty(helpInfo);
 		}
 
@@ -128,22 +128,22 @@ namespace Rex.Utilities.Test
 		[Test]
 		public void SimpleMethodTest()
 		{
-			var helpInfo = Parser.Intellisence("Math.PI.ToString()").Select(i => i.Details.ToString()); ;
+			var helpInfo = Parser.Intellisense("Math.PI.ToString()").Select(i => i.Details.ToString()); ;
 			Assert.IsEmpty(helpInfo);
 
-			helpInfo = Parser.Intellisence("a = new Action(").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisense("a = new Action(").Select(i => i.Details.ToString());
 			CollectionAssert.Contains(helpInfo, "Action");
 			CollectionAssert.Contains(helpInfo, "Action<T>");
 			CollectionAssert.Contains(helpInfo, "Action<T1, T2>");
 
-			helpInfo = Parser.Intellisence("Math.PI.GetHashCode().ToString(").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisense("Math.PI.GetHashCode().ToString(").Select(i => i.Details.ToString());
 			Assert.IsEmpty(helpInfo);
 		}
 
 		[Test]
 		public void SimpleAfterMethodTest()
 		{
-			var helpInfo = Parser.Intellisence("Math.Abs(-2).MaxValue");
+			var helpInfo = Parser.Intellisense("Math.Abs(-2).MaxValue");
 			Assert.IsEmpty(helpInfo);
 
 			var match = Regex.Match("Math.Abs(-2).MaxValue", RexParser.DotAfterMethodRegex);
@@ -155,8 +155,8 @@ namespace Rex.Utilities.Test
 			possibleMethods = Parser.PossibleMethods(match);
 			Assert.AreEqual(1, possibleMethods.Count());
 
-			var afterMethod = Parser.Intellisence("Math.ToString().").ToList();
-			var SameType = Parser.Intellisence("Math.PI.ToString().").ToList();
+			var afterMethod = Parser.Intellisense("Math.ToString().").ToList();
+			var SameType = Parser.Intellisense("Math.PI.ToString().").ToList();
 
 			Assert.AreEqual(SameType.Count, afterMethod.Count);
 			for (int i = 0; i < afterMethod.Count; i++)
@@ -171,18 +171,18 @@ namespace Rex.Utilities.Test
 			var x = new RecursiveTest(null);
 			SetVar("x", new RecursiveTest(x));
 
-			var helpInfo = Parser.Intellisence("x.Recursion").Select(i => i.Details.ToString());
+			var helpInfo = Parser.Intellisense("x.Recursion").Select(i => i.Details.ToString());
 			Assert.AreEqual(2, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "RecursiveTest RecursionProp { get; set; }");
 			CollectionAssert.Contains(helpInfo, "readonly RecursiveTest RecursionField");
 
 
-			helpInfo = Parser.Intellisence("x.RecursionProp.Recursion").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisense("x.RecursionProp.Recursion").Select(i => i.Details.ToString());
 			Assert.AreEqual(2, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "RecursiveTest RecursionProp { get; set; }");
 			CollectionAssert.Contains(helpInfo, "readonly RecursiveTest RecursionField");
 
-			helpInfo = Parser.Intellisence("x.RecursionField.Recursion").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisense("x.RecursionField.Recursion").Select(i => i.Details.ToString());
 			Assert.AreEqual(2, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "RecursiveTest RecursionProp { get; set; }");
 			CollectionAssert.Contains(helpInfo, "readonly RecursiveTest RecursionField");
@@ -199,37 +199,37 @@ namespace Rex.Utilities.Test
 				}
 			});
 
-			var helpInfo = Parser.Intellisence("TheA.TheIn").Select(i => i.Details.ToString());
+			var helpInfo = Parser.Intellisense("TheA.TheIn").Select(i => i.Details.ToString());
 			Assert.AreEqual(1, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "I_B TheInterface { get; set; }");
 
-			helpInfo = Parser.Intellisence("TheA.TheInterface.").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisense("TheA.TheInterface.").Select(i => i.Details.ToString());
 			CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get; }");
 
-			helpInfo = Parser.Intellisence("TheA.TheInterface.InnerB.").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisense("TheA.TheInterface.InnerB.").Select(i => i.Details.ToString());
 			CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get; }");
 		}
 
 		[Test]
 		public void KeywordToTypeTest()
 		{
-			var helpInfo1 = Parser.Intellisence("Double.").Select(i => i.Details.ToString());
-			var helpInfo2 = Parser.Intellisence("double.").Select(i => i.Details.ToString());
+			var helpInfo1 = Parser.Intellisense("Double.").Select(i => i.Details.ToString());
+			var helpInfo2 = Parser.Intellisense("double.").Select(i => i.Details.ToString());
 			Assert.AreEqual(helpInfo1, helpInfo2);
 			Assert.IsNotEmpty(helpInfo1);
 
-			helpInfo1 = Parser.Intellisence("Int32.").Select(i => i.Details.ToString());
-			helpInfo2 = Parser.Intellisence("int.").Select(i => i.Details.ToString());
+			helpInfo1 = Parser.Intellisense("Int32.").Select(i => i.Details.ToString());
+			helpInfo2 = Parser.Intellisense("int.").Select(i => i.Details.ToString());
 			Assert.AreEqual(helpInfo1, helpInfo2);
 			Assert.IsNotEmpty(helpInfo1);
 
-			helpInfo1 = Parser.Intellisence("Boolean.").Select(i => i.Details.ToString());
-			helpInfo2 = Parser.Intellisence("bool.").Select(i => i.Details.ToString());
+			helpInfo1 = Parser.Intellisense("Boolean.").Select(i => i.Details.ToString());
+			helpInfo2 = Parser.Intellisense("bool.").Select(i => i.Details.ToString());
 			Assert.AreEqual(helpInfo1, helpInfo2);
 			Assert.IsNotEmpty(helpInfo1);
 
-			helpInfo1 = Parser.Intellisence("String.").Select(i => i.Details.ToString());
-			helpInfo2 = Parser.Intellisence("string.").Select(i => i.Details.ToString());
+			helpInfo1 = Parser.Intellisense("String.").Select(i => i.Details.ToString());
+			helpInfo2 = Parser.Intellisense("string.").Select(i => i.Details.ToString());
 			Assert.AreEqual(helpInfo1, helpInfo2);
 			Assert.IsNotEmpty(helpInfo1);
 		}
@@ -237,14 +237,14 @@ namespace Rex.Utilities.Test
 		[Test]
 		public void DoNotShowStaticOnInstanceTest()
 		{
-			var helpInfo = Parser.Intellisence("Math.PI.");
+			var helpInfo = Parser.Intellisense("Math.PI.");
 			Assert.IsNotEmpty(helpInfo);
 			Assert.IsEmpty(from h in helpInfo
 						   where h.Details.Contains(Syntax.ConstKeyword) ||
 								 h.Details.Contains(Syntax.StaticKeyword)
 						   select h);
 
-			helpInfo = Parser.Intellisence("Math.PI.GetType().");
+			helpInfo = Parser.Intellisense("Math.PI.GetType().");
 			Assert.IsEmpty(from h in helpInfo
 						   where h.Details.Contains(Syntax.ConstKeyword) ||
 								 h.Details.Contains(Syntax.StaticKeyword)
@@ -259,7 +259,7 @@ namespace Rex.Utilities.Test
 			SetVar("DoubleX", 1.0);
 			SetVar("DoubleY", 1.0);
 			SetVar("DoubleZ", 1.0);
-			var helpInfo = Parser.Intellisence("Double");
+			var helpInfo = Parser.Intellisense("Double");
 			Assert.IsNotEmpty(helpInfo);
 			var names = helpInfo.Select(i => i.Details.Name.String);
 			foreach (var v in RexHelper.Variables)
@@ -274,7 +274,7 @@ namespace Rex.Utilities.Test
 			IntellisenseInvokeTest invoker;
 			invoker = SetVar("invoker", new IntellisenseInvokeTest());
 
-			var helpInfo = Parser.Intellisence("invoker.Counter").Select(i => i.Details.ToString()).First();
+			var helpInfo = Parser.Intellisense("invoker.Counter").Select(i => i.Details.ToString()).First();
 			Assert.AreEqual("int Counter { get; }", helpInfo);
 			Assert.AreEqual(0, invoker.counter);
 		}
@@ -282,37 +282,37 @@ namespace Rex.Utilities.Test
 		[Test]
 		public void StaticInterfaceTest()
 		{
-			var helpInfo = Parser.Intellisence("StaticA.TheIn").Select(i => i.Details.ToString());
+			var helpInfo = Parser.Intellisense("StaticA.TheIn").Select(i => i.Details.ToString());
 			Assert.AreEqual(1, helpInfo.Count());
 			CollectionAssert.Contains(helpInfo, "static I_B TheInterface { get; set; }");
 
-			helpInfo = Parser.Intellisence("StaticA.TheInterface.").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisense("StaticA.TheInterface.").Select(i => i.Details.ToString());
 			CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get; }");
 
-			helpInfo = Parser.Intellisence("StaticA.TheInterface.InnerB.").Select(i => i.Details.ToString());
+			helpInfo = Parser.Intellisense("StaticA.TheInterface.InnerB.").Select(i => i.Details.ToString());
 			CollectionAssert.Contains(helpInfo, "double DoYouSeeMe { get; }");
 		}
 
 		[Test]
 		public void OutRefParaTest()
 		{
-			var helpInfo = Parser.Intellisence("Double.TryParse").First();
+			var helpInfo = Parser.Intellisense("Double.TryParse").First();
 			Assert.True(helpInfo.Details.Any(i => i.Type == SyntaxType.Keyword && i.String == "out"));
 
-			helpInfo = Parser.Intellisence("OutRefTest.RefMethod").First();
+			helpInfo = Parser.Intellisense("OutRefTest.RefMethod").First();
 			Assert.True(helpInfo.Details.Any(i => i.Type == SyntaxType.Keyword && i.String == "ref"));
 
-			helpInfo = Parser.Intellisence("OutRefTest.OutMethod").First();
+			helpInfo = Parser.Intellisense("OutRefTest.OutMethod").First();
 			Assert.True(helpInfo.Details.Any(i => i.Type == SyntaxType.Keyword && i.String == "out"));
 		}
 
 		[Test]
 		public void PerformanceTest()
 		{
-			SpeedTestAction(() => Parser.Intellisence("Mat"), 100);
-			SpeedTestAction(() => Parser.Intellisence("Math.PI."), 100);
-			SpeedTestAction(() => Parser.Intellisence("Math.PI.ToString()."), 100);
-			SpeedTestAction(() => Parser.Intellisence("Math.PI.ToString().Length.MaxValue"), 100);
+			SpeedTestAction(() => Parser.Intellisense("Mat"), 100);
+			SpeedTestAction(() => Parser.Intellisense("Math.PI."), 100);
+			SpeedTestAction(() => Parser.Intellisense("Math.PI.ToString()."), 100);
+			SpeedTestAction(() => Parser.Intellisense("Math.PI.ToString().Length.MaxValue"), 100);
 		}
 
 		[Test]
@@ -382,7 +382,7 @@ namespace Rex.Utilities.Test
 		[Test]
 		public void ColorizingPerformanceTest()
 		{
-			var mathPIHelp = Parser.Intellisence("Math.PI.");
+			var mathPIHelp = Parser.Intellisense("Math.PI.");
 			SpeedTestAction(() =>
 			{
 				foreach (var help in mathPIHelp)
@@ -395,8 +395,8 @@ namespace Rex.Utilities.Test
 		[Test]
 		public void ShouldNotGetHelp()
 		{
-			Assert.IsEmpty(Parser.Intellisence("Dictonary<int,int>"));
-			Assert.IsEmpty(Parser.Intellisence("Func<int,int>(i => i."));
+			Assert.IsEmpty(Parser.Intellisense("Dictonary<int,int>"));
+			Assert.IsEmpty(Parser.Intellisense("Func<int,int>(i => i."));
 		}
 
 		[Test]
@@ -413,7 +413,7 @@ namespace Rex.Utilities.Test
 			SetVar("MyDoubleX", 1.0);
 			SetVar("MyDoubleY", 1.0);
 			SetVar("MyDoubleZ", 1.0);
-			var helpInfo = Parser.Intellisence("MyDoubl");
+			var helpInfo = Parser.Intellisense("MyDoubl");
 			foreach (var item in helpInfo)
 			{
 				Assert.IsTrue(item.ReplaceString.Contains("MyDouble"));
@@ -421,7 +421,7 @@ namespace Rex.Utilities.Test
 				Assert.AreEqual(6, item.End);
 			}
 
-			helpInfo = Parser.Intellisence("Math.PI.GetHashCode().ToStr");
+			helpInfo = Parser.Intellisense("Math.PI.GetHashCode().ToStr");
 			Assert.IsNotEmpty(helpInfo);
 			foreach (var item in helpInfo)
 			{
@@ -430,7 +430,7 @@ namespace Rex.Utilities.Test
 				Assert.AreEqual(26, item.End);
 			}
 
-			helpInfo = Parser.Intellisence("x = Math.PI.ToStr");
+			helpInfo = Parser.Intellisense("x = Math.PI.ToStr");
 			foreach (var item in helpInfo)
 			{
 				Assert.IsTrue(item.ReplaceString.Contains("ToString"));
@@ -439,7 +439,7 @@ namespace Rex.Utilities.Test
 			}
 
 			//var x = Math.Tan()
-			helpInfo = Parser.Intellisence("x = Math.Tan(Math.P");
+			helpInfo = Parser.Intellisense("x = Math.Tan(Math.P");
 			foreach (var item in helpInfo)
 			{
 				if (!item.IsMethodOverload)
@@ -450,7 +450,7 @@ namespace Rex.Utilities.Test
 			}
 
 			SetVar<string>("MyVar", null);
-			helpInfo = Parser.Intellisence("x = MyVar");
+			helpInfo = Parser.Intellisense("x = MyVar");
 			foreach (var item in helpInfo)
 			{
 				if (!item.IsMethodOverload)
@@ -478,7 +478,7 @@ namespace Rex.Utilities.Test
 
 		private static T SetVar<T>(string name, T val)
 		{
-			return (T)(RexHelper.Variables[name] = new RexHelper.Varible { VarValue = val, VarType = typeof(T) }).VarValue;
+			return (T)(RexHelper.Variables[name] = new RexHelper.Variable { VarValue = val, VarType = typeof(T) }).VarValue;
 		}
 
 	}

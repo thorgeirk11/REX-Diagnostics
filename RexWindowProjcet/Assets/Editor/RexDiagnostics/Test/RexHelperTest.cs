@@ -20,7 +20,7 @@ namespace Rex.Utilities.Test
 
 			RexHelper.Variables.Clear();
 			var expression = "1+1";
-			var pResult = Parser.ParseAssigment(expression);
+			var pResult = Parser.ParseAssignment(expression);
 			var cResult = RexCompileEngine.Compile(pResult);
 			var output = Execute(cResult);
 			Assert.AreEqual(2, output.Value);
@@ -43,7 +43,7 @@ namespace Rex.Utilities.Test
 		public void CompileFailTest()
 		{
 			var expression = "1 / 0";
-			var pResult = Parser.ParseAssigment(expression);
+			var pResult = Parser.ParseAssignment(expression);
 			Assert.AreEqual(expression, pResult.ExpressionString);
 			Assert.AreEqual(expression, pResult.WholeCode);
 			Assert.IsFalse(pResult.IsDeclaring);
@@ -81,7 +81,7 @@ namespace Rex.Utilities.Test
 
 		private static void SetVar<T>(string name, T val)
 		{
-			RexHelper.Variables[name] = new RexHelper.Varible { VarValue = val, VarType = typeof(T) };
+			RexHelper.Variables[name] = new RexHelper.Variable { VarValue = val, VarType = typeof(T) };
 		}
 
 		[Test]
@@ -186,7 +186,7 @@ namespace Rex.Utilities.Test
 		public void SimpleExpressionTest()
 		{
 			var expression = "1+1";
-			var pResult = Parser.ParseAssigment(expression);
+			var pResult = Parser.ParseAssignment(expression);
 			Assert.AreEqual(expression, pResult.ExpressionString);
 			Assert.AreEqual(expression, pResult.WholeCode);
 			Assert.IsFalse(pResult.IsDeclaring);
@@ -244,7 +244,7 @@ namespace Rex.Utilities.Test
 		public void SimpleAssigmentTest()
 		{
 			var expression = "x = 1 + 1";
-			var pResult = Parser.ParseAssigment(expression);
+			var pResult = Parser.ParseAssignment(expression);
 			Assert.AreEqual("1 + 1", pResult.ExpressionString);
 			Assert.AreEqual(expression, pResult.WholeCode);
 			Assert.IsTrue(pResult.IsDeclaring);
@@ -264,7 +264,7 @@ namespace Rex.Utilities.Test
 		{
 			var expr = "new Func<int, bool>(i => i < 5)";
 			var expression = "x = " + expr;
-			var pResult = Parser.ParseAssigment(expression);
+			var pResult = Parser.ParseAssignment(expression);
 			Assert.AreEqual(expr, pResult.ExpressionString);
 			Assert.AreEqual(expression, pResult.WholeCode);
 			Assert.IsTrue(pResult.IsDeclaring);
@@ -285,7 +285,7 @@ namespace Rex.Utilities.Test
 		{
 			var expr = "new[] { 1, 2, 3 }.Select(i => i)";
 			var expression = "x = " + expr;
-			var pResult = Parser.ParseAssigment(expression);
+			var pResult = Parser.ParseAssignment(expression);
 			Assert.AreEqual(expr, pResult.ExpressionString);
 			Assert.AreEqual(expression, pResult.WholeCode);
 			Assert.IsTrue(pResult.IsDeclaring);
@@ -329,7 +329,7 @@ namespace Rex.Utilities.Test
 		}
 		public static DummyOutput CompileAndRun(string code, out Dictionary<MessageType, List<string>> messages)
 		{
-			var pResult = new RexParser().ParseAssigment(code);
+			var pResult = new RexParser().ParseAssignment(code);
 			var cResult = RexCompileEngine.Compile(pResult);
 			return RexHelper.Execute<DummyOutput>(cResult, out messages);
 		}

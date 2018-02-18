@@ -11,12 +11,12 @@ namespace Rex.Utilities
 {
 	public static class RexHelper
 	{
-		public class Varible
+		public class Variable
 		{
 			public object VarValue { get; set; }
 			public Type VarType { get; set; }
 		}
-		public static readonly Dictionary<string, Varible> Variables = new Dictionary<string, Varible>();
+		public static readonly Dictionary<string, Variable> Variables = new Dictionary<string, Variable>();
 
 		public static IEnumerable<OutputEntry> Output { get { return _outputList; } }
 
@@ -140,14 +140,14 @@ namespace Rex.Utilities
 						var iEnumerable = interfaces.FirstOrDefault(t => t.IsGenericType && t.GetInterface("IEnumerable") != null);
 						if (iEnumerable != null)
 						{
-							Variables[varName] = new Varible { VarValue = val, VarType = iEnumerable };
+							Variables[varName] = new Variable { VarValue = val, VarType = iEnumerable };
 							return;
 						}
 						warning = string.Format("Expression returned a compiler generated class. Could not declare variable '{0}'", varName);
 					}
 					else
 					{
-						Variables[varName] = new Varible { VarValue = val, VarType = valType };
+						Variables[varName] = new Variable { VarValue = val, VarType = valType };
 						return;
 					}
 				}

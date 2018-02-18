@@ -40,16 +40,16 @@ namespace Rex.Utilities.Test
 			SetVar<InterfaceTestClass, InterfaceB>("ib");
 			SetVar<InterfaceTestClass, InterfaceTestClass>("i");
 
-			var helpInfo = Parser.Intellisence("ia.").Select(i => i.Details.ToString()).ToList();
+			var helpInfo = Parser.Intellisense("ia.").Select(i => i.Details.ToString()).ToList();
 			CollectionAssert.Contains(helpInfo, "int One { get; }");
 			Assert.True(helpInfo.Count() == 1);
 
-			helpInfo = Parser.Intellisence("ib.").Select(i => i.Details.ToString()).ToList();
+			helpInfo = Parser.Intellisense("ib.").Select(i => i.Details.ToString()).ToList();
 			CollectionAssert.Contains(helpInfo, "int One { get; }");
 			CollectionAssert.Contains(helpInfo, "int Two { get; }");
 			Assert.True(helpInfo.Count() == 2);
 
-			helpInfo = Parser.Intellisence("i.").Select(i => i.Details.ToString()).ToList();
+			helpInfo = Parser.Intellisense("i.").Select(i => i.Details.ToString()).ToList();
 			CollectionAssert.Contains(helpInfo, "int One { get; set; }");
 			CollectionAssert.Contains(helpInfo, "int Two { get; set; }");
 			CollectionAssert.Contains(helpInfo, "int Three { get; set; }");
@@ -58,7 +58,7 @@ namespace Rex.Utilities.Test
 
 		private static TA SetVar<TA, TB>(string name) where TA : TB, new()
 		{
-			return (TA)(RexHelper.Variables[name] = new RexHelper.Varible { VarValue = new TA(), VarType = typeof(TB) }).VarValue;
+			return (TA)(RexHelper.Variables[name] = new RexHelper.Variable { VarValue = new TA(), VarType = typeof(TB) }).VarValue;
 		}
 	}
 }

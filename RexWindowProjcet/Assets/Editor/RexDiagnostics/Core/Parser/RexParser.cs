@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace Rex.Utilities
 {
-	public class RexParser : IRexIntellisenceProvider, IRexParser
+	public class RexParser : IRexIntellisenseProvider, IRexParser
 	{
 		public const string AssignmentRegex = @"^(?<type>\S*\s+)?(?<var>[^ .,=]+)\s*=(?<expr>[^=].*)$";
 		public const string DotExpressionSearch = @"^(?<fullType>(?<firstType>\w+\.)?(\w+\.)*)(?<search>\w*)$";
@@ -22,7 +22,7 @@ namespace Rex.Utilities
 		public const BindingFlags InstanceBindings = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
 		public const BindingFlags StaticBindings = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
 
-		public ParseResult ParseAssigment(string parsedCode)
+		public ParseResult ParseAssignment(string parsedCode)
 		{
 			var match = Regex.Match(parsedCode, AssignmentRegex, RegexOptions.Singleline);
 			if (match.Success)
@@ -77,9 +77,9 @@ namespace Rex.Utilities
 
 		////}
 
-		public IEnumerable<CodeCompletion> Intellisence(string exprssion)
+		public IEnumerable<CodeCompletion> Intellisense(string expression)
 		{
-			var parse = ParseAssigment(exprssion);
+			var parse = ParseAssignment(expression);
 			var offset = parse.WholeCode.IndexOf(parse.ExpressionString);
 
 			var dotExpressionMatch = Regex.Match(parse.ExpressionString, DotExpressionSearch);
@@ -87,7 +87,7 @@ namespace Rex.Utilities
 				return DotExpression(dotExpressionMatch, offset);
 
 			Type endType = null;
-			var afterMethodMatch = Regex.Match(exprssion, DotAfterMethodRegex);
+			var afterMethodMatch = Regex.Match(expression, DotAfterMethodRegex);
 			while (afterMethodMatch.Success)
 			{
 				var possibleMethods = PossibleMethods(afterMethodMatch);
@@ -95,14 +95,14 @@ namespace Rex.Utilities
 				{
 					var method = possibleMethods.First();
 					endType = method.ReturnType;
-					exprssion = exprssion.Substring(afterMethodMatch.Length);
+					expression = expression.Substring(afterMethodMatch.Length);
 					offset += afterMethodMatch.Length;
 				}
 				else
 				{
 					return Enumerable.Empty<CodeCompletion>();
 				}
-				afterMethodMatch = Regex.Match(exprssion, DotAfterMethodRegex);
+				afterMethodMatch = Regex.Match(expression, DotAfterMethodRegex);
 			}
 
 			//Math.PI.ToString().Trim(',', String.Empty.Length.To)
@@ -136,7 +136,7 @@ namespace Rex.Utilities
 
 			if (endType != null)
 			{
-				var methodSearch = Regex.Match(exprssion, DotExpressionSearch);
+				var methodSearch = Regex.Match(expression, DotExpressionSearch);
 				if (methodSearch.Success)
 				{
 					var full = methodSearch.Groups["fullType"];
