@@ -35,7 +35,7 @@ namespace Rex.Window
 		/// </summary>
 		public bool ShowEnumeration { get; set; }
 
-		private MemberDetails _exceptionDetails;
+        private MemberDetails _exceptionDetails;
 		public override Exception Exception
 		{
 			get { return base.Exception; }
@@ -95,7 +95,10 @@ namespace Rex.Window
 			}
 		}
 
-		public OutputEntry() : base()
+        public Dictionary<Action, GUIContent> FilteredDetails { get; private set; }
+		private string lastFilterText;
+
+        public OutputEntry() : base()
 		{
 			EnumerationItems = new List<OutputEntry>();
 		}
@@ -104,7 +107,7 @@ namespace Rex.Window
 		{
 			base.LoadVoid();
 			DisplayMessage = DisplayFieldFor(null, Text);
-			Details = new Dictionary<Action, GUIContent>();
+			FilteredDetails = Details = new Dictionary<Action, GUIContent>();
 		}
 
 		protected override void LoadSingleObject(object value)
@@ -134,7 +137,7 @@ namespace Rex.Window
 		private void LoadInDetails(object value, IEnumerable<MemberDetails> memberDetails)
 		{
 			DisplayMessage = DisplayFieldFor(value, Text);
-			Details = (from detail in memberDetails
+			FilteredDetails = Details = (from detail in memberDetails
 					   let tooltip = RexUIUtils.SyntaxHighlingting(detail.TakeWhile(i => i.Type != SyntaxType.EqualsOp))
 					   let content = new GUIContent(detail.Name.String, tooltip)
 					   let displayAction = DisplayFieldFor(detail.Value, detail.Constant.String)
@@ -182,12 +185,12 @@ namespace Rex.Window
 				if (handler != null)
 					handler();
 				EditorGUILayout.EndHorizontal();
-				if (Details.Count > 0)
+				if (FilteredDetails.Count > 0)
 				{
 					ShowDetails = EditorGUILayout.Foldout(ShowDetails, RexStaticTextCollection.Instance["foldout_output_details"]);
 					if (ShowDetails)
 					{
-						foreach (var detail in Details)
+						foreach (var detail in FilteredDetails)
 						{
 							EditorGUILayout.BeginHorizontal();
 							{
@@ -248,5 +251,39 @@ namespace Rex.Window
 		{
 			return FieldForType.ContainsKey(type) || type == typeof(UnityEngine.Object);
 		}
-	}
+
+        public override bool Filter(string text)
+        {
+			text = text.ToLower();
+			if (string.IsNullOrEmpty(text) || Details == null)
+			{
+				FilteredDetails = Details;
+				EnumerationItems.ForEach(o => o.Filter(text));
+				return true;
+			}
+			if (lastFilterText != text)
+			{
+				string newValue = "<b>" + text + "</b>";
+				FilteredDetails = (
+					from d in Details
+					where d.Value.text.Contains(text)
+					select d).ToDictionary(
+						x => x.Key, 
+						y => new GUIContent(y.Value.text.Replace(text, newValue), y.Value.tooltip)
+				);
+				if (EnumerationItems.Count > 0)
+				{
+					bool shouldDisplay = false;
+					foreach (var o in EnumerationItems)
+					{	
+						 shouldDisplay |=  o.Filter(text);
+					}
+					return shouldDisplay;
+				}
+				lastFilterText = text;
+				return ShowDetails = FilteredDetails.Count > 0;
+			}
+			return FilteredDetails.Count > 0;
+		}
+    }
 }

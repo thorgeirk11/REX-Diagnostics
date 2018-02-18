@@ -85,5 +85,7 @@ namespace Rex.Utilities.Helpers
 		/// </summary>
 		public abstract void DrawOutputUI();
 
+		public abstract bool Filter(string text);
+
 	}
 }

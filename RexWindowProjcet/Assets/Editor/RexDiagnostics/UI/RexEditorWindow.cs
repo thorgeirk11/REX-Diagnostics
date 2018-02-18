@@ -83,6 +83,7 @@ namespace Rex.Window
 
 		bool updateSkins = true;
 		TextEditor _inputField;
+		string _outputFilterText;
 
 		private DateTime lastExecute;
 		private bool lastRunSuccesfull;
@@ -610,7 +611,7 @@ namespace Rex.Window
 			GUILayout.BeginHorizontal();
 			{
 				GUILayout.Label(_texts["output_header"]);
-
+				_outputFilterText = EditorGUILayout.TextField(_outputFilterText);
 				if (RexHelper.Output.Any() && GUILayout.Button(_texts["output_clear"], GUILayout.Width(43f)))
 					RexHelper.ClearOutput();
 			}
@@ -619,15 +620,16 @@ namespace Rex.Window
 			EditorGUILayout.BeginVertical(slimBox);
 			scroll3 = EditorGUILayout.BeginScrollView(scroll3);
 			{
-				OutputEntry deleted = null;
 				foreach (var o in RexHelper.Output)
 				{
-					EditorGUILayout.BeginVertical(GUILayout.ExpandWidth(true));
-					o.DrawOutputUI();
-					DisplayLine();
-					EditorGUILayout.EndVertical();
+					if (o.Filter(_outputFilterText))
+					{
+						EditorGUILayout.BeginVertical(GUILayout.ExpandWidth(true));
+						o.DrawOutputUI();
+						DisplayLine();
+						EditorGUILayout.EndVertical();
+					}
 				}
-				RexHelper.RemoveOutput(deleted);
 			}
 			EditorGUILayout.EndScrollView();
 			EditorGUILayout.EndVertical();
@@ -829,7 +831,7 @@ namespace Rex.Window
 		/// </summary>
 		/// <param name="VarName">Name of the var. (key of the <see cref="RexHelper.Variables"/>)</param>
 		/// <param name="var">The varible to display. (Value of the <see cref="RexHelper.Variables"/>)</param>
-		private bool DisplayVariable(string VarName, RexHelper.Varible var)
+		private bool DisplayVariable(string VarName, RexHelper.Variable var)
 		{
 			string highlightedString;
 
