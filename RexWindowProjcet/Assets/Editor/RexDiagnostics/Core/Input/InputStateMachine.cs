@@ -170,7 +170,6 @@ namespace Rex.Utilities.Input
             {
                 SelectedHelp = 0;
                 UseIntelliSelection();
-				IntelliSenceHelp.Clear();
                 return;
             }
             else if (IsKeyDown(KeyCode.Return) || IsKeyDown(KeyCode.KeypadEnter))
@@ -261,6 +260,7 @@ namespace Rex.Utilities.Input
 			ReplacementCode = ReplacementString();
 			if (ReplacementCode != Code)
 			{
+				IntelliSenceHelp.Clear();
 				ShouldReplaceCode = true;
 				SelectedHelp = -1;
 			}
