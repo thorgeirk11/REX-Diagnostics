@@ -260,6 +260,7 @@ namespace Rex.Utilities.Input
 			ReplacementCode = ReplacementString();
 			if (ReplacementCode != Code)
 			{
+				IntelliSenceHelp.Clear();
 				ShouldReplaceCode = true;
 				SelectedHelp = -1;
 			}
