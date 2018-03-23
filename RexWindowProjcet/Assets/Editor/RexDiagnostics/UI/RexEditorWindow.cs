@@ -48,6 +48,9 @@ namespace Rex.Window
 		[SerializeField]
 		private RexCompileEngine _compileEngine;
 
+		[SerializeField]
+		private bool _alwaysOn;
+
 		/// <summary>
 		/// History of all the expressions executed in this editor session.
 		/// </summary>
@@ -195,9 +198,13 @@ namespace Rex.Window
 
 		void OnGUI()
 		{
-			if (!EditorApplication.isPlaying)
+			if (!_alwaysOn && !EditorApplication.isPlaying)
 			{
-				EditorGUILayout.HelpBox("Need to be in play mode to evaluate expressions", MessageType.Info);
+				EditorGUILayout.HelpBox("Warning: Manipulating a GameObject in REX while not in play mode might result in the change to be permanent", MessageType.Info);
+				if (GUILayout.Button("Turn REX on"))
+				{
+					_alwaysOn = true;
+				}
 				return;
 			}
 
