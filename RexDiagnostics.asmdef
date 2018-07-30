@@ -1,0 +1,8 @@
+{
+    "name": "RexDiagnostics",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}
