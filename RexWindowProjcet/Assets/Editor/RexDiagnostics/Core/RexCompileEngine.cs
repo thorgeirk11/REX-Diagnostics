@@ -54,7 +54,6 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 	public void OnEnable()
 	{
 		hideFlags = HideFlags.HideAndDontSave;
-
 		if (_instance == null)
 		{
 			_instance = this;
