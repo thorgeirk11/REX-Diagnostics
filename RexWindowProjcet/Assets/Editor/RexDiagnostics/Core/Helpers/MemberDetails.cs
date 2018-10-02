@@ -70,7 +70,7 @@ namespace Rex.Utilities.Helpers
 
 			if (mySyntax.Count != otherSyntax.Count) return false;
 
-			for (int i = 0; i < mySyntax.Count; i++)
+			for (var i = 0; i < mySyntax.Count; i++)
 			{
 				if (!mySyntax[i].IsEquivelent(otherSyntax[i]))
 					return false;

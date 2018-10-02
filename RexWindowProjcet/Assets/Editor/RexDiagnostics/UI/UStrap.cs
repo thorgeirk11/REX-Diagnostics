@@ -78,9 +78,9 @@ namespace Rex.Window
         public static Rect[,] Grid(Rect super, int cols = 1, int rows = 1)
         {
             var grid = new Rect[cols, rows];
-            for (int c = 0; c < cols; c++)
+            for (var c = 0; c < cols; c++)
             {
-                for (int r = 0; r < rows; r++)
+                for (var r = 0; r < rows; r++)
                 {
                     grid[c, r] = super.SubRect(cols: cols, col: c, rows: rows, row: r, grouped: true);
                 }

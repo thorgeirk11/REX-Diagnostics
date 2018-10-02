@@ -43,7 +43,7 @@ namespace Rex.Utilities.Helpers
 
 		private static void SaveMacros(IEnumerable<string> macros)
 		{
-			int i = 1;
+			var i = 1;
 			foreach (var macro in macros)
 			{
 				UnityEditor.EditorPrefs.SetString(REX_MACRO_NAME + i, macro);

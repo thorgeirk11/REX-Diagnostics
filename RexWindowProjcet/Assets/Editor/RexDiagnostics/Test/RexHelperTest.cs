@@ -211,7 +211,7 @@ namespace Rex.Utilities.Test
 			Assert.AreEqual(new[] { 1, 2, 3, 4, 5 }, output.Value);
 
 			Assert.AreEqual(5, output.EnumerationItems.Count);
-			for (int i = 1; i <= output.EnumerationItems.Count; i++)
+			for (var i = 1; i <= output.EnumerationItems.Count; i++)
 			{
 				Assert.AreEqual(i, (output.EnumerationItems[i - 1] as DummyOutput).Value);
 			}
@@ -219,7 +219,7 @@ namespace Rex.Utilities.Test
 			output = CompileAndRun("new [] { \"1\", \"2\", \"3\", null, \"5\" }");
 			Assert.AreEqual(new[] { "1", "2", "3", null, "5" }, output.Value);
 			Assert.AreEqual(5, output.EnumerationItems.Count);
-			for (int i = 1; i <= output.EnumerationItems.Count; i++)
+			for (var i = 1; i <= output.EnumerationItems.Count; i++)
 			{
 				if (i == 4)
 					Assert.IsNull((output.EnumerationItems[i - 1] as DummyOutput).Value);
@@ -335,7 +335,7 @@ namespace Rex.Utilities.Test
 		}
 	}
 
-	public class DummyOutput : OutputEntry
+	public class DummyOutput : OutputEntry, IOutputEntry
 	{
 		public override void DrawOutputUI()
 		{
@@ -351,7 +351,7 @@ namespace Rex.Utilities.Test
 		{
 			base.LoadSingleObject(values);
 			Value = values;
-			foreach (object o in values)
+			foreach (var o in values)
 			{
 				var member = new DummyOutput();
 				member.LoadSingleObject(o);

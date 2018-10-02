@@ -338,7 +338,7 @@ namespace Rex.Utilities
 			{
 				var nested = NestedType(t, false);
 
-				bool isGeneric = false;
+				var isGeneric = false;
 				var name = t.Name;
 				if (name.IndexOf("`") > -1)
 				{
@@ -404,7 +404,7 @@ namespace Rex.Utilities
 			var genericArguments = new List<Syntax>();
 			// Build the type arguments (if any)
 			var argsCount = availableArguments.Count;
-			for (int i = 0; i < argsCount && availableArguments.Count > 0; i++)
+			for (var i = 0; i < argsCount && availableArguments.Count > 0; i++)
 			{
 				if (i != 0) genericArguments.AddRange(new[] { Syntax.Comma, Syntax.Space });
 

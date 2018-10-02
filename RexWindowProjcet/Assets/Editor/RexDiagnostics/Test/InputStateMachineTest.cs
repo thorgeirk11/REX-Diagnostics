@@ -167,7 +167,7 @@ namespace Rex.Utilities.Test
 		}
 		public static void PressKey(KeyCode key, int repeat = 1)
 		{
-			for (int i = 0; i < repeat; i++)
+			for (var i = 0; i < repeat; i++)
 			{
 				RexISM.PressKey(key);
 				RexISM.Update();

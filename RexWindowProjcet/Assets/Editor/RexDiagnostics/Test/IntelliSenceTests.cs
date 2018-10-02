@@ -159,7 +159,7 @@ namespace Rex.Utilities.Test
 			var SameType = Parser.Intellisense("Math.PI.ToString().").ToList();
 
 			Assert.AreEqual(SameType.Count, afterMethod.Count);
-			for (int i = 0; i < afterMethod.Count; i++)
+			for (var i = 0; i < afterMethod.Count; i++)
 			{
 				afterMethod[i].Details.IsEquivelent(SameType[i].Details);
 			}
@@ -467,7 +467,7 @@ namespace Rex.Utilities.Test
 		{
 			var sw = new Stopwatch();
 			sw.Start();
-			for (int i = 0; i < n; i++)
+			for (var i = 0; i < n; i++)
 			{
 				ToDo();
 			}

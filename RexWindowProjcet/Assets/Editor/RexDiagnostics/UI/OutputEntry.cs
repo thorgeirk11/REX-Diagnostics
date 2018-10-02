@@ -9,7 +9,7 @@ using System.Collections;
 
 namespace Rex.Window
 {
-	public class OutputEntry : AOutputEntry
+	public class OutputEntry : AOutputEntry, IOutputEntry
 	{
 		/// <summary>
 		/// Action Dictionary for displaying the details.
@@ -120,7 +120,7 @@ namespace Rex.Window
 		{
 			LoadSingleObject(values);
 
-			foreach (object o in values)
+			foreach (var o in values)
 			{
 				var member = new OutputEntry();
 				member.LoadSingleObject(o);
@@ -263,7 +263,7 @@ namespace Rex.Window
 			}
 			if (lastFilterText != text)
 			{
-				string newValue = "<b>" + text + "</b>";
+				var newValue = "<b>" + text + "</b>";
 				FilteredDetails = (
 					from d in Details
 					where d.Value.text.Contains(text)
@@ -273,7 +273,7 @@ namespace Rex.Window
 				);
 				if (EnumerationItems.Count > 0)
 				{
-					bool shouldDisplay = false;
+					var shouldDisplay = false;
 					foreach (var o in EnumerationItems)
 					{	
 						 shouldDisplay |=  o.Filter(text);

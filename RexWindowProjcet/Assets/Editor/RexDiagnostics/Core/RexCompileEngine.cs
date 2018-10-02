@@ -191,7 +191,7 @@ public class RexCompileEngine : ScriptableObject, IDisposable
 			return currentAssemblies;
 
 		var assemblies = new List<string>();
-		foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+		foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
 		{
 			try
 			{

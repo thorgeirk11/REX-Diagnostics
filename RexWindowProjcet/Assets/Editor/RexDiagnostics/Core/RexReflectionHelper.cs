@@ -187,7 +187,7 @@ namespace Rex.Utilities.Helpers
 			syntax.Add(Syntax.ParaOpen);
 
 			var paras = meth.GetParameters();
-			for (int i = 0; i < paras.Length; i++)
+			for (var i = 0; i < paras.Length; i++)
 			{
 				if (paras[i].IsOut)
 					syntax.AddRange(new[] { Syntax.OutKeyword, Syntax.Space });
