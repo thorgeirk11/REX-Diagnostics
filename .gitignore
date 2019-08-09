@@ -221,3 +221,5 @@ FakesAssemblies/
 **/UnityVS*.sln
 **/UnityVS*.csproj
 **/UnityVS.VersionSpecific.*
+
+**/*.vs
