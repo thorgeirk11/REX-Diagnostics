@@ -464,7 +464,7 @@ namespace Rex.Window
 				{
 					codeCompletion.SyntaxHighlightedDetails = RexUIUtils.SyntaxHighlingting(codeCompletion.Details, codeCompletion.Search);
 				}
-				var rect = new Rect(1, i * lineHeigth, intelliRect.width, intelliRect.height);
+				var rect = new Rect(1, i * lineHeigth, intelliRect.width, lineHeigth);
 
 				if (IsSelectable && i == RexISM.SelectedHelp)
 				{
