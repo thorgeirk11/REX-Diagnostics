@@ -449,12 +449,12 @@ namespace Rex.Window
 
 		private static void DisplayHelp(ref Rect intelliRect, List<CodeCompletion> help, bool IsSelectable, ref Vector2 scroll)
 		{
-			const float lineHeigth = 18.5f;
-			intelliRect.height = Mathf.Min(lineHeigth * help.Count, 150);
+			const float lineHeight = 18.5f;
+			intelliRect.height = Mathf.Min(lineHeight * help.Count, 150);
 
-			scroll = GUI.BeginScrollView(intelliRect, scroll, new Rect(0, 0, 250, lineHeigth * help.Count));
+			scroll = GUI.BeginScrollView(intelliRect, scroll, new Rect(0, 0, 250, lineHeight * help.Count));
 
-			GUI.Box(new Rect(0, -15, intelliRect.width, help.Count * lineHeigth + 15), "", GUI.skin.window);
+			GUI.Box(new Rect(0, -15, intelliRect.width, help.Count * lineHeight + 15), "", GUI.skin.window);
 
 			GUI.skin.label.richText = true;
 			for (int i = 0; i < help.Count; i++)
@@ -464,7 +464,7 @@ namespace Rex.Window
 				{
 					codeCompletion.SyntaxHighlightedDetails = RexUIUtils.SyntaxHighlingting(codeCompletion.Details, codeCompletion.Search);
 				}
-				var rect = new Rect(1, i * lineHeigth, intelliRect.width, intelliRect.height);
+				var rect = new Rect(1, i * lineHeight, intelliRect.width, lineHeight);
 
 				if (IsSelectable && i == RexISM.SelectedHelp)
 				{
